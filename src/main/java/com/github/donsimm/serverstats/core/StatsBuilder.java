@@ -53,7 +53,7 @@ public final class StatsBuilder {
             List<Map.Entry<UUID, Double>> all = new ArrayList<>();
             for (PlayerData p : players) {
                 Double value = p.values.get(category.id());
-                if (value != null && !value.isNaN() && value > 0) {
+                if (value != null && !value.isNaN() && (value > 0 || category.includeZero())) {
                     all.add(Map.entry(p.uuid, value));
                 }
             }

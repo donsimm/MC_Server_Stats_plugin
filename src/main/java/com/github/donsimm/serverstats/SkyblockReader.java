@@ -21,53 +21,101 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
- * Liest uSkyBlock rein lesend: islands/&lt;x,z&gt;.yml (general.level, party.leader-uuid, party.members.&lt;uuid&gt;)
- * und data/challenge-progress.db (Tabelle challenge_progress: island_key, challenge_id, times_completed).
+ * Liest uSkyBlock rein lesend. Wer eine Insel hat, ergibt sich aus zwei Quellen, die sich ergaenzen:
+ * islands/&lt;x,z&gt;.yml (general.level, party.leader-uuid, party.members.&lt;uuid&gt;) und
+ * players/&lt;uuid&gt;.yml (player.islandX/Z, 0 = keine Insel). Challenges kommen aus data/challenge-progress.db
+ * (Tabelle challenge_progress: island_key, challenge_id, times_completed), der Schluessel ist "x,z".
  */
 final class SkyblockReader {
     /** Werte einer Insel, jedem Mitglied zugeordnet. */
     record Info(double level, int challenges, int completions, int partySize) {
     }
 
+    /** Ergebnis samt Zaehlern fuer die Fehlersuche. */
+    record Result(Map<UUID, Info> players, int islandFiles, int playerFiles, int islands, int challengeIslands) {
+    }
+
     private SkyblockReader() {
     }
 
-    static Map<UUID, Info> read(Path pluginDir, Logger log) {
+    private static final class Island {
+        double level;
+        int partySize;
+        final Set<UUID> members = new HashSet<>();
+    }
+
+    static Result read(Path pluginDir, Logger log) {
         Map<String, int[]> challenges = readChallenges(pluginDir.resolve("data").resolve("challenge-progress.db"), log);
-        Map<UUID, Info> result = new HashMap<>();
-        Path islands = pluginDir.resolve("islands");
-        try (DirectoryStream<Path> files = Files.newDirectoryStream(islands, "*.yml")) {
+        Map<String, Island> islands = new HashMap<>();
+
+        int islandFiles = 0;
+        try (DirectoryStream<Path> files = Files.newDirectoryStream(pluginDir.resolve("islands"), "*.yml")) {
             for (Path file : files) {
+                islandFiles++;
                 String name = file.getFileName().toString();
                 String key = name.substring(0, name.length() - 4);
                 YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file.toFile());
-                Set<UUID> members = new HashSet<>();
-                String leader = yaml.getString("party.leader-uuid");
-                if (leader != null) {
-                    addUuid(members, leader);
-                }
+                Island island = islands.computeIfAbsent(key, k -> new Island());
+                island.level = yaml.getDouble("general.level", 0);
+                island.partySize = yaml.getInt("party.currentSize", 0);
+                addUuid(island.members, yaml.getString("party.leader-uuid"));
                 ConfigurationSection section = yaml.getConfigurationSection("party.members");
                 if (section != null) {
                     for (String member : section.getKeys(false)) {
-                        addUuid(members, member);
+                        addUuid(island.members, member);
                     }
-                }
-                if (members.isEmpty()) {
-                    continue; // verlassene Insel
-                }
-                int[] c = challenges.getOrDefault(key, new int[]{0, 0});
-                Info info = new Info(yaml.getDouble("general.level", 0), c[0], c[1], Math.max(members.size(), yaml.getInt("party.currentSize", 0)));
-                for (UUID uuid : members) {
-                    result.put(uuid, info);
                 }
             }
         } catch (IOException e) {
             log.warning("uSkyBlock: Insel-Ordner nicht lesbar: " + e.getMessage());
         }
-        return result;
+
+        // Spielerdateien: islandX/islandZ ist der Inselschluessel, islandY 0 bedeutet "keine Insel"
+        int playerFiles = 0;
+        try (DirectoryStream<Path> files = Files.newDirectoryStream(pluginDir.resolve("players"), "*.yml")) {
+            for (Path file : files) {
+                String name = file.getFileName().toString();
+                UUID uuid;
+                try {
+                    uuid = UUID.fromString(name.substring(0, name.length() - 4));
+                } catch (IllegalArgumentException e) {
+                    continue; // aeltere Dateien nach Spielername
+                }
+                playerFiles++;
+                YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file.toFile());
+                if (yaml.getInt("player.islandY", 0) == 0) {
+                    continue;
+                }
+                String key = yaml.getInt("player.islandX") + "," + yaml.getInt("player.islandZ");
+                islands.computeIfAbsent(key, k -> new Island()).members.add(uuid);
+            }
+        } catch (IOException e) {
+            // Ordner fehlt: dann zaehlen nur die Insel-Dateien
+        }
+
+        Map<UUID, Info> result = new HashMap<>();
+        int withChallenges = 0;
+        for (Map.Entry<String, Island> entry : islands.entrySet()) {
+            Island island = entry.getValue();
+            if (island.members.isEmpty()) {
+                continue; // verlassene Insel
+            }
+            int[] c = challenges.get(entry.getKey());
+            if (c != null) {
+                withChallenges++;
+            }
+            Info info = new Info(island.level, c == null ? 0 : c[0], c == null ? 0 : c[1], Math.max(island.members.size(), island.partySize));
+            for (UUID uuid : island.members) {
+                result.put(uuid, info);
+            }
+        }
+        return new Result(result, islandFiles, playerFiles, islands.size(), withChallenges);
     }
 
     private static void addUuid(Set<UUID> set, String text) {
+        if (text == null) {
+            return;
+        }
         try {
             set.add(UUID.fromString(text));
         } catch (IllegalArgumentException ignored) {

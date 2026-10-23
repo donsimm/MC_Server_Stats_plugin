@@ -138,7 +138,7 @@ public final class AutoStats {
             String id = "stat-" + key.replace('_', '-');
             values.put(id, scaled);
             categories.add(new CategoryDef(id, page, false, title(key), subtitle, "star", PALETTE[color++ % PALETTE.length],
-                    false, format, "vanilla", List.of(), List.of(), "", 1.0, "", "", 1.0));
+                    false, format, "vanilla", List.of(), List.of(), "", 1.0, "", "", 1.0, false));
         }
         return new Result(categories, values);
     }

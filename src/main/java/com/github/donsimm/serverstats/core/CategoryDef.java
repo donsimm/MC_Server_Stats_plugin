@@ -15,8 +15,9 @@ import java.util.List;
  * @param column     CookieClicker: Spalte COOKIES, PER_CLICK oder CLICKER_CLICKS
  * @param ajlbBoard  AJLeaderboards-Board fuer Zeitfenster (oder als Quelle bei source=ajlb)
  * @param ajlbScale  Faktor auf die AJLB-Werte
+ * @param includeZero true: auch Spieler mit dem Wert 0 werden gelistet (z. B. "hat eine Insel")
  */
 public record CategoryDef(String id, String page, boolean highlight, String title, String subtitle, String icon, String color,
                           boolean night, String format, String source, List<String> stat, List<String> sum,
-                          String groupSum, double scale, String column, String ajlbBoard, double ajlbScale) {
+                          String groupSum, double scale, String column, String ajlbBoard, double ajlbScale, boolean includeZero) {
 }

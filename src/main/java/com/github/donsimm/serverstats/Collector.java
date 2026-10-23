@@ -412,7 +412,13 @@ final class Collector {
 
         Map<UUID, Map<String, double[]>> jobsData = snap.jobsDir == null ? null : JobsReader.read(snap.jobsDir);
         Map<String, Map<UUID, Long>> customStats = new HashMap<>();
-        Map<UUID, SkyblockReader.Info> skyData = snap.skyDir == null ? null : SkyblockReader.read(snap.skyDir, plugin.getLogger());
+        SkyblockReader.Result skyResult = snap.skyDir == null ? null : SkyblockReader.read(snap.skyDir, plugin.getLogger());
+        Map<UUID, SkyblockReader.Info> skyData = skyResult == null ? null : skyResult.players();
+        if (skyResult != null) {
+            notes.add("uSkyBlock: " + skyResult.islandFiles() + " Insel-Dateien, " + skyResult.playerFiles() + " Spielerdateien, "
+                    + skyResult.islands() + " Inseln, " + skyData.size() + " Spieler mit Insel, Challenge-Daten fuer "
+                    + skyResult.challengeIslands() + " Inseln.");
+        }
         Map<UUID, OneblockData.Island> oneData = null;
         if (snap.oneFile != null) {
             try {
@@ -495,7 +501,8 @@ final class Collector {
                                 case "PARTY" -> info.partySize() > 1 ? info.partySize() : 0;
                                 default -> 0;
                             };
-                            if (value > 0) {
+                            // Der Level darf 0 sein (frische Insel): so sieht man, wer schon eine Insel hat
+                            if (value > 0 || c.column().equalsIgnoreCase("LEVEL")) {
                                 p.values.put(c.id(), value);
                             }
                         }

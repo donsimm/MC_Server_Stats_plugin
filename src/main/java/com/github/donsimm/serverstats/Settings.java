@@ -178,7 +178,8 @@ final class Settings {
                         s.getDouble("scale", 1.0),
                         s.getString("column", ""),
                         s.getString("ajlb-board", ""),
-                        s.getDouble("ajlb-scale", 1.0)));
+                        s.getDouble("ajlb-scale", 1.0),
+                        s.getBoolean("include-zero", false)));
             }
         }
         for (Map<?, ?> m : c.getMapList("chips")) {

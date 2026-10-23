@@ -21,7 +21,7 @@ class CoreTest {
 
     private static CategoryDef cat(String id, List<String> stat, List<String> sum, String groupSum, double scale) {
         return new CategoryDef(id, "S", false, id, "", "clock", "#fff", false, "int", "vanilla", stat, sum, groupSum, scale,
-                "", "", 1);
+                "", "", 1, false);
     }
 
     @Test
@@ -132,10 +132,12 @@ class CoreTest {
         pc.mcmmoSkills = Map.of("MINING", 120);
         pc.mcmmoPower = 120;
         CategoryDef deaths = cat("deaths", List.of("custom:deaths"), List.of(), "", 1);
+        CategoryDef zero = new CategoryDef("zero", "S", false, "zero", "", "star", "#fff", false, "int", "skyblock", List.of(), List.of(), "", 1, "", "", 1, true);
+        pa.values.put("zero", 0.0);
         Map<String, Map<String, List<AjlbEntry>>> ajlb = Map.of("deaths",
                 Map.of("week", List.of(new AjlbEntry("beta", 2), new AjlbEntry("Unbekannt", 99))));
 
-        JsonObject json = StatsBuilder.build("T", "S", 1000, List.of(deaths), List.of(pa, pb, pc), ajlb,
+        JsonObject json = StatsBuilder.build("T", "S", 1000, List.of(deaths, zero), List.of(pa, pb, pc), ajlb,
                 List.of(new StatsBuilder.Chip("deaths", "Tode")), Map.of(), 1000);
 
         JsonObject category = json.getAsJsonArray("categories").get(0).getAsJsonObject();
@@ -147,6 +149,8 @@ class CoreTest {
         assertEquals(1, week.size());
         assertEquals(2, week.get(0).getAsJsonArray().get(1).getAsLong());
         assertEquals(List.of("all", "week"), category.getAsJsonArray("periods").asList().stream().map(e -> e.getAsString()).toList());
+        JsonObject zeroCategory = json.getAsJsonArray("categories").get(1).getAsJsonObject();
+        assertEquals(1, zeroCategory.getAsJsonObject("boards").getAsJsonArray("all").size(), "Wert 0 wird mit includeZero gelistet");
         assertEquals(12, json.getAsJsonArray("chips").get(0).getAsJsonObject().get("value").getAsLong());
         assertTrue(json.getAsJsonObject("players").has(c.toString()), "Spieler mit mcMMO-Daten wird gelistet");
         assertEquals(120, json.getAsJsonObject("players").getAsJsonObject(c.toString())

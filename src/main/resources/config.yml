@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 9
+config-version: 10
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -127,6 +127,7 @@ chips:
 #   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker (column: COOKIES, CLICKS, PER_CLICK, PRESTIGE) | jobs (column: Job-Name oder *) | skyblock (column: LEVEL, CHALLENGES, COMPLETIONS, PARTY) | oneblock (column: LEVEL, INVITED) | ajlb
 #   vanilla: stat (Liste, erster Treffer zaehlt) oder sum (Liste, addiert) oder group-sum (ganze Gruppe), plus scale
 #   ajlb-board: AJLeaderboards-Board fuer Zeitfenster (optional)
+#   include-zero: true = auch Spieler mit dem Wert 0 listen (z. B. "hat eine Insel")
 categories:
   dauerzocker:
     page: "Übersicht"
@@ -550,8 +551,9 @@ categories:
     column: "*"
   sky-level:
     page: "SkyBlock"
-    title: "Insel-Level"
-    subtitle: "Höchster Level der Insel"
+    title: "Inseln"
+    subtitle: "Alle Spieler mit Insel, nach Level"
+    include-zero: true
     icon: star
     color: "#a8f0ff"
     format: dec
