@@ -671,8 +671,13 @@ function currentTab() {
 }
 function renderNav() {
   const tab = currentTab();
+  // Reihenfolge: Übersicht, Jobs, SkyBlock, Cookie Clicker, Parkour, weitere Seiten, Museum, Alle Statistiken, Spieler
+  const order = ['start', 'seite-' + slug('Jobs & mcMMO'), 'seite-' + slug('SkyBlock & OneBlock'), 'seite-' + slug('Cookie Clicker'), 'seite-' + slug('Parkour'),
+    '*', 'museum', 'seite-' + slug('Alle Statistiken'), 'spieler'];
+  const rank = id => { const i = order.indexOf(id); return i < 0 ? order.indexOf('*') : i; };
   const items = [['start', MAIN_PAGE], ...PAGES.filter(p => p !== MAIN_PAGE).map(p => [pageRoute(p), p]),
-    ...(DATA.museum ? [['museum', DATA.museum.title || 'Museum']] : []), ['spieler', 'Spieler']];
+    ...(DATA.museum ? [['museum', DATA.museum.title || 'Museum']] : []), ['spieler', 'Spieler']]
+    .map((x, i) => [x, i]).sort((a, b) => rank(a[0][0]) - rank(b[0][0]) || a[1] - b[1]).map(x => x[0]);
   const links = DATA.links || {};
   const tabs = items.map(([id, label]) => `<a href="#${id}" data-go="${id}"${id === tab ? ' aria-current="page"' : ''}>${esc(label)}</a>`).join('');
   // Externe Symbole rechts: Homepage und Discord (Adressen kommen aus der config.yml)

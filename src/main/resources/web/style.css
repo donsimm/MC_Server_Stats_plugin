@@ -106,6 +106,9 @@ button, input, select { font-family: var(--font); font-size: 15px; }
 }
 .nav a:hover { background: #e4dcc6; }
 .nav a[aria-current="page"] { background: var(--gold); }
+.nav a[data-go="spieler"] { background: #8fd0ff; }
+.nav a[data-go="spieler"]:hover { background: #b4e0ff; }
+.nav a[data-go="spieler"][aria-current="page"] { background: #8fd0ff; outline: 3px solid var(--gold); outline-offset: 2px; }
 .nav a.icon { padding: 7px 10px; }
 .nav a.icon svg { display: block; }
 .nav a.discord { background: #5865f2; color: #fff; }
