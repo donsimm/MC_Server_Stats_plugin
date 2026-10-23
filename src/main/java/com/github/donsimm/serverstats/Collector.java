@@ -132,26 +132,39 @@ final class Collector {
         });
     }
 
+    /** Der Weltordner der ersten Welt und seine uebergeordneten Ordner (ab Paper 26.x liegt er unter dimensions/...). */
+    private static List<Path> worldRoots() {
+        List<Path> roots = new ArrayList<>();
+        Path path = Bukkit.getWorlds().get(0).getWorldFolder().toPath().toAbsolutePath().normalize();
+        for (int i = 0; i < 6 && path != null; i++) {
+            roots.add(path);
+            path = path.getParent();
+        }
+        return roots;
+    }
+
     private Path findDir(String override, String... candidates) {
         if (override != null && !override.isBlank()) {
-            Path path = plugin.getDataFolder().toPath().getParent().getParent().resolve(override).normalize();
+            Path path = plugin.getDataFolder().toPath().toAbsolutePath().getParent().getParent().resolve(override).normalize();
             return Files.isDirectory(path) ? path : null;
         }
-        Path world = Bukkit.getWorlds().get(0).getWorldFolder().toPath();
-        for (String candidate : candidates) {
-            Path path = world.resolve(candidate);
-            if (Files.isDirectory(path)) {
-                return path;
+        for (Path root : worldRoots()) {
+            for (String candidate : candidates) {
+                Path path = root.resolve(candidate);
+                if (Files.isDirectory(path)) {
+                    return path;
+                }
             }
         }
         return null;
     }
 
     private static String describeCandidates(String... candidates) {
-        Path world = Bukkit.getWorlds().get(0).getWorldFolder().toPath();
         List<String> out = new ArrayList<>();
-        for (String c : candidates) {
-            out.add(world.resolve(c).toString());
+        for (Path root : worldRoots()) {
+            for (String c : candidates) {
+                out.add(root.resolve(c).toString());
+            }
         }
         return String.join(" | ", out);
     }

@@ -58,7 +58,7 @@ Bitte der Reihe nach prüfen und mir Log-Auszüge (`[ServerStats]`, `ERROR`, `WA
 ### Ehrlich offen (nicht verifiziert)
 
 - Läuft das Plugin gegen Paper 26.2? Gebaut wird gegen die Paper-API 1.21.11, die genutzten Methoden sind alt und stabil, geprüft ist es nicht.
-- Ordner der Statistikdateien in Paper 26.x (`world/stats` oder `world/players/stats`): beide werden probiert.
+- Ordner der Statistikdateien in Paper 26.x: ab dem Weltordner werden bis zu 6 Ebenen nach oben `stats` und `players/stats` gesucht (auf einem Testserver lag der Weltordner unter `DoNs_World/dimensions/minecraft/overworld`).
 - Schreibweise der AJLeaderboards-Platzhalter (`sources.ajlb` in der `config.yml`): aus dem Gedächtnis, mit `/serverstats ajlb` prüfen.
 - mcMMO-Anbindung per Reflection (`ExperienceAPI.getLevelOffline`, `getPowerLevelOffline`) für Version 2.2.x.
 - JDBC-Treiber `org.sqlite.JDBC` für die CookieClicker-Datenbank: wird als vom Server mitgeliefert angenommen.

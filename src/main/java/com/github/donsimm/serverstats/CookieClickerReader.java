@@ -1,5 +1,7 @@
 package com.github.donsimm.serverstats;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -7,7 +9,10 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
@@ -31,6 +36,41 @@ final class CookieClickerReader {
         this.log = log;
     }
 
+    /** Die konfigurierte Datei, sonst eine .db-Datei in einem Ordner mit "cookie" im Namen (Ordnername kann je nach Version abweichen). */
+    private Path locateSqlite() {
+        Path configured = pluginsDir.resolve(settings.cookieSqliteFile).normalize();
+        if (Files.isReadable(configured)) {
+            return configured;
+        }
+        List<Path> found = new ArrayList<>();
+        List<String> seen = new ArrayList<>();
+        try (DirectoryStream<Path> dirs = Files.newDirectoryStream(pluginsDir)) {
+            for (Path dir : dirs) {
+                if (!Files.isDirectory(dir) || !dir.getFileName().toString().toLowerCase(Locale.ROOT).contains("cookie")) {
+                    continue;
+                }
+                try (DirectoryStream<Path> files = Files.newDirectoryStream(dir)) {
+                    for (Path f : files) {
+                        seen.add(dir.getFileName() + "/" + f.getFileName());
+                        if (f.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".db")) {
+                            found.add(f);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            // Ordner nicht lesbar: Meldung unten
+        }
+        if (!found.isEmpty()) {
+            log.info("CookieClicker: konfigurierte Datei fehlt (" + configured + "), verwende stattdessen " + found.get(0));
+            return found.get(0);
+        }
+        log.warning("CookieClicker: keine SQLite-Datei gefunden (erwartet: " + configured + "). Inhalt der Ordner mit 'cookie' im Namen: "
+                + (seen.isEmpty() ? "keine solchen Ordner" : String.join(", ", seen))
+                + ". Nutzt CookieClicker MySQL? Dann sources.cookieclicker.type: mysql einstellen.");
+        return null;
+    }
+
     /** @return Zeilen pro UUID, oder null wenn die Datenbank nicht gelesen werden konnte (Grund steht im Log). */
     Map<UUID, Row> read() {
         String url;
@@ -43,10 +83,8 @@ final class CookieClickerReader {
             props.setProperty("password", settings.cookieMysqlPassword);
         } else {
             driver = "org.sqlite.JDBC";
-            Path file = pluginsDir.resolve(settings.cookieSqliteFile).normalize();
-            if (!Files.isReadable(file)) {
-                log.warning("CookieClicker: Datenbankdatei nicht gefunden: " + file
-                        + " (sources.cookieclicker.sqlite-file pruefen, oder type: mysql einstellen)");
+            Path file = locateSqlite();
+            if (file == null) {
                 return null;
             }
             url = "jdbc:sqlite:" + file;

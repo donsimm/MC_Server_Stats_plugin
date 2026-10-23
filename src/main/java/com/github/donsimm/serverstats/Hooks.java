@@ -108,7 +108,7 @@ final class Hooks {
         }
     }
 
-    /** Skill-Level aller Hauptskills, null wenn der Spieler bei mcMMO nicht bekannt ist. */
+    /** Skill-Level aller Hauptskills, null wenn kein einziger Skill gelesen werden konnte. */
     Map<String, Integer> mcmmoLevels(UUID uuid) {
         Map<String, Integer> result = new LinkedHashMap<>();
         for (Object skill : mmSkills) {
@@ -122,7 +122,9 @@ final class Hooks {
                     result.put(name, level);
                 }
             } catch (ReflectiveOperationException | RuntimeException e) {
-                return null; // Spieler unbekannt oder Profil nicht ladbar
+                Throwable cause = e.getCause() != null ? e.getCause() : e;
+                report("mcmmo-level-" + name, "mcMMO: Skill " + name + " nicht lesbar (" + cause.getClass().getSimpleName() + ": " + cause.getMessage()
+                        + "), wird uebersprungen. Weitere Fehler dieser Art werden pro Skill nur einmal gemeldet.", null);
             }
         }
         return result.isEmpty() ? null : result;
