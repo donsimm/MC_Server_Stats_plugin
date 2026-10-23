@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 6
+config-version: 7
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -185,6 +185,8 @@ categories:
       - "custom:pig_one_cm"
       - "custom:strider_one_cm"
       - "custom:minecart_one_cm"
+      - "custom:camel_one_cm"
+      - "custom:happy_ghast_one_cm"
       - "custom:aviate_one_cm"
     scale: 0.00001            # Zentimeter -> Kilometer
 
@@ -358,15 +360,59 @@ categories:
     ajlb-board: "statistic_aviate_one_cm"
     ajlb-scale: 0.00001
 
-  reiter:
+  pferd:
     page: "Übersicht"
-    title: "Reiter"
-    subtitle: "Meiste Strecke auf Pferd, Schwein und Strider"
+    title: "Pferd"
+    subtitle: "Meiste Strecke auf dem Pferd"
     icon: heart
     color: "#e0b88a"
     format: km
     source: vanilla
-    sum: ["custom:horse_one_cm", "custom:pig_one_cm", "custom:strider_one_cm"]
+    stat: ["custom:horse_one_cm"]
+    scale: 0.00001
+    ajlb-board: "statistic_horse_one_cm"
+    ajlb-scale: 0.00001
+  schwein:
+    page: "Übersicht"
+    title: "Schwein"
+    subtitle: "Meiste Strecke auf dem Schwein"
+    icon: heart
+    color: "#ffb3c6"
+    format: km
+    source: vanilla
+    stat: ["custom:pig_one_cm"]
+    scale: 0.00001
+    ajlb-board: "statistic_pig_one_cm"
+    ajlb-scale: 0.00001
+  strider:
+    page: "Übersicht"
+    title: "Strider"
+    subtitle: "Meiste Strecke auf dem Strider"
+    icon: heart
+    color: "#ff9a76"
+    format: km
+    source: vanilla
+    stat: ["custom:strider_one_cm"]
+    scale: 0.00001
+  kamel:
+    page: "Übersicht"
+    title: "Kamel"
+    subtitle: "Meiste Strecke auf dem Kamel"
+    icon: heart
+    color: "#f2d49b"
+    format: km
+    source: vanilla
+    stat: ["custom:camel_one_cm"]
+    scale: 0.00001
+  lore:
+    page: "Übersicht"
+    title: "Lore"
+    subtitle: "Meiste Strecke in der Lore"
+    icon: heart
+    color: "#c9c9d9"
+    format: km
+    source: vanilla
+    stat: ["custom:minecart_one_cm"]
     scale: 0.00001
 
   kletterer:
