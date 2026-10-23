@@ -2,7 +2,7 @@
 
 ## Worum es geht
 Paper-Plugin **ServerStats**: sammelt Vanilla-Statistiken und Daten von Vault, mcMMO, AJLeaderboards (via PlaceholderAPI),
-CookieClicker (ZilloLP, DB lesen) und schreibt `stats.json` / `online.json` für eine mitgelieferte Webseite (`src/main/resources/web`).
+CookieClickerZ (KartoffelChipss, DB `userData.db` lesen; Tabelle `players`, Zahlen als Text) und schreibt `stats.json` / `online.json` für eine mitgelieferte Webseite (`src/main/resources/web`).
 Zielserver des Nutzers: Paper 26.2, 20 bis 30 Spieler, Antworten auf Deutsch, technisch und knapp, Quellen nennen.
 
 ## Aufbau

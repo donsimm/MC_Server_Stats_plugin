@@ -162,7 +162,7 @@ public final class StatsBuilder {
             case "advancements" -> "Vanilla-Advancements";
             case "vault" -> "Vault (Kontostand)";
             case "mcmmo-power" -> "mcMMO";
-            case "cookieclicker" -> "CookieClicker (ZilloLP)";
+            case "cookieclicker" -> "CookieClickerZ";
             case "ajlb" -> "AJLeaderboards";
             default -> c.source();
         };

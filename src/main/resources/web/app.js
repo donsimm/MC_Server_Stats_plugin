@@ -231,8 +231,9 @@ function dur(h) {
   return d > 0 ? `${d} T ${hh} Std` : `${hh} Std`;
 }
 function big(v) {
-  if (v >= 1e9) return nf1.format(v / 1e9) + ' Mrd.';
-  if (v >= 1e6) return nf1.format(v / 1e6) + ' Mio.';
+  const units = [[1e24, 'Quadr.'], [1e21, 'Trd.'], [1e18, 'Trio.'], [1e15, 'Brd.'], [1e12, 'Bio.'], [1e9, 'Mrd.'], [1e6, 'Mio.']];
+  if (v >= 1e27) return v.toExponential(2).replace('e+', ' × 10^');
+  for (const [limit, name] of units) if (v >= limit) return nf1.format(v / limit) + ' ' + name;
   return nf.format(Math.round(v));
 }
 function fmt(c, v) {
@@ -413,7 +414,7 @@ function profilView(u) {
   const tiles = DATA.categories.filter(c => !c.synthetic && IDX.val[c.id][u] !== undefined).map(c => {
     const rk = IDX.rank[c.id][u], total = (c.boards.all || []).length;
     return `<a class="card tile${c.night ? ' night' : ''}" href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}" style="${cardVars(c)}">` +
-      `<div class="card-h"><div class="ico">${icoSVG(c.icon)}</div><div><h3>${esc(c.title)}</h3></div></div>` +
+      `<div class="card-h"><div><h3>${esc(c.title)}</h3></div></div>` +
       `<div class="big">${fmt(c, IDX.val[c.id][u])}</div>` +
       `<div class="pl"><span class="rank${rk <= 3 ? ' top' : ''}">Platz ${rk}</span><span>von ${total}</span></div></a>`;
   }).join('');
@@ -468,7 +469,7 @@ function renderFooter() {
   const when = new Date(DATA.generated * 1000);
   const p = n => String(n).padStart(2, '0');
   $('foot').innerHTML = `<div><b>Datenquellen:</b> ${sources.map(esc).join(' · ')}</div>` +
-    `<div>Stand: ${p(when.getDate())}.${p(when.getMonth() + 1)}.${when.getFullYear()} ${p(when.getHours())}:${p(when.getMinutes())}${cookie ? ' · Cookie-Clicker-Daten: Plugin CookieClicker von ZilloLP' : ''}</div>`;
+    `<div>Stand: ${p(when.getDate())}.${p(when.getMonth() + 1)}.${when.getFullYear()} ${p(when.getHours())}:${p(when.getMinutes())}${cookie ? ' · Cookie-Clicker-Daten: Plugin CookieClickerZ von KartoffelChipss' : ''}</div>`;
 }
 function go(t) {
   cur = t; render(); window.scrollTo(0, 0);
@@ -483,6 +484,7 @@ async function loadStats() {
   try {
     const next = await getJSON('stats.json');
     const changed = !DATA || next.generated !== DATA.generated;
+    next.categories.forEach(c => { if (!c.page) c.page = c.section || 'Ranglisten'; });
     DATA = next; addSkillCategories(); buildIndex(); buildPages();
     document.title = DATA.title;
     $('site-title').textContent = DATA.title;

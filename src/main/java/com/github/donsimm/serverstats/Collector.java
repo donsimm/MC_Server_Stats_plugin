@@ -383,7 +383,7 @@ final class Collector {
         if (cookieNeeded) {
             cookies = new CookieClickerReader(s, plugin.getDataFolder().toPath().getParent(), plugin.getLogger()).read();
             if (cookies == null) {
-                notes.add("CookieClicker-Datenbank nicht lesbar, Cookie-Ranglisten fehlen (Details im Log).");
+                notes.add("CookieClickerZ-Datenbank nicht lesbar, Cookie-Ranglisten fehlen (Details im Log).");
                 snap.categories.removeIf(c -> c.source().equals("cookieclicker"));
             }
         }
@@ -426,9 +426,10 @@ final class Collector {
                         CookieClickerReader.Row row = cookies == null ? null : cookies.get(p.uuid);
                         if (row != null) {
                             switch (c.column().toUpperCase(Locale.ROOT)) {
-                                case "COOKIES" -> p.values.put(c.id(), (double) row.cookies());
-                                case "PER_CLICK" -> p.values.put(c.id(), (double) row.perClick());
-                                case "CLICKER_CLICKS" -> p.values.put(c.id(), (double) row.clicks());
+                                case "COOKIES" -> p.values.put(c.id(), row.cookies());
+                                case "PER_CLICK" -> p.values.put(c.id(), row.perClick());
+                                case "CLICKS", "CLICKER_CLICKS" -> p.values.put(c.id(), (double) row.clicks());
+                                case "PRESTIGE" -> p.values.put(c.id(), (double) row.prestige());
                                 default -> {
                                 }
                             }

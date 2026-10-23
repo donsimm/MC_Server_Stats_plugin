@@ -105,13 +105,13 @@ final class Settings {
 
         cookieEnabled = c.getBoolean("sources.cookieclicker.enabled", true);
         cookieMysql = "mysql".equalsIgnoreCase(c.getString("sources.cookieclicker.type", "sqlite"));
-        cookieSqliteFile = c.getString("sources.cookieclicker.sqlite-file", "CookieClicker/cookieclicker.db");
+        cookieSqliteFile = c.getString("sources.cookieclicker.sqlite-file", "CookieClickerZ/userData.db");
         cookieMysqlHost = c.getString("sources.cookieclicker.mysql.host", "localhost");
         cookieMysqlPort = c.getInt("sources.cookieclicker.mysql.port", 3306);
-        cookieMysqlDatabase = c.getString("sources.cookieclicker.mysql.database", "CookieClicker");
+        cookieMysqlDatabase = c.getString("sources.cookieclicker.mysql.database", "cookieclicker");
         cookieMysqlUser = c.getString("sources.cookieclicker.mysql.user", "root");
         cookieMysqlPassword = c.getString("sources.cookieclicker.mysql.password", "");
-        cookieTable = c.getString("sources.cookieclicker.players-table", "cookieclicker_players");
+        cookieTable = c.getString("sources.cookieclicker.players-table", "players");
 
         ajlbEnabled = c.getBoolean("sources.ajlb.enabled", true);
         ajlbTop = Math.max(1, Math.min(100, c.getInt("sources.ajlb.top", 30)));

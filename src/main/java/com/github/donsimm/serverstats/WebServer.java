@@ -81,7 +81,8 @@ final class WebServer {
             String name = file.getFileName().toString();
             String ext = name.contains(".") ? name.substring(name.lastIndexOf('.') + 1).toLowerCase() : "";
             String type = TYPES.getOrDefault(ext, "application/octet-stream");
-            if (ext.equals("json") || ext.equals("html")) {
+            // Seite, Skripte, Stile und Daten nie zwischenspeichern, sonst mischen sich alte Dateien mit neuen Daten
+            if (ext.equals("json") || ext.equals("html") || ext.equals("js") || ext.equals("css")) {
                 exchange.getResponseHeaders().set("Cache-Control", "no-store");
             } else {
                 exchange.getResponseHeaders().set("Cache-Control", "public, max-age=3600");

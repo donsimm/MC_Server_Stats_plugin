@@ -36,7 +36,7 @@ Voraussetzung: Paper mit Java 21 oder neuer. Optional: Vault, mcMMO, Placeholder
 | Kontostand | Vault (EssentialsX Economy o. ä.) |
 | Skills, Power-Level, Radar | mcMMO (`ExperienceAPI`, Flatfile oder SQL egal) |
 | Zeitfenster Monat/Woche/Heute, Quest-Punkte | AJLeaderboards über PlaceholderAPI |
-| Kekse, Klicks, Kekse pro Klick | Datenbank des Plugins CookieClicker (ZilloLP), nur lesend |
+| Kekse, Klicks, Kekse pro Klick, Prestige | Datenbank des Plugins CookieClickerZ (`plugins/CookieClickerZ/userData.db`, Tabelle `players`), nur lesend |
 | Online-Liste | Paper-API, Sitzungsdauer und Dimension vom Plugin selbst; AFK über EssentialsX |
 | Köpfe | Mojang-Sitzungsserver, als PNG zwischengespeichert; ohne Kopf zeigt die Seite ein erzeugtes Pixel-Gesicht |
 
@@ -61,7 +61,7 @@ Bitte der Reihe nach prüfen und mir Log-Auszüge (`[ServerStats]`, `ERROR`, `WA
 - Ordner der Statistikdateien in Paper 26.x: ab dem Weltordner werden bis zu 6 Ebenen nach oben `stats` und `players/stats` gesucht (auf einem Testserver lag der Weltordner unter `DoNs_World/dimensions/minecraft/overworld`).
 - Schreibweise der AJLeaderboards-Platzhalter (`sources.ajlb` in der `config.yml`): aus dem Gedächtnis, mit `/serverstats ajlb` prüfen.
 - mcMMO-Anbindung per Reflection (`ExperienceAPI.getLevelOffline`, `getPowerLevelOffline`) für Version 2.2.x.
-- JDBC-Treiber `org.sqlite.JDBC` für die CookieClicker-Datenbank: wird als vom Server mitgeliefert angenommen.
+- JDBC-Treiber `org.sqlite.JDBC` für die CookieClickerZ-Datenbank: CookieClickerZ selbst nutzt ihn ohne eigene Kopie, er sollte also auf dem Server vorhanden sein.
 
 ## Entwickeln
 
@@ -76,7 +76,7 @@ Die Logik ohne Bukkit-Abhängigkeit steckt im Paket `core` und ist mit JUnit get
 
 - Pixelify Sans (Schrift, lokal eingebunden): SIL Open Font License 1.1, https://fonts.google.com/specimen/Pixelify+Sans
 - Atkinson Hyperlegible Next (Schrift für Text und Zahlen, lokal eingebunden): SIL Open Font License 1.1, https://fonts.google.com/specimen/Atkinson+Hyperlegible+Next
-- CookieClicker von ZilloLP (nur Datenbank lesen, kein Code übernommen): https://github.com/ZilloLP/CookieClicker (Lizenz: nicht kommerziell, Namensnennung)
+- CookieClickerZ von KartoffelChipss (nur Datenbank lesen, kein Code übernommen): https://github.com/KartoffelChipss/CookieClickerZ (GPL-3.0)
 - Paper-API: https://docs.papermc.io
 - Vanilla-Statistiken: https://minecraft.wiki/w/Statistics
 - AJLeaderboards: https://wiki.ajg0702.us/ajleaderboards

@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 2
+config-version: 3
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -57,18 +57,19 @@ sources:
     # Fuer AFK-Anzeige in der Online-Liste
     enabled: true
   cookieclicker:
+    # Plugin CookieClickerZ (KartoffelChipss). Die Datenbank wird nur gelesen.
     enabled: true
-    # sqlite oder mysql (so wie in der config.yml von CookieClicker eingestellt)
+    # sqlite oder mysql (so wie unter storage.type in der config.yml von CookieClickerZ eingestellt)
     type: sqlite
     # relativ zum plugins-Ordner
-    sqlite-file: "CookieClicker/cookieclicker.db"
+    sqlite-file: "CookieClickerZ/userData.db"
     mysql:
       host: "localhost"
       port: 3306
-      database: "CookieClicker"
+      database: "cookieclicker"
       user: "root"
       password: ""
-    players-table: "cookieclicker_players"
+    players-table: "players"
   ajlb:
     # AJLeaderboards ueber PlaceholderAPI. Nur fuer Zeitfenster (Monat, Woche, Heute) und Kategorien mit source: ajlb.
     # Die Platzhalter-Schreibweise kann je nach AJLB-Version abweichen: mit /serverstats ajlb <board> pruefen.
@@ -95,7 +96,7 @@ chips:
 #   highlight: true = erscheint zusaetzlich auf der Uebersichtsseite
 #   format:  int | dur (Wert in Stunden) | km | big (Mio./Mrd.) | adv (x / Gesamtzahl)
 #   icon:    clock gem skull pick sword swords boot scroll bolt star heart shield cookie cursor gear
-#   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker | ajlb
+#   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker (column: COOKIES, CLICKS, PER_CLICK, PRESTIGE) | ajlb
 #   vanilla: stat (Liste, erster Treffer zaehlt) oder sum (Liste, addiert) oder group-sum (ganze Gruppe), plus scale
 #   ajlb-board: AJLeaderboards-Board fuer Zeitfenster (optional)
 categories:
@@ -414,7 +415,7 @@ categories:
     color: "#f2e394"
     format: int
     source: cookieclicker
-    column: CLICKER_CLICKS
+    column: CLICKS
 
   klickkraft:
     page: "Cookie Clicker"
@@ -425,3 +426,12 @@ categories:
     format: int
     source: cookieclicker
     column: PER_CLICK
+  prestige:
+    page: "Cookie Clicker"
+    title: "Prestige-König"
+    subtitle: "Höchste Prestige-Stufe"
+    icon: star
+    color: "#ffe08a"
+    format: int
+    source: cookieclicker
+    column: PRESTIGE
