@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 13
+config-version: 14
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -154,7 +154,7 @@ chips:
   - { category: keksbaecker, label: "Kekse gebacken" }
 
 # Ranglisten. Die Reihenfolge hier ist die Reihenfolge auf der Seite.
-#   page:      "Übersicht" = Startseite, sonst Reiter in der Navigation (mcMMO, Cookie Clicker, Jobs). Neue Namen ergeben neue Reiter.
+#   page:      "Tab" oder "Tab|Abschnitt" (mehrere Abschnitte auf einer Seite, z. B. "Jobs & mcMMO|Jobs"). "Übersicht" = Startseite, sonst Reiter in der Navigation (mcMMO, Cookie Clicker, Jobs). Neue Namen ergeben neue Reiter.
 #   format:  int | dur (Wert in Stunden) | km | big (Mio./Mrd./Bio. ...) | adv (x / Gesamtzahl) | dec (eine Nachkommastelle) | level ("Level 16")
 #   icon:    clock gem skull pick sword swords boot scroll bolt star heart shield cookie cursor gear
 #   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker (column: COOKIES, CLICKS, PER_CLICK, PRESTIGE) | jobs (column: Job-Name oder *) | skyblock (column: LEVEL, CHALLENGES, COMPLETIONS, PARTY) | oneblock (column: LEVEL, INVITED) | parkour (stat: block:<modus> oder elytra:<modus>, column: SCORE oder TIME) | ajlb
@@ -491,7 +491,7 @@ categories:
     ajlb-board: "quests_player_quest_points"
 
   skillmeister:
-    page: "mcMMO"
+    page: "Jobs & mcMMO|mcMMO"
     title: "Skill-Meister"
     subtitle: "Höchstes mcMMO-Power-Level"
     icon: bolt
@@ -529,7 +529,7 @@ categories:
     column: CLICKS
 
   bergarbeiter:
-    page: "Jobs"
+    page: "Jobs & mcMMO|Jobs"
     title: "Bergarbeiter"
     subtitle: "Höchstes Level als Bergarbeiter"
     icon: star
@@ -538,7 +538,7 @@ categories:
     source: jobs
     column: "Miner"
   farmer:
-    page: "Jobs"
+    page: "Jobs & mcMMO|Jobs"
     title: "Farmer"
     subtitle: "Höchstes Level als Farmer"
     icon: star
@@ -547,7 +547,7 @@ categories:
     source: jobs
     column: "Farmer"
   jaeger:
-    page: "Jobs"
+    page: "Jobs & mcMMO|Jobs"
     title: "Jäger"
     subtitle: "Höchstes Level als Jäger"
     icon: star
@@ -556,7 +556,7 @@ categories:
     source: jobs
     column: "Hunter"
   fischer:
-    page: "Jobs"
+    page: "Jobs & mcMMO|Jobs"
     title: "Fischer"
     subtitle: "Höchstes Level als Fischer"
     icon: star
@@ -565,7 +565,7 @@ categories:
     source: jobs
     column: "Fisher"
   holzfaeller:
-    page: "Jobs"
+    page: "Jobs & mcMMO|Jobs"
     title: "Holzfäller"
     subtitle: "Höchstes Level als Holzfäller"
     icon: star
@@ -574,7 +574,7 @@ categories:
     source: jobs
     column: "Woodcutter"
   jobmeister:
-    page: "Jobs"
+    page: "Jobs & mcMMO|Jobs"
     title: "Job-Meister"
     subtitle: "Höchste Summe aller Job-Level"
     icon: star
@@ -583,7 +583,7 @@ categories:
     source: jobs
     column: "*"
   sky-level:
-    page: "SkyBlock"
+    page: "SkyBlock & OneBlock|SkyBlock"
     title: "Inseln"
     subtitle: "Alle Spieler mit Insel, nach Level"
     include-zero: true
@@ -593,7 +593,7 @@ categories:
     source: skyblock
     column: "LEVEL"
   sky-challenges:
-    page: "SkyBlock"
+    page: "SkyBlock & OneBlock|SkyBlock"
     title: "Challenges"
     subtitle: "Meiste verschiedene Challenges der Insel"
     icon: star
@@ -602,7 +602,7 @@ categories:
     source: skyblock
     column: "CHALLENGES"
   sky-completions:
-    page: "SkyBlock"
+    page: "SkyBlock & OneBlock|SkyBlock"
     title: "Challenge-Abschlüsse"
     subtitle: "Meiste Abschlüsse insgesamt"
     icon: star
@@ -611,7 +611,7 @@ categories:
     source: skyblock
     column: "COMPLETIONS"
   sky-team:
-    page: "SkyBlock"
+    page: "SkyBlock & OneBlock|SkyBlock"
     title: "Inselteam"
     subtitle: "Grösstes Team auf einer Insel"
     icon: star
@@ -620,7 +620,7 @@ categories:
     source: skyblock
     column: "PARTY"
   oneblock-level:
-    page: "OneBlock"
+    page: "SkyBlock & OneBlock|OneBlock"
     title: "OneBlock-Level"
     subtitle: "Höchstes Level, bei Gleichstand die meisten Blöcke"
     icon: star
@@ -629,7 +629,7 @@ categories:
     source: oneblock
     column: "LEVEL"
   oneblock-team:
-    page: "OneBlock"
+    page: "SkyBlock & OneBlock|OneBlock"
     title: "Mitbewohner"
     subtitle: "Meiste eingeladene Spieler auf einer Insel"
     icon: star
@@ -674,7 +674,7 @@ categories:
     source: vanilla
     group-sum: "killed_by"
   parkour-default:
-    page: "Parkour"
+    page: "Parkour|Parkour"
     title: "Parkour-Rekord"
     subtitle: "Höchster Punktestand im Block-Parkour"
     icon: boot
@@ -684,7 +684,7 @@ categories:
     stat: ["block:default"]
     column: "SCORE"
   parkour-speed:
-    page: "Parkour"
+    page: "Parkour|Parkour"
     title: "Parkour Speed"
     subtitle: "Höchster Punktestand im Modus Speed"
     icon: boot
@@ -694,7 +694,7 @@ categories:
     stat: ["block:speed"]
     column: "SCORE"
   parkour-hourglass:
-    page: "Parkour"
+    page: "Parkour|Parkour"
     title: "Parkour Hourglass"
     subtitle: "Höchster Punktestand im Modus Hourglass"
     icon: boot
@@ -704,7 +704,7 @@ categories:
     stat: ["block:hourglass"]
     column: "SCORE"
   parkour-super-jump:
-    page: "Parkour"
+    page: "Parkour|Parkour"
     title: "Parkour Super Jump"
     subtitle: "Höchster Punktestand im Modus Super Jump"
     icon: boot
@@ -714,7 +714,7 @@ categories:
     stat: ["block:super_jump"]
     column: "SCORE"
   parkour-team-survival:
-    page: "Parkour"
+    page: "Parkour|Parkour"
     title: "Parkour Team Survival"
     subtitle: "Höchster Punktestand im Modus Team Survival"
     icon: boot
@@ -724,7 +724,7 @@ categories:
     stat: ["block:team_survival"]
     column: "SCORE"
   parkour-time-trial:
-    page: "Parkour"
+    page: "Parkour|Parkour"
     title: "Parkour Time Trial"
     subtitle: "Schnellste Zeit im Modus Time Trial"
     icon: boot
@@ -734,7 +734,7 @@ categories:
     stat: ["block:time_trial"]
     column: "TIME"
   parkour-wave-trial:
-    page: "Parkour"
+    page: "Parkour|Parkour"
     title: "Parkour Wave Trial"
     subtitle: "Schnellste Zeit im Modus Wave Trial"
     icon: boot
@@ -744,7 +744,7 @@ categories:
     stat: ["block:wave_trial"]
     column: "TIME"
   elytra-default:
-    page: "Parkour"
+    page: "Parkour|Elytra"
     title: "Elytra-Rekord"
     subtitle: "Weiteste Strecke im Elytra-Parkour"
     icon: boot
@@ -754,7 +754,7 @@ categories:
     stat: ["elytra:default"]
     column: "SCORE"
   elytra-close:
-    page: "Parkour"
+    page: "Parkour|Elytra"
     title: "Elytra Close"
     subtitle: "Weiteste Strecke im Modus Close"
     icon: boot
@@ -764,7 +764,7 @@ categories:
     stat: ["elytra:close"]
     column: "SCORE"
   elytra-min-speed:
-    page: "Parkour"
+    page: "Parkour|Elytra"
     title: "Elytra Min Speed"
     subtitle: "Weiteste Strecke im Modus Min Speed"
     icon: boot
@@ -774,7 +774,7 @@ categories:
     stat: ["elytra:min speed"]
     column: "SCORE"
   elytra-obstacle:
-    page: "Parkour"
+    page: "Parkour|Elytra"
     title: "Elytra Obstacle"
     subtitle: "Weiteste Strecke im Modus Obstacle"
     icon: boot
@@ -784,7 +784,7 @@ categories:
     stat: ["elytra:obstacle"]
     column: "SCORE"
   elytra-speed-demon:
-    page: "Parkour"
+    page: "Parkour|Elytra"
     title: "Elytra Speed Demon"
     subtitle: "Weiteste Strecke im Modus Speed Demon"
     icon: boot
@@ -794,7 +794,7 @@ categories:
     stat: ["elytra:speed demon"]
     column: "SCORE"
   elytra-time-trial:
-    page: "Parkour"
+    page: "Parkour|Elytra"
     title: "Elytra Time Trial"
     subtitle: "Weiteste Strecke im Modus Time Trial"
     icon: boot

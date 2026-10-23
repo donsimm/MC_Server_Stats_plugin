@@ -337,9 +337,23 @@ function startView() {
 let catFilter = '';
 function pageView(title) {
   const cats = DATA.categories.filter(c => c.page === title);
+  if (cats.some(c => c.sub)) return sectionPageView(title, cats);
   // Seiten mit vielen Ranglisten bekommen ein Suchfeld
   const filter = cats.length > 20 ? `<div class="filter"><label for="catfilter">Rangliste suchen</label><input id="catfilter" type="search" value="${esc(catFilter)}" placeholder="z. B. Truhen, Fische, Schaden …" autocomplete="off"></div>` : '';
   return `<h2 class="sec" style="margin-top:0">${esc(title)}<small>${cats.length} Ranglisten</small></h2>${filter}${periodCtl(cats)}${gridOf(cats)}`;
+}
+const SECTION_ORDER = ['Parkour', 'Elytra', 'Jobs', 'mcMMO', 'SkyBlock', 'OneBlock'];
+/** Seite mit mehreren Abschnitten ("Tab|Abschnitt" in der config.yml), z. B. Jobs vor mcMMO. */
+function sectionPageView(title, cats) {
+  const subs = [];
+  cats.forEach(c => { const s = c.sub || 'Weitere'; if (!subs.includes(s)) subs.push(s); });
+  const rank = s => { const i = SECTION_ORDER.indexOf(s); return i < 0 ? 99 : i; };
+  subs.sort((a, b) => rank(a) - rank(b));
+  const body = subs.map(s => {
+    const part = cats.filter(c => (c.sub || 'Weitere') === s);
+    return `<h2 class="sec">${esc(s)}<small>${part.filter(c => (c.boards.all || []).length).length} Ranglisten</small></h2>${gridOf(part)}`;
+  }).join('');
+  return `<h2 class="sec" style="margin-top:0">${esc(title)}</h2>${periodCtl(cats)}${body}`;
 }
 function applyCatFilter() {
   const q = catFilter.trim().toLowerCase();
@@ -602,7 +616,7 @@ function addSkillCategories() {
   skillKeys().forEach((k, i) => {
     const board = Object.entries(DATA.players).filter(([, p]) => p.mcmmo && p.mcmmo.skills[k] > 0)
       .map(([u, p]) => [u, p.mcmmo.skills[k]]).sort((a, b) => b[1] - a[1]);
-    DATA.categories.push({ id: 'mcmmo-' + k.toLowerCase(), page: 'mcMMO', highlight: false, synthetic: true, title: skillLabel(k), subtitle: 'mcMMO-Level',
+    DATA.categories.push({ id: 'mcmmo-' + k.toLowerCase(), page: 'Jobs & mcMMO', sub: 'mcMMO', highlight: false, synthetic: true, title: skillLabel(k), subtitle: 'mcMMO-Level',
       icon: SKILL_ICONS[k] || 'star', color: SKILL_COLORS[i % SKILL_COLORS.length], night: false, format: 'int', source: 'mcMMO', periods: ['all'], boards: { all: board } });
   });
 }
@@ -664,6 +678,7 @@ async function loadStats() {
     const next = await getJSON('stats.json');
     const changed = !DATA || next.generated !== DATA.generated;
     next.categories.forEach(c => { if (!c.page) c.page = c.section || 'Ranglisten'; });
+    next.categories.forEach(c => { const i = c.page.indexOf('|'); if (i >= 0) { c.sub = c.page.slice(i + 1).trim(); c.page = c.page.slice(0, i).trim(); } });
     DATA = next; addSkillCategories(); buildIndex(); buildPages();
     document.title = DATA.title;
     if ($('site-title')) $('site-title').textContent = DATA.title;
