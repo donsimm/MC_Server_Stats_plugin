@@ -339,8 +339,9 @@ function pageView(title) {
   const cats = DATA.categories.filter(c => c.page === title);
   if (cats.some(c => c.sub)) return sectionPageView(title, cats);
   // Seiten mit vielen Ranglisten bekommen ein Suchfeld
-  const filter = cats.length > 20 ? `<div class="filter"><label for="catfilter">Rangliste suchen</label><input id="catfilter" type="search" value="${esc(catFilter)}" placeholder="z. B. Truhen, Fische, Schaden …" autocomplete="off"></div>` : '';
-  return `<h2 class="sec" style="margin-top:0">${esc(title)}<small>${cats.length} Ranglisten</small></h2>${filter}${periodCtl(cats)}${gridOf(cats)}`;
+  const isAuto = cats.some(c => c.auto);
+  const filter = cats.length > 20 || isAuto ? `<div class="filter"><label for="catfilter">Rangliste suchen</label><input id="catfilter" type="search" value="${esc(catFilter)}" placeholder="${isAuto ? 'Alle Quellen durchsuchen, z. B. angeln, Bergbau, Tode …' : 'z. B. Truhen, Fische, Schaden …'}" autocomplete="off"></div>` : '';
+  return `<h2 class="sec" style="margin-top:0">${esc(title)}<small>${cats.length} Ranglisten</small></h2>${filter}${isAuto ? '<div id="allres"></div>' : ''}${periodCtl(cats)}${gridOf(cats)}`;
 }
 const SECTION_ORDER = ['Parkour', 'Elytra', 'Jobs', 'mcMMO', 'SkyBlock', 'OneBlock'];
 /** Seite mit mehreren Abschnitten ("Tab|Abschnitt" in der config.yml), z. B. Jobs vor mcMMO. */
@@ -355,8 +356,44 @@ function sectionPageView(title, cats) {
   }).join('');
   return `<h2 class="sec" style="margin-top:0">${esc(title)}</h2>${periodCtl(cats)}${body}`;
 }
+/** Verwandte Suchbegriffe: wer "angeln" sucht, findet auch Fischer, Fische, mcMMO-Angeln. */
+const SEARCH_GROUPS = [
+  ['angeln', 'angel', 'fisch', 'fischer', 'fishing', 'fisher', 'fang', 'gefangen'],
+  ['bergbau', 'bergarbeiter', 'mining', 'miner', 'abbau', 'abgebaut', 'abriss', 'graben', 'excavation', 'schaufel'],
+  ['holz', 'holzfäll', 'woodcutting', 'lumber', 'baum', 'bäume'],
+  ['farm', 'farmer', 'ernte', 'kräuter', 'herbalism', 'landwirt', 'weizen', 'anbau', 'gepflanzt'],
+  ['kampf', 'kämpfer', 'fighting', 'jäger', 'hunter', 'schwert', 'swords', 'axt', 'äxte', 'axes', 'faust', 'unarmed', 'getötet', 'schaden', 'damage', 'kill'],
+  ['bogen', 'archery', 'pfeil', 'armbrust', 'crossbow', 'dreizack', 'trident'],
+  ['reparieren', 'repair', 'amboss', 'schmied'],
+  ['alchemie', 'alchemy', 'brau', 'trank', 'tränke'],
+  ['akrobatik', 'acrobatics', 'fall', 'sturz', 'hüpf', 'sprung'],
+  ['zähmen', 'taming', 'zahm', 'tier', 'haustier'],
+  ['laufen', 'läufer', 'gehen', 'walk', 'strecke', 'sprint', 'distanz', 'weltenbummler'],
+  ['tod', 'tode', 'gestorben', 'deaths', 'friedhof', 'unsterblich'],
+  ['zeit', 'spielzeit', 'play', 'dauerzocker', 'online'],
+  ['geld', 'konto', 'vault', 'bank', 'diamant', 'reich'],
+  ['keks', 'cookie', 'klick', 'prestige']
+];
+function searchTerms(q) {
+  const terms = new Set([q]);
+  SEARCH_GROUPS.forEach(g => { if (g.some(w => w.includes(q) || (w.length >= 4 && q.includes(w)))) g.forEach(w => terms.add(w)); });
+  return [...terms];
+}
+const catText = c => `${c.title} ${c.subtitle} ${c.source} ${c.id} ${c.sub || ''}`.toLowerCase();
 function applyCatFilter() {
   const q = catFilter.trim().toLowerCase();
+  const all = $('allres');
+  if (all) {
+    // Seite "Alle Statistiken": Suche ueber alle Ranglisten aller Quellen (Vanilla, mcMMO, Jobs, Parkour ...)
+    const grid = $('view').querySelector(':scope > .grid');
+    if (!q) { all.innerHTML = ''; if (grid) grid.hidden = false; return; }
+    const terms = searchTerms(q);
+    const hits = DATA.categories.filter(c => (c.boards.all || []).length && terms.some(w => catText(c).includes(w)));
+    if (grid) grid.hidden = true;
+    all.innerHTML = `<p class="muted">${hits.length} Ranglisten zu «${esc(catFilter.trim())}» aus allen Quellen${terms.length > 1 ? ' (inkl. verwandte Begriffe)' : ''}</p>` +
+      (hits.length ? `<div class="grid">${hits.map(cardHTML).join('')}</div>` : '<p class="empty">Keine Treffer.</p>');
+    return;
+  }
   document.querySelectorAll('#view .grid .card[data-title]').forEach(el => { el.hidden = !!q && !el.dataset.title.includes(q); });
 }
 /* Museum: Baby und ausgewachsen werden zu einem Eintrag, Sammel-Erfolge entfallen, Kategorien werden vereinheitlicht. */
