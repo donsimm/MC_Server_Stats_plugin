@@ -244,6 +244,7 @@ function fmt(c, v) {
     case 'big': return big(v);
     case 'level': return `Level ${Math.floor(v + 1e-9)}`;
     case 'dec': return nf1.format(v);
+    case 'timerev': { const ms = Math.max(0, Math.round(1e9 - v)); return `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}.${String(ms % 1000).padStart(3, '0')}`; }
     default: return nf.format(Math.round(v));
   }
 }

@@ -156,4 +156,22 @@ class CoreTest {
         assertEquals(120, json.getAsJsonObject("players").getAsJsonObject(c.toString())
                 .getAsJsonObject("mcmmo").get("power").getAsInt());
     }
+
+    @Test
+    void parkourBlockAndElytraFilesAreParsed() {
+        String block = """
+                {"serialized":{"00000000-0000-0000-0000-00000000000a":"Alpha,01:02:345,0.5,120","kaputt":"x","00000000-0000-0000-0000-00000000000b":"Beta,00:10:000,0.5,7"}}""";
+        Map<UUID, ParkourData.Entry> b = ParkourData.parse(block);
+        assertEquals(2, b.size());
+        ParkourData.Entry a = b.get(UUID.fromString("00000000-0000-0000-0000-00000000000a"));
+        assertEquals(120, a.score(), 1e-9);
+        assertEquals(62_345, a.timeMs());
+        String elytra = """
+                {"00000000-0000-0000-0000-00000000000a":{"name":"Alpha","score":523.7,"time":90000,"seed":5},
+                 "00000000-0000-0000-0000-00000000000b":"{name=Beta, score=12.0, time=1000, seed=1}"}""";
+        Map<UUID, ParkourData.Entry> e = ParkourData.parse(elytra.replace("{name=Beta, score=12.0, time=1000, seed=1}", "{\\\"name\\\":\\\"Beta\\\",\\\"score\\\":12.0,\\\"time\\\":1000}"));
+        assertEquals(2, e.size());
+        assertEquals(523.7, e.get(UUID.fromString("00000000-0000-0000-0000-00000000000a")).score(), 1e-9);
+        assertEquals(12.0, e.get(UUID.fromString("00000000-0000-0000-0000-00000000000b")).score(), 1e-9);
+    }
 }

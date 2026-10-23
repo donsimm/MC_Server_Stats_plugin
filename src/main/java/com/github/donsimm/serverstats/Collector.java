@@ -6,6 +6,7 @@ import com.github.donsimm.serverstats.core.AutoStats;
 import com.github.donsimm.serverstats.core.CategoryDef;
 import com.github.donsimm.serverstats.core.NumberParse;
 import com.github.donsimm.serverstats.core.OneblockData;
+import com.github.donsimm.serverstats.core.ParkourData;
 import com.github.donsimm.serverstats.core.PlayerData;
 import com.github.donsimm.serverstats.core.StatsBuilder;
 import com.github.donsimm.serverstats.core.VanillaStats;
@@ -63,6 +64,7 @@ final class Collector {
         Path jobsDir;
         Path skyDir;
         Path oneFile;
+        Path parkourDir;
         /** Museum: Advancement-ID -> Anzeigename (leer = Museum aus). */
         final Map<String, MuseumItem> museum = new java.util.LinkedHashMap<>();
         final Map<UUID, Set<String>> museumDone = new HashMap<>();
@@ -314,6 +316,27 @@ final class Collector {
         return last.isEmpty() ? path : Character.toUpperCase(last.charAt(0)) + last.substring(1);
     }
 
+    /**
+     * Ranglisten-Datei von Infinite Parkour Reborn. stat = "block:<modus>" (IP/leaderboards) oder "elytra:<modus>"
+     * (IP/elytra/leaderboards, sonst altes IEP/leaderboards), oder null wenn es die Datei (noch) nicht gibt.
+     */
+    private Path parkourFile(Path ipDir, CategoryDef c) {
+        if (ipDir == null || c.stat().isEmpty() || !c.stat().get(0).contains(":")) {
+            return null;
+        }
+        String[] key = c.stat().get(0).split(":", 2);
+        String name = key[1].toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9 _-]", "") + ".json";
+        List<Path> candidates = key[0].equals("elytra")
+                ? List.of(ipDir.resolve("elytra/leaderboards").resolve(name), ipDir.resolveSibling("IEP").resolve("leaderboards").resolve(name))
+                : List.of(ipDir.resolve("leaderboards").resolve(name));
+        for (Path candidate : candidates) {
+            if (Files.isRegularFile(candidate)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
     private Snapshot gather(Settings s) {
         Snapshot snap = new Snapshot();
         long now = System.currentTimeMillis();
@@ -335,6 +358,9 @@ final class Collector {
         if (s.skyblockEnabled && Files.isDirectory(pluginsDir.resolve(s.skyblockFolder).resolve("islands"))) {
             snap.skyDir = pluginsDir.resolve(s.skyblockFolder);
         }
+        if (s.parkourEnabled && Files.isDirectory(pluginsDir.resolve(s.parkourFolder))) {
+            snap.parkourDir = pluginsDir.resolve(s.parkourFolder);
+        }
         if (s.oneblockEnabled && Files.isRegularFile(pluginsDir.resolve(s.oneblockFile))) {
             snap.oneFile = pluginsDir.resolve(s.oneblockFile);
         }
@@ -353,12 +379,13 @@ final class Collector {
                 case "jobs" -> snap.jobsDir != null;
                 case "skyblock" -> snap.skyDir != null;
                 case "oneblock" -> snap.oneFile != null;
+                case "parkour" -> parkourFile(snap.parkourDir, c) != null;
                 case "ajlb" -> ajlb && !c.ajlbBoard().isBlank();
                 default -> false;
             };
             if (ok) {
                 snap.categories.add(c);
-            } else if (!c.source().equals("cookieclicker") || s.cookieEnabled) {
+            } else if ((!c.source().equals("cookieclicker") || s.cookieEnabled) && !c.source().equals("parkour")) {
                 snap.notes.add("Kategorie '" + c.id() + "' uebersprungen: Quelle '" + c.source() + "' nicht verfuegbar.");
             }
         }
@@ -541,6 +568,23 @@ final class Collector {
                     + skyResult.islands() + " Inseln, " + skyData.size() + " Spieler mit Insel, Challenge-Daten fuer "
                     + skyResult.challengeIslands() + " Inseln.");
         }
+        Map<String, Map<UUID, ParkourData.Entry>> parkourData = new HashMap<>();
+        int parkourRecords = 0;
+        for (CategoryDef c : snap.categories) {
+            if (c.source().equals("parkour")) {
+                Path file = parkourFile(snap.parkourDir, c);
+                try {
+                    Map<UUID, ParkourData.Entry> data = ParkourData.parse(Files.readString(file, StandardCharsets.UTF_8));
+                    parkourData.put(c.id(), data);
+                    parkourRecords += data.size();
+                } catch (IOException | RuntimeException e) {
+                    notes.add("Parkour: " + file.getFileName() + " nicht lesbar (" + e.getMessage() + "). Nutzt Infinite Parkour MySQL? Das wird nicht unterstuetzt.");
+                }
+            }
+        }
+        if (snap.parkourDir != null) {
+            notes.add("Parkour: " + parkourData.size() + " Ranglisten-Dateien gelesen, " + parkourRecords + " Eintraege.");
+        }
         Map<UUID, OneblockData.Island> oneData = null;
         if (snap.oneFile != null) {
             try {
@@ -637,6 +681,15 @@ final class Collector {
                             };
                             // Der Level darf 0 sein (frische Insel): so sieht man, wer schon eine Insel hat
                             if (value > 0 || c.column().equalsIgnoreCase("LEVEL")) {
+                                p.values.put(c.id(), value);
+                            }
+                        }
+                    }
+                    case "parkour" -> {
+                        ParkourData.Entry entry = parkourData.getOrDefault(c.id(), Map.of()).get(p.uuid);
+                        if (entry != null) {
+                            double value = c.column().equalsIgnoreCase("TIME") ? (entry.timeMs() > 0 ? ParkourData.TIME_BASE - entry.timeMs() : 0) : entry.score();
+                            if (value > 0) {
                                 p.values.put(c.id(), value);
                             }
                         }

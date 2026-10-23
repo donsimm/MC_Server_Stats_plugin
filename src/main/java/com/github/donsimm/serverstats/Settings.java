@@ -60,6 +60,9 @@ final class Settings {
     final boolean oneblockEnabled;
     final String oneblockFile;
 
+    final boolean parkourEnabled;
+    final String parkourFolder;
+
     final boolean autoStats;
     final String autoPage;
     final int autoMinPlayers;
@@ -141,6 +144,9 @@ final class Settings {
         skyblockFolder = c.getString("sources.skyblock.folder", "uSkyBlock");
         oneblockEnabled = c.getBoolean("sources.oneblock.enabled", true);
         oneblockFile = c.getString("sources.oneblock.file", "Oneblock/PlData.json");
+
+        parkourEnabled = c.getBoolean("sources.parkour.enabled", true);
+        parkourFolder = c.getString("sources.parkour.folder", "IP");
 
         autoStats = c.getBoolean("auto-stats.enabled", true);
         autoPage = c.getString("auto-stats.page", "Alle Statistiken");

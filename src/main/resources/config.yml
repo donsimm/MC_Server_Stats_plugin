@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 12
+config-version: 13
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -126,6 +126,12 @@ sources:
     enabled: true
     # relativ zum plugins-Ordner
     file: "Oneblock/PlData.json"
+  parkour:
+    # Plugin Infinite Parkour Reborn (IP, IPPlus, IEP in einem). Gelesen werden IP/leaderboards/*.json (Block) und
+    # IP/elytra/leaderboards/*.json (Elytra), nur lesend. MySQL-Speicherung wird nicht unterstuetzt.
+    enabled: true
+    # relativ zum plugins-Ordner
+    folder: "IP"
   ajlb:
     # AJLeaderboards ueber PlaceholderAPI. Nur fuer Zeitfenster (Monat, Woche, Heute) und Kategorien mit source: ajlb.
     # Die Platzhalter-Schreibweise kann je nach AJLB-Version abweichen: mit /serverstats ajlb <board> pruefen.
@@ -151,7 +157,7 @@ chips:
 #   page:      "Übersicht" = Startseite, sonst Reiter in der Navigation (mcMMO, Cookie Clicker, Jobs). Neue Namen ergeben neue Reiter.
 #   format:  int | dur (Wert in Stunden) | km | big (Mio./Mrd./Bio. ...) | adv (x / Gesamtzahl) | dec (eine Nachkommastelle) | level ("Level 16")
 #   icon:    clock gem skull pick sword swords boot scroll bolt star heart shield cookie cursor gear
-#   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker (column: COOKIES, CLICKS, PER_CLICK, PRESTIGE) | jobs (column: Job-Name oder *) | skyblock (column: LEVEL, CHALLENGES, COMPLETIONS, PARTY) | oneblock (column: LEVEL, INVITED) | ajlb
+#   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker (column: COOKIES, CLICKS, PER_CLICK, PRESTIGE) | jobs (column: Job-Name oder *) | skyblock (column: LEVEL, CHALLENGES, COMPLETIONS, PARTY) | oneblock (column: LEVEL, INVITED) | parkour (stat: block:<modus> oder elytra:<modus>, column: SCORE oder TIME) | ajlb
 #   vanilla: stat (Liste, erster Treffer zaehlt) oder sum (Liste, addiert) oder group-sum (ganze Gruppe), plus scale
 #   ajlb-board: AJLeaderboards-Board fuer Zeitfenster (optional)
 #   include-zero: true = auch Spieler mit dem Wert 0 listen (z. B. "hat eine Insel")
@@ -667,3 +673,133 @@ categories:
     format: int
     source: vanilla
     group-sum: "killed_by"
+  parkour-default:
+    page: "Parkour"
+    title: "Parkour-Rekord"
+    subtitle: "Höchster Punktestand im Block-Parkour"
+    icon: boot
+    color: "#8fd0ff"
+    format: int
+    source: parkour
+    stat: ["block:default"]
+    column: "SCORE"
+  parkour-speed:
+    page: "Parkour"
+    title: "Parkour Speed"
+    subtitle: "Höchster Punktestand im Modus Speed"
+    icon: boot
+    color: "#ffd23f"
+    format: int
+    source: parkour
+    stat: ["block:speed"]
+    column: "SCORE"
+  parkour-hourglass:
+    page: "Parkour"
+    title: "Parkour Hourglass"
+    subtitle: "Höchster Punktestand im Modus Hourglass"
+    icon: boot
+    color: "#f7c8a0"
+    format: int
+    source: parkour
+    stat: ["block:hourglass"]
+    column: "SCORE"
+  parkour-super-jump:
+    page: "Parkour"
+    title: "Parkour Super Jump"
+    subtitle: "Höchster Punktestand im Modus Super Jump"
+    icon: boot
+    color: "#b8f5c8"
+    format: int
+    source: parkour
+    stat: ["block:super_jump"]
+    column: "SCORE"
+  parkour-team-survival:
+    page: "Parkour"
+    title: "Parkour Team Survival"
+    subtitle: "Höchster Punktestand im Modus Team Survival"
+    icon: boot
+    color: "#ff9fc0"
+    format: int
+    source: parkour
+    stat: ["block:team_survival"]
+    column: "SCORE"
+  parkour-time-trial:
+    page: "Parkour"
+    title: "Parkour Time Trial"
+    subtitle: "Schnellste Zeit im Modus Time Trial"
+    icon: boot
+    color: "#7fd4ff"
+    format: timerev
+    source: parkour
+    stat: ["block:time_trial"]
+    column: "TIME"
+  parkour-wave-trial:
+    page: "Parkour"
+    title: "Parkour Wave Trial"
+    subtitle: "Schnellste Zeit im Modus Wave Trial"
+    icon: boot
+    color: "#d6c2ff"
+    format: timerev
+    source: parkour
+    stat: ["block:wave_trial"]
+    column: "TIME"
+  elytra-default:
+    page: "Parkour"
+    title: "Elytra-Rekord"
+    subtitle: "Weiteste Strecke im Elytra-Parkour"
+    icon: boot
+    color: "#8fd0ff"
+    format: dec
+    source: parkour
+    stat: ["elytra:default"]
+    column: "SCORE"
+  elytra-close:
+    page: "Parkour"
+    title: "Elytra Close"
+    subtitle: "Weiteste Strecke im Modus Close"
+    icon: boot
+    color: "#ffd23f"
+    format: dec
+    source: parkour
+    stat: ["elytra:close"]
+    column: "SCORE"
+  elytra-min-speed:
+    page: "Parkour"
+    title: "Elytra Min Speed"
+    subtitle: "Weiteste Strecke im Modus Min Speed"
+    icon: boot
+    color: "#c6f26b"
+    format: dec
+    source: parkour
+    stat: ["elytra:min speed"]
+    column: "SCORE"
+  elytra-obstacle:
+    page: "Parkour"
+    title: "Elytra Obstacle"
+    subtitle: "Weiteste Strecke im Modus Obstacle"
+    icon: boot
+    color: "#ff9fc0"
+    format: dec
+    source: parkour
+    stat: ["elytra:obstacle"]
+    column: "SCORE"
+  elytra-speed-demon:
+    page: "Parkour"
+    title: "Elytra Speed Demon"
+    subtitle: "Weiteste Strecke im Modus Speed Demon"
+    icon: boot
+    color: "#f7c8a0"
+    format: dec
+    source: parkour
+    stat: ["elytra:speed demon"]
+    column: "SCORE"
+  elytra-time-trial:
+    page: "Parkour"
+    title: "Elytra Time Trial"
+    subtitle: "Weiteste Strecke im Modus Time Trial"
+    icon: boot
+    color: "#7fd4ff"
+    format: dec
+    source: parkour
+    stat: ["elytra:time trial"]
+    column: "SCORE"
