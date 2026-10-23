@@ -764,6 +764,24 @@ final class Collector {
             }
             museum.add("items", items);
             json.add("museum", museum);
+            // Kompakte Uebersicht fuer die Fehlersuche: je Kategorie Anzahl, Beispiel-IDs und -Namen
+            JsonObject overview = new JsonObject();
+            Map<String, List<Map.Entry<String, MuseumItem>>> byCategory = new java.util.TreeMap<>();
+            for (Map.Entry<String, MuseumItem> e : snap.museum.entrySet()) {
+                byCategory.computeIfAbsent(e.getValue().category(), k -> new ArrayList<>()).add(e);
+            }
+            for (Map.Entry<String, List<Map.Entry<String, MuseumItem>>> c : byCategory.entrySet()) {
+                JsonObject o = new JsonObject();
+                o.addProperty("anzahl", c.getValue().size());
+                JsonArray sample = new JsonArray();
+                for (Map.Entry<String, MuseumItem> e : c.getValue().subList(0, Math.min(6, c.getValue().size()))) {
+                    sample.add(e.getValue().name() + "  [" + e.getKey() + "]");
+                }
+                o.add("beispiele", sample);
+                overview.add(c.getKey(), o);
+            }
+            Files.createDirectories(s.outputDir);
+            writeJson(s.outputDir.resolve("museum-overview.json"), overview);
         }
         Files.createDirectories(s.outputDir);
         writeJson(s.outputDir.resolve("stats.json"), json);
