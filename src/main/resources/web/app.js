@@ -346,13 +346,26 @@ function applyCatFilter() {
 function museumView() {
   const M = DATA.museum, items = M.items.slice().sort((a, b) => a.name.localeCompare(b.name, 'de'));
   const got = items.filter(i => i.by.length).length;
-  const cards = items.map(i => {
+  const cats = [];
+  items.forEach(i => {
+    const k = i.cat || 'Weitere';
+    let c = cats.find(x => x.title === k);
+    if (!c) cats.push(c = { title: k, items: [] });
+    c.items.push(i);
+  });
+  cats.sort((a, b) => a.title.localeCompare(b.title, 'de'));
+  const card = i => {
     const who = i.by.map(u => `<a href="#profil-${u}" title="${esc(nameOf(u))}">${avatar(u)}</a>`).join('');
-    return `<div class="muse ${i.by.length ? 'have' : 'miss'}"><b>${esc(i.name)}</b>` +
+    const img = i.img ? `<img class="mob" src="heads/${esc(i.img)}.png" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : '<span class="mob"></span>';
+    return `<div class="muse ${i.by.length ? 'have' : 'miss'}">${img}<b>${esc(i.name)}</b>` +
       (i.by.length ? `<span class="muse-by">${who}</span><small>${i.by.length} Spieler</small>` : '<small>noch nicht gesammelt</small>') + '</div>';
+  };
+  const sections = cats.map(c => {
+    const have = c.items.filter(i => i.by.length).length;
+    return `<h2 class="sec">${esc(c.title)}<small>${nf.format(have)} / ${nf.format(c.items.length)}</small></h2><div class="muse-grid">${c.items.map(card).join('')}</div>`;
   }).join('');
   return `<h2 class="sec">${esc(M.title || 'Museum')}</h2><p class="muted">${nf.format(got)} von ${nf.format(items.length)} Köpfen gesammelt (alle Spieler zusammen)</p>` +
-    `<div class="muse-bar"><i style="width:${items.length ? Math.round(got * 100 / items.length) : 0}%"></i></div><div class="muse-grid">${cards}</div>`;
+    `<div class="muse-bar"><i style="width:${items.length ? Math.round(got * 100 / items.length) : 0}%"></i></div>${sections}`;
 }
 function spielerView() {
   const list = Object.entries(DATA.players).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));

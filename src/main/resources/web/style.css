@@ -258,3 +258,6 @@ h2.sec small { color: var(--muted); font-size: 13px; font-weight: 400; margin-le
 .muse-by { display: flex; flex-wrap: wrap; gap: 3px; }
 .muse-by .av { width: 24px; height: 24px; }
 .muse small { opacity: .8; }
+.muse { position: relative; padding-left: 62px; min-height: 66px; justify-content: center; }
+.muse .mob { position: absolute; left: 8px; top: 8px; width: 46px; height: 46px; image-rendering: pixelated; }
+.muse.miss .mob { filter: grayscale(1) brightness(.5); }

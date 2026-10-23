@@ -47,6 +47,10 @@ import java.util.logging.Level;
 final class Collector {
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
+    /** Ein Museumsstueck: Advancement mit Anzeigename, Kategorie (Reiter im Advancement-Menue) und Kopf-Textur. */
+    private record MuseumItem(String name, String category, String skinUrl) {
+    }
+
     private static final class Snapshot {
         final List<PlayerData> players = new ArrayList<>();
         final List<CategoryDef> categories = new ArrayList<>();
@@ -60,7 +64,7 @@ final class Collector {
         Path skyDir;
         Path oneFile;
         /** Museum: Advancement-ID -> Anzeigename (leer = Museum aus). */
-        final Map<String, String> museum = new java.util.LinkedHashMap<>();
+        final Map<String, MuseumItem> museum = new java.util.LinkedHashMap<>();
         final Map<UUID, Set<String>> museumDone = new HashMap<>();
     }
 
@@ -222,6 +226,23 @@ final class Collector {
                 }
             }
         }
+        Map<String, String> rootTitles = new HashMap<>();
+        Map<String, Advancement> byId = new HashMap<>();
+        for (Iterator<Advancement> it = Bukkit.advancementIterator(); it.hasNext(); ) {
+            Advancement adv = it.next();
+            byId.put(adv.getKey().getNamespace() + ":" + adv.getKey().getKey(), adv);
+        }
+        for (String ns : chosen) {
+            for (String id : idsByNamespace.getOrDefault(ns, List.of())) {
+                String path = id.substring(id.indexOf(':') + 1);
+                if (path.equals("root") || path.endsWith("/root")) {
+                    String title = displayTitle(byId.get(id));
+                    if (title != null) {
+                        rootTitles.put(id.substring(0, id.length() - "root".length()), title);
+                    }
+                }
+            }
+        }
         for (String ns : chosen) {
             for (String id : idsByNamespace.getOrDefault(ns, List.of())) {
                 String path = id.substring(id.indexOf(':') + 1);
@@ -232,7 +253,14 @@ final class Collector {
                 if (!s.museumContains.isEmpty() && s.museumContains.stream().noneMatch(lowerPath::contains)) {
                     continue;
                 }
-                snap.museum.put(id, prettyName(path));
+                int slash = path.lastIndexOf('/');
+                String dirKey = id.substring(0, id.length() - (path.length() - (slash + 1)));
+                String category = rootTitles.get(dirKey);
+                if (category == null) {
+                    category = slash < 0 ? "Weitere" : prettyName(path.substring(0, slash));
+                }
+                String title = displayTitle(byId.get(id));
+                snap.museum.put(id, new MuseumItem(title != null ? title : prettyName(path), category, skinUrl(byId.get(id))));
             }
         }
         if (snap.museum.isEmpty()) {
@@ -240,6 +268,41 @@ final class Collector {
                     + (perNamespace.isEmpty() ? "keine" : perNamespace)
                     + ". Passenden Namensraum unter museum.namespaces in der config.yml eintragen.");
         }
+    }
+
+    /** Titel aus der Advancement-Anzeige, oder null (kein Titel oder nur ein Uebersetzungsschluessel). */
+    private static String displayTitle(Advancement adv) {
+        try {
+            if (adv == null || adv.getDisplay() == null) {
+                return null;
+            }
+            String text = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
+                    .serialize(adv.getDisplay().title()).trim();
+            return text.isEmpty() || !text.contains(" ") && text.contains(".") ? null : text;
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
+    /** Textur-Adresse des Kopfes, der als Symbol des Advancements dient, oder leer. */
+    private static String skinUrl(Advancement adv) {
+        try {
+            if (adv == null || adv.getDisplay() == null) {
+                return "";
+            }
+            org.bukkit.inventory.meta.ItemMeta meta = adv.getDisplay().icon().getItemMeta();
+            if (meta instanceof org.bukkit.inventory.meta.SkullMeta skull && skull.getOwnerProfile() != null) {
+                java.net.URL url = skull.getOwnerProfile().getTextures().getSkin();
+                return url == null ? "" : url.toString();
+            }
+        } catch (RuntimeException | LinkageError e) {
+            // Symbol ohne Kopf-Textur
+        }
+        return "";
+    }
+
+    private static String imageName(String id) {
+        return "mob_" + id.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "_");
     }
 
     private static String prettyName(String path) {
@@ -676,10 +739,16 @@ final class Collector {
             JsonObject museum = new JsonObject();
             museum.addProperty("title", s.museumTitle);
             JsonArray items = new JsonArray();
-            for (Map.Entry<String, String> e : snap.museum.entrySet()) {
+            HeadService museumHeads = heads;
+            for (Map.Entry<String, MuseumItem> e : snap.museum.entrySet()) {
                 JsonObject item = new JsonObject();
                 item.addProperty("id", e.getKey());
-                item.addProperty("name", e.getValue());
+                item.addProperty("name", e.getValue().name());
+                item.addProperty("cat", e.getValue().category());
+                if (!e.getValue().skinUrl().isEmpty() && museumHeads != null) {
+                    item.addProperty("img", imageName(e.getKey()));
+                    museumHeads.enqueueSkin(imageName(e.getKey()), e.getValue().skinUrl());
+                }
                 JsonArray by = new JsonArray();
                 for (Map.Entry<UUID, Set<String>> d : snap.museumDone.entrySet()) {
                     if (listed.contains(d.getKey()) && d.getValue().contains(e.getKey())) {

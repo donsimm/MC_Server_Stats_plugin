@@ -125,19 +125,7 @@ final class HeadService {
                 fail(id, "Skin-Bild nicht lesbar oder zu klein");
                 return;
             }
-            BufferedImage head = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
-            for (int y = 0; y < 8; y++) {
-                for (int x = 0; x < 8; x++) {
-                    int base = skin.getRGB(8 + x, 8 + y);
-                    int hat = skin.getRGB(40 + x, 8 + y);
-                    int color = (hat >>> 24) > 127 ? hat : base;
-                    for (int dy = 0; dy < 8; dy++) {
-                        for (int dx = 0; dx < 8; dx++) {
-                            head.setRGB(x * 8 + dx, y * 8 + dy, color | 0xFF000000);
-                        }
-                    }
-                }
-            }
+            BufferedImage head = cropHead(skin);
             Path tmp = dir.resolve(id + ".png.tmp");
             ImageIO.write(head, "png", tmp.toFile());
             Files.move(tmp, dir.resolve(id + ".png"), StandardCopyOption.REPLACE_EXISTING);
@@ -151,6 +139,67 @@ final class HeadService {
             log.warning("Spielerkoepfe deaktiviert: Java-Bildbibliothek (java.desktop) fehlt auf diesem Server (" + e + ").");
         } finally {
             queued.remove(id);
+        }
+    }
+
+    /** Gesicht (8x8 plus Hut-Ebene) auf 64x64 vergroessert. */
+    private static BufferedImage cropHead(BufferedImage skin) {
+        BufferedImage head = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                int base = skin.getRGB(8 + x, 8 + y);
+                int hat = skin.getRGB(40 + x, 8 + y);
+                int color = (hat >>> 24) > 127 ? hat : base;
+                for (int dy = 0; dy < 8; dy++) {
+                    for (int dx = 0; dx < 8; dx++) {
+                        head.setRGB(x * 8 + dx, y * 8 + dy, color | 0xFF000000);
+                    }
+                }
+            }
+        }
+        return head;
+    }
+
+    private final Set<String> queuedSkins = ConcurrentHashMap.newKeySet();
+
+    /** Museum: Kopfbild aus einer Textur-Adresse (nur textures.minecraft.net) als heads/&lt;name&gt;.png speichern. */
+    void enqueueSkin(String name, String skinUrl) {
+        if (disabled || !skinUrl.startsWith("http://textures.minecraft.net/") && !skinUrl.startsWith("https://textures.minecraft.net/")) {
+            return;
+        }
+        Path file = dir.resolve(name + ".png");
+        try {
+            if (Files.isRegularFile(file) && System.currentTimeMillis() - Files.getLastModifiedTime(file).toMillis() < maxAgeMs) {
+                return;
+            }
+        } catch (IOException ignored) {
+            // dann neu laden
+        }
+        if (queuedSkins.add(name)) {
+            worker.execute(() -> {
+                try {
+                    Files.createDirectories(dir);
+                    HttpResponse<byte[]> png = http.send(HttpRequest.newBuilder(URI.create(skinUrl)).timeout(Duration.ofSeconds(15)).build(),
+                            HttpResponse.BodyHandlers.ofByteArray());
+                    BufferedImage skin = png.statusCode() == 200 ? ImageIO.read(new ByteArrayInputStream(png.body())) : null;
+                    if (skin == null || skin.getWidth() < 64 || skin.getHeight() < 16) {
+                        lastFailure = "Museum-Textur " + name + ": HTTP " + png.statusCode() + " oder Bild nicht lesbar";
+                        return;
+                    }
+                    Path tmp = dir.resolve(name + ".png.tmp");
+                    ImageIO.write(cropHead(skin), "png", tmp.toFile());
+                    Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING);
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (IOException | RuntimeException e) {
+                    lastFailure = "Museum-Textur " + name + ": " + e.getClass().getSimpleName();
+                } catch (NoClassDefFoundError | UnsatisfiedLinkError e) {
+                    disabled = true;
+                } finally {
+                    queuedSkins.remove(name);
+                }
+            });
         }
     }
 
