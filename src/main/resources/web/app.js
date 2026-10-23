@@ -380,7 +380,7 @@ function museumItems() {
   const cats = [...new Set([...map.values()].map(e => e.cat).filter(Boolean))];
   for (const e of map.values()) {
     if (!e.cat || !/zombie villager/i.test(e.cat + ' ' + e.name) || !/zombie villager/i.test(e.cat)) continue;
-    const biome = ['desert', 'plains', 'savanna', 'snow', 'swamp', 'taiga', 'jungle'].find(b => e.name.toLowerCase().includes(b));
+    const biome = ['desert', 'plain', 'savanna', 'snow', 'swamp', 'taiga', 'jungle'].find(b => e.name.toLowerCase().includes(b));
     const target = biome && cats.find(c => !/zombie villager/i.test(c) && (c.toLowerCase().includes(biome) || biome.includes(c.toLowerCase())));
     if (target) e.cat = target;
   }
