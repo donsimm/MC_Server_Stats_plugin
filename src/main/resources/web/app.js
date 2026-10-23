@@ -343,29 +343,41 @@ function applyCatFilter() {
   const q = catFilter.trim().toLowerCase();
   document.querySelectorAll('#view .grid .card[data-title]').forEach(el => { el.hidden = !!q && !el.dataset.title.includes(q); });
 }
-/* Museum: Baby und ausgewachsen werden zu einem Eintrag, "End line"-Sammelerfolge entfallen. */
+/* Museum: Baby und ausgewachsen werden zu einem Eintrag, Sammel-Erfolge entfallen, Kategorien werden vereinheitlicht. */
 const MUSE = { q: '', cat: '', player: '', st: '' };
 let MUSE_ITEMS = null;
+const MUSE_GENERIC = ['Feindliche Mobs', 'Friedliche Mobs', 'Vanilla-Mobs', 'Sonstige'];
+/** Kategoriename des Datapacks -> Anzeigename; null = Eintrag weglassen. */
+function museumCat(raw) {
+  const c = (raw || '').toLowerCase().replace(/[_-]+/g, ' ').trim();
+  if (/^end line|heads? collection|^baby\b|^babies$/.test(c)) return null;
+  if (/shulker/.test(c)) return 'Shulker';
+  if (/^(felines?|cats?|kittens?)$/.test(c)) return 'Katzen';
+  if (/^(dogs?|wolf|wolves|baby dogs?)$/.test(c)) return 'Hunde';
+  if (/^hostiles?$/.test(c)) return 'Feindliche Mobs';
+  if (/^passives?$/.test(c)) return 'Friedliche Mobs';
+  if (c === 'vanilla') return 'Vanilla-Mobs';
+  if (c === 'weitere' || c === '') return 'Sonstige';
+  if (c === 'end') return 'Ende';
+  return raw.replace(/\b\w/g, ch => ch.toUpperCase());
+}
 function museumItems() {
   if (MUSE_ITEMS && MUSE_ITEMS.src === DATA.museum) return MUSE_ITEMS.list;
   const map = new Map();
   for (const i of DATA.museum.items) {
     if (/^end line/i.test(i.name)) continue;
     const baby = /\bbaby\b/i.test(i.name);
+    const cat = museumCat(i.cat);
     const key = i.name.toLowerCase().replace(/^kill\s+/, '').replace(/\bbaby\s+/, '').replace(/\s+/g, ' ').trim();
     let e = map.get(key);
-    if (!e) map.set(key, e = { name: '', cat: '', img: '', by: new Set(), adult: false });
+    if (!e) map.set(key, e = { name: '', cat: null, img: '', by: new Set(), adult: false });
     i.by.forEach(u => e.by.add(u));
-    if (!baby || !e.adult) {
-      if (!baby) e.adult = true;
-      if (!baby || !e.name) {
-        e.name = baby ? i.name.replace(/^kill\s+/i, '').replace(/\bbaby\s+/i, '').replace(/^./, c => c.toUpperCase()) : i.name;
-        e.cat = i.cat || 'Weitere';
-      }
-      if (i.img && (!baby || !e.img)) e.img = i.img;
-    } else if (i.img && !e.img) e.img = i.img;
+    if (cat && (!e.cat || MUSE_GENERIC.includes(e.cat) && !MUSE_GENERIC.includes(cat))) e.cat = cat;
+    if (!baby && !e.adult) { e.adult = true; e.name = i.name; e.img = i.img || e.img; }
+    else if (!e.name) e.name = i.name.replace(/^kill\s+/i, '').replace(/\bbaby\s+/i, '').replace(/^./, c => c.toUpperCase());
+    if (!e.img && i.img) e.img = i.img;
   }
-  const list = [...map.values()].map(e => ({ name: e.name, cat: e.cat, img: e.img, by: [...e.by] }));
+  const list = [...map.values()].filter(e => e.cat).map(e => ({ name: e.name, cat: e.cat, img: e.img, by: [...e.by] }));
   list.sort((a, b) => a.name.localeCompare(b.name, 'de'));
   MUSE_ITEMS = { src: DATA.museum, list };
   return list;
