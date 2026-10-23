@@ -95,20 +95,21 @@ button, input, select { font-family: var(--font); font-size: 15px; }
 }
 .suggest button:hover, .suggest button:focus-visible { background: var(--gold); outline-offset: -3px; }
 
-/* Navigation */
-.nav { display: flex; flex-wrap: wrap; gap: 10px 12px; margin-bottom: 26px; }
+/* Navigation: alles auf einer Zeile. Reicht die Breite nicht (Handy), scrollen die Reiter seitlich, die Symbole bleiben stehen. */
+.nav { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 20px; }
+.nav-tabs { display: flex; flex-wrap: nowrap; gap: 8px; flex: 1; min-width: 0; overflow-x: auto; padding: 0 6px 8px 0; scrollbar-width: thin; }
+.nav-ext { display: flex; flex: none; gap: 8px; padding-bottom: 8px; }
 .nav a {
-  padding: 8px 16px; background: var(--paper); color: var(--ink); font-weight: 700; text-decoration: none;
+  display: inline-flex; align-items: center; white-space: nowrap;
+  padding: 7px 12px; background: var(--paper); color: var(--ink); font-weight: 700; font-size: 15px; text-decoration: none;
   border: 3px solid var(--ink); box-shadow: 4px 4px 0 #3a3a3a;
 }
 .nav a:hover { background: #e4dcc6; }
-.nav a.first-ext { margin-left: auto; }
-.nav a.ext { display: inline-flex; align-items: center; gap: 6px; }
-.nav a.icon { padding: 8px 12px; background: #5865f2; color: #fff; }
-.nav a.icon:hover { background: #7983f5; }
-.nav a.icon svg { display: block; }
-@media (max-width: 760px) { .nav a.first-ext { margin-left: 0; } }
 .nav a[aria-current="page"] { background: var(--gold); }
+.nav a.icon { padding: 7px 10px; }
+.nav a.icon svg { display: block; }
+.nav a.discord { background: #5865f2; color: #fff; }
+.nav a.discord:hover { background: #7983f5; }
 
 /* Werkzeugleiste */
 .bar-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-bottom: 8px; }
