@@ -75,6 +75,7 @@ Die Logik ohne Bukkit-Abhängigkeit steckt im Paket `core` und ist mit JUnit get
 ## Quellen und Lizenzen
 
 - Pixelify Sans (Schrift, lokal eingebunden): SIL Open Font License 1.1, https://fonts.google.com/specimen/Pixelify+Sans
+- Atkinson Hyperlegible Next (Schrift für Text und Zahlen, lokal eingebunden): SIL Open Font License 1.1, https://fonts.google.com/specimen/Atkinson+Hyperlegible+Next
 - CookieClicker von ZilloLP (nur Datenbank lesen, kein Code übernommen): https://github.com/ZilloLP/CookieClicker (Lizenz: nicht kommerziell, Namensnennung)
 - Paper-API: https://docs.papermc.io
 - Vanilla-Statistiken: https://minecraft.wiki/w/Statistics

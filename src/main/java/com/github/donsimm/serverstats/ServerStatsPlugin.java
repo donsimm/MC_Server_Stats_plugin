@@ -17,7 +17,8 @@ import java.util.logging.Level;
 public final class ServerStatsPlugin extends JavaPlugin {
     private static final List<String> WEB_FILES = List.of(
             "index.html", "app.js", "style.css",
-            "fonts/pixelify-latin.woff2", "fonts/pixelify-latin-ext.woff2");
+            "fonts/pixelify-latin.woff2", "fonts/pixelify-latin-ext.woff2",
+            "fonts/atkinson-next-latin.woff2", "fonts/atkinson-next-latin-ext.woff2");
 
     private Settings settings;
     private OptOutStore optOut;
