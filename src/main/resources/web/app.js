@@ -351,14 +351,13 @@ const MUSE_GENERIC = ['Feindliche Mobs', 'Friedliche Mobs', 'Vanilla-Mobs', 'Son
 function museumCat(raw) {
   const c = (raw || '').toLowerCase().replace(/[_-]+/g, ' ').trim();
   if (/^end line|heads? collection|^baby\b|^babies$/.test(c)) return null;
+  if (/^(canidae|end|sea|passives?|weitere|sonstige)$/.test(c) || c === '') return null; // ausgeblendete Kategorien
   if (/shulker/.test(c)) return 'Shulker';
   if (/^(felines?|cats?|kittens?)$/.test(c)) return 'Katzen';
   if (/^(dogs?|wolf|wolves|baby dogs?)$/.test(c)) return 'Hunde';
   if (/^hostiles?$/.test(c)) return 'Feindliche Mobs';
   if (/^passives?$/.test(c)) return 'Friedliche Mobs';
   if (c === 'vanilla') return 'Vanilla-Mobs';
-  if (c === 'weitere' || c === '') return 'Sonstige';
-  if (c === 'end') return 'Ende';
   return raw.replace(/\b\w/g, ch => ch.toUpperCase());
 }
 function museumItems() {
@@ -376,6 +375,14 @@ function museumItems() {
     if (!baby && !e.adult) { e.adult = true; e.name = i.name; e.img = i.img || e.img; }
     else if (!e.name) e.name = i.name.replace(/^kill\s+/i, '').replace(/\bbaby\s+/i, '').replace(/^./, c => c.toUpperCase());
     if (!e.img && i.img) e.img = i.img;
+  }
+  // Zombie-Dorfbewohner in die Kategorie ihres Bioms verschieben (sofern es eine solche Kategorie gibt)
+  const cats = [...new Set([...map.values()].map(e => e.cat).filter(Boolean))];
+  for (const e of map.values()) {
+    if (!e.cat || !/zombie villager/i.test(e.cat + ' ' + e.name) || !/zombie villager/i.test(e.cat)) continue;
+    const biome = ['desert', 'plains', 'savanna', 'snow', 'swamp', 'taiga', 'jungle'].find(b => e.name.toLowerCase().includes(b));
+    const target = biome && cats.find(c => !/zombie villager/i.test(c) && (c.toLowerCase().includes(biome) || biome.includes(c.toLowerCase())));
+    if (target) e.cat = target;
   }
   const list = [...map.values()].filter(e => e.cat).map(e => ({ name: e.name, cat: e.cat, img: e.img, by: [...e.by] }));
   list.sort((a, b) => a.name.localeCompare(b.name, 'de'));
