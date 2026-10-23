@@ -91,6 +91,67 @@ ICO.cursor = shiftDown(['#...............', '##..............', '#+#............
   }
   ICO.gear = outline(rowsOf(g));
 })();
+function fillTri(g, a, b, c, ch) {
+  const side = (p, q, r) => (p[0] - r[0]) * (q[1] - r[1]) - (q[0] - r[0]) * (p[1] - r[1]);
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+    const p = [x + .5, y + .5], d1 = side(p, a, b), d2 = side(p, b, c), d3 = side(p, c, a);
+    if (!((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0))) g[y][x] = ch;
+  }
+}
+ICO.arrow = outline(shiftDown(mirror(['.......#', '......##', '.....###', '....####', '...#####', '..######', '.#######', '########', '....####', '....####', '....####', '....####']), 2));
+(() => {
+  const g = blank();
+  const pts = [[3, 13], [12, 11], [4, 9], [12, 7], [4, 5], [12, 3]];
+  for (let i = 0; i < pts.length - 1; i++) seg(g, pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], 2, '#');
+  ICO.spring = rowsOf(g);
+})();
+(() => {
+  const g = blank();
+  for (const y0 of [4, 8, 12]) for (let x = 0; x < 16; x++) {
+    const y = y0 + Math.round(1.6 * Math.sin(x * 0.85 + y0));
+    g[Math.max(0, Math.min(15, y))][x] = '#';
+    g[Math.max(0, Math.min(15, y + 1))][x] = '#';
+  }
+  ICO.wave = rowsOf(g);
+})();
+(() => {
+  const g = blank();
+  fillTri(g, [1, 14], [14, 1], [14, 11], '#');
+  ICO.wing = outline(rowsOf(g));
+})();
+(() => {
+  const g = blank();
+  for (let y = 11; y <= 13; y++) for (let x = 2 + (y - 11); x <= 13 - (y - 11); x++) g[y][x] = '#';
+  fillTri(g, [9, 2], [9, 10], [14, 10], '#');
+  const o = outline(rowsOf(g)).map(r => [...r]);
+  for (let y = 2; y <= 10; y++) o[y][8] = '#';
+  ICO.boat = rowsOf(o);
+})();
+(() => {
+  const g = blank();
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+    const nx = (x + .5 - 8) / 7.4, ny = (y + .5 - 8) / 4.6;
+    if (nx * nx + ny * ny <= 1) g[y][x] = '#';
+  }
+  const o = outline(rowsOf(g)).map(r => [...r]);
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) if (Math.hypot(x + .5 - 8, y + .5 - 8) <= 2.6) o[y][x] = '#';
+  ICO.eye = rowsOf(o);
+})();
+(() => {
+  const g = blank();
+  seg(g, 5, 10.5, 11, 4.5, 4.6, '#');
+  seg(g, 10.5, 5, 13.8, 1.7, 2.2, '#');
+  seg(g, 3.2, 8.2, 6.5, 11.5, 1.6, '#');
+  seg(g, 4.5, 11.5, 1.2, 14.8, 2.6, '+');
+  ICO.rocket = rowsOf(g);
+})();
+(() => {
+  const g = blank();
+  for (let y = 2; y <= 6; y++) for (let x = 2; x <= 13; x++) g[y][x] = '#';
+  const o = outline(rowsOf(g)).map(r => [...r]);
+  for (let y = 7; y <= 14; y++) { o[y][7] = '#'; o[y][8] = '#'; }
+  ICO.hammer = rowsOf(o);
+})();
 const icoCache = {};
 function icoSVG(name) {
   if (icoCache[name]) return icoCache[name];

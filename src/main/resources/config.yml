@@ -221,6 +221,159 @@ categories:
     source: vanilla
     stat: ["custom:player_kills"]
 
+  laeufer:
+    section: "Unterwegs"
+    title: "Läufer"
+    subtitle: "Meiste Strecke zu Fuss"
+    icon: boot
+    color: "#f7c8a0"
+    format: km
+    source: vanilla
+    stat: ["custom:walk_one_cm"]
+    scale: 0.00001
+    ajlb-board: "statistic_walk_one_cm"
+    ajlb-scale: 0.00001
+
+  sprinter:
+    section: "Unterwegs"
+    title: "Sprinter"
+    subtitle: "Meiste Strecke gesprintet"
+    icon: bolt
+    color: "#b8f5c8"
+    format: km
+    source: vanilla
+    stat: ["custom:sprint_one_cm"]
+    scale: 0.00001
+    ajlb-board: "statistic_sprint_one_cm"
+    ajlb-scale: 0.00001
+
+  wasserratte:
+    section: "Unterwegs"
+    title: "Wasserratte"
+    subtitle: "Meiste Strecke geschwommen"
+    icon: wave
+    color: "#7fd4ff"
+    format: km
+    source: vanilla
+    stat: ["custom:swim_one_cm"]
+    scale: 0.00001
+    ajlb-board: "statistic_swim_one_cm"
+    ajlb-scale: 0.00001
+
+  kapitaen:
+    section: "Unterwegs"
+    title: "Kapitän"
+    subtitle: "Meiste Strecke im Boot"
+    icon: boat
+    color: "#a8c8ff"
+    format: km
+    source: vanilla
+    stat: ["custom:boat_one_cm"]
+    scale: 0.00001
+    ajlb-board: "statistic_boat_one_cm"
+    ajlb-scale: 0.00001
+
+  elytrapilot:
+    section: "Unterwegs"
+    title: "Elytra-Pilot"
+    subtitle: "Meiste Strecke im Gleitflug"
+    icon: wing
+    color: "#d6c2ff"
+    format: km
+    source: vanilla
+    stat: ["custom:aviate_one_cm"]
+    scale: 0.00001
+    ajlb-board: "statistic_aviate_one_cm"
+    ajlb-scale: 0.00001
+
+  reiter:
+    section: "Unterwegs"
+    title: "Reiter"
+    subtitle: "Meiste Strecke auf Pferd, Schwein und Strider"
+    icon: heart
+    color: "#e0b88a"
+    format: km
+    source: vanilla
+    sum: ["custom:horse_one_cm", "custom:pig_one_cm", "custom:strider_one_cm"]
+    scale: 0.00001
+
+  kletterer:
+    section: "Unterwegs"
+    title: "Kletterer"
+    subtitle: "Meiste Strecke geklettert"
+    icon: arrow
+    color: "#b5e07a"
+    format: km
+    source: vanilla
+    stat: ["custom:climb_one_cm"]
+    scale: 0.00001
+    ajlb-board: "statistic_climb_one_cm"
+    ajlb-scale: 0.00001
+
+  huepfer:
+    section: "Unterwegs"
+    title: "Hüpfer"
+    subtitle: "Meiste Sprünge"
+    icon: spring
+    color: "#ff9fc0"
+    format: int
+    source: vanilla
+    stat: ["custom:jump"]
+    ajlb-board: "statistic_jump"
+
+  schleicher:
+    section: "Weitere Ranglisten"
+    title: "Schleicher"
+    subtitle: "Meiste Zeit geschlichen"
+    icon: eye
+    color: "#c9c9d9"
+    format: dur
+    source: vanilla
+    stat: ["custom:sneak_time"]
+    scale: 0.0000138889        # Ticks -> Stunden
+
+  handwerker:
+    section: "Weitere Ranglisten"
+    title: "Handwerker"
+    subtitle: "Meiste Gegenstände hergestellt"
+    icon: hammer
+    color: "#ffb87a"
+    format: int
+    source: vanilla
+    group-sum: "crafted"
+    ajlb-board: "statistic_craft_item"
+
+  pruegelknabe:
+    section: "Weitere Ranglisten"
+    title: "Prügelknabe"
+    subtitle: "Meist von Spielern getötet"
+    icon: skull
+    color: "#ff9a9a"
+    format: int
+    source: vanilla
+    stat: ["killed_by:player"]
+
+  feuerwerker:
+    section: "Weitere Ranglisten"
+    title: "Feuerwerker"
+    subtitle: "Meiste Feuerwerksraketen gezündet"
+    icon: rocket
+    color: "#ffd36e"
+    format: int
+    source: vanilla
+    stat: ["used:firework_rocket"]
+    ajlb-board: "statistic_use_item:firework_rocket"
+
+  unsterblich:
+    section: "Weitere Ranglisten"
+    title: "Unsterblich"
+    subtitle: "Meiste Totems der Unsterblichkeit"
+    icon: heart
+    color: "#9be8d0"
+    format: int
+    source: vanilla
+    stat: ["used:totem_of_undying"]
+
   keksbaecker:
     section: "Cookie Clicker"
     title: "Keksbäcker"
