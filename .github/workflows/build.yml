@@ -9,6 +9,11 @@ on:
 permissions:
   contents: write
 
+# Neuere Pushes auf denselben Branch brechen ältere Läufe ab, damit das Release immer den letzten Stand enthält.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
