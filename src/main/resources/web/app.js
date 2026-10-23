@@ -287,14 +287,15 @@ function rowHTML(u, v, i, c, max) {
   return `<li><a class="row" href="#profil-${u}" data-go="profil-${u}"${w}><span class="rank${i < 3 ? ' top' : ''}">${i + 1}</span>${avatar(u)}` +
     `<span class="nm">${isOnline(u) ? '<i class="dot" title="online"></i>' : ''}${esc(nameOf(u))}</span><span class="val">${fmt(c, v)}</span></a></li>`;
 }
-function headHTML(c) {
+function headHTML(c, link) {
   const tag = onlyTotal(c) ? '<span class="tag">nur Gesamt</span>' : '';
-  return `<div class="card-h"><div><h3>${esc(c.title)}</h3><p>${esc(c.subtitle)}</p></div>${tag}</div>`;
+  const title = link ? `<a class="card-title" href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}">${esc(c.title)}</a>` : esc(c.title);
+  return `<div class="card-h"><div><h3>${title}</h3><p>${esc(c.subtitle)}</p></div>${tag}</div>`;
 }
 function cardHTML(c) {
   const b = boardOf(c);
   const rows = b.length ? `<ol class="rows">${b.slice(0, 10).map(([u, v], i) => rowHTML(u, v, i, c)).join('')}</ol>` : '<p class="none">Noch keine Daten.</p>';
-  return `<article class="card${c.night ? ' night' : ''}" data-title="${esc(c.title.toLowerCase())}" style="${cardVars(c)}">${headHTML(c)}${rows}` +
+  return `<article class="card${c.night ? ' night' : ''}" data-title="${esc(c.title.toLowerCase())}" style="${cardVars(c)}">${headHTML(c, true)}${rows}` +
     `<div class="card-f"><a href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}">Alle ${b.length} anzeigen →</a><span class="src">Quelle: ${esc(c.source)}</span></div></article>`;
 }
 function periodCtl(cats) {
