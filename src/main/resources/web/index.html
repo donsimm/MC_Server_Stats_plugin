@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stats-Tafel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <header class="page-head">
+      <a class="brand" href="#start" data-go="start">
+        <span class="logo" id="logo"></span>
+        <span><h1 id="site-title">Stats-Tafel</h1><p id="site-sub"></p></span>
+      </a>
+      <div class="search">
+        <input id="q" type="search" placeholder="Spieler suchen …" autocomplete="off" aria-label="Spieler suchen">
+        <ul class="suggest" id="sug" hidden></ul>
+      </div>
+    </header>
+    <main id="view"><p class="empty">Lade Daten …</p></main>
+    <footer class="foot" id="foot"></footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

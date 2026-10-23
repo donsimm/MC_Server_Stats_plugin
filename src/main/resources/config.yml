@@ -1,0 +1,250 @@
+# ServerStats - Konfiguration
+# Nach Aenderungen: /serverstats reload
+
+# Titel und Untertitel der Seite
+title: "Stats-Tafel"
+subtitle: "Ranglisten unseres Servers"
+
+# Wie oft die Ranglisten neu berechnet werden (Sekunden) und wie oft die Online-Liste aktualisiert wird
+refresh-seconds: 300
+online-refresh-seconds: 30
+
+# Ausgabeordner fuer stats.json, online.json, Kopf-Bilder und die Webseite (relativ zum Plugin-Ordner)
+output-dir: "web"
+# true: die mitgelieferte Webseite (index.html, app.js, style.css) wird bei jedem Start ueberschrieben.
+# Auf false stellen, wenn du die Dateien selbst anpasst.
+overwrite-web-files: true
+
+# Eingebauter Webserver (liefert nur Dateien aus output-dir aus).
+# Wer bereits nginx/Apache nutzt, setzt enabled auf false und zeigt den Webserver auf den Ausgabeordner.
+http:
+  enabled: true
+  bind: "0.0.0.0"
+  port: 8123
+  # Adresse, die /serverstats link den Spielern anzeigt
+  public-url: "http://localhost:8123"
+
+players:
+  # Leer lassen = automatisch suchen (world/stats bzw. world/players/stats).
+  stats-dir: ""
+  advancements-dir: ""
+  exclude-uuids: []
+  exclude-names: []
+  # Spieler, die laenger nicht online waren, ausblenden (0 = alle zeigen)
+  max-inactive-days: 0
+  # Spieler im Vanish-Modus nicht in der Online-Liste zeigen
+  hide-vanished: true
+
+# Spielerkoepfe (werden von den Mojang-Servern geholt, einmal pro Spieler zwischengespeichert)
+heads:
+  enabled: true
+  refresh-days: 7
+
+sources:
+  mcmmo:
+    enabled: true
+    # Obergrenze der Skala im Skill-Radar (Modus "Absolut")
+    radar-max: 1000
+  vault:
+    enabled: true
+    # Namen von Konten, die nicht in der Rangliste erscheinen sollen (Server-/NPC-Konten)
+    exclude-names: []
+  essentials:
+    # Fuer AFK-Anzeige in der Online-Liste
+    enabled: true
+  cookieclicker:
+    enabled: true
+    # sqlite oder mysql (so wie in der config.yml von CookieClicker eingestellt)
+    type: sqlite
+    # relativ zum plugins-Ordner
+    sqlite-file: "CookieClicker/cookieclicker.db"
+    mysql:
+      host: "localhost"
+      port: 3306
+      database: "CookieClicker"
+      user: "root"
+      password: ""
+    players-table: "cookieclicker_players"
+  ajlb:
+    # AJLeaderboards ueber PlaceholderAPI. Nur fuer Zeitfenster (Monat, Woche, Heute) und Kategorien mit source: ajlb.
+    # Die Platzhalter-Schreibweise kann je nach AJLB-Version abweichen: mit /serverstats ajlb <board> pruefen.
+    enabled: true
+    top: 30
+    name-placeholder: "%ajlb_lb_{board}_{pos}_name{suffix}%"
+    value-placeholder: "%ajlb_lb_{board}_{pos}_value{suffix}%"
+    # {suffix} bleibt fuer "Gesamt" leer, sonst "_" plus der Name hier
+    period-names:
+      day: "daily"
+      week: "weekly"
+      month: "monthly"
+
+# Kennzahlen oben auf der Startseite (Summe aller Spieler). Die Kategorie muss weiter unten existieren.
+chips:
+  - { category: dauerzocker, label: "Spielzeit gesamt" }
+  - { category: abrissbirne, label: "Blöcke abgebaut" }
+  - { category: friedhof, label: "Tode" }
+  - { category: weltenbummler, label: "Strecke gesamt" }
+  - { category: keksbaecker, label: "Kekse gebacken" }
+
+# Ranglisten. Die Reihenfolge hier ist die Reihenfolge auf der Seite, Abschnitte entstehen aus "section".
+#   format:  int | dur (Wert in Stunden) | km | big (Mio./Mrd.) | adv (x / Gesamtzahl)
+#   icon:    clock gem skull pick sword swords boot scroll bolt star heart shield cookie cursor gear
+#   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker | ajlb
+#   vanilla: stat (Liste, erster Treffer zaehlt) oder sum (Liste, addiert) oder group-sum (ganze Gruppe), plus scale
+#   ajlb-board: AJLeaderboards-Board fuer Zeitfenster (optional)
+categories:
+  dauerzocker:
+    section: "Hauptranglisten"
+    title: "Dauerzocker"
+    subtitle: "Meiste Spielzeit"
+    icon: clock
+    color: "#8fd0ff"
+    format: dur
+    source: vanilla
+    stat: ["custom:play_time", "custom:play_one_minute"]
+    scale: 0.0000138889        # Ticks -> Stunden
+    ajlb-board: "statistic_hours_played"
+  diamantenbank:
+    section: "Hauptranglisten"
+    title: "Diamantenbank"
+    subtitle: "Wer hat, der hat"
+    icon: gem
+    color: "#4de3d5"
+    format: int
+    source: vault
+  friedhof:
+    section: "Hauptranglisten"
+    title: "Friedhof"
+    subtitle: "Hier liegen sie. Immer wieder."
+    icon: skull
+    color: "#2b2040"
+    night: true
+    format: int
+    source: vanilla
+    stat: ["custom:deaths"]
+    ajlb-board: "statistic_deaths"
+  abrissbirne:
+    section: "Hauptranglisten"
+    title: "Abrissbirne"
+    subtitle: "Meiste Blöcke abgebaut"
+    icon: pick
+    color: "#ffd23f"
+    format: int
+    source: vanilla
+    group-sum: "mined"
+    ajlb-board: "statistic_mine_block"
+  monsterjaeger:
+    section: "Hauptranglisten"
+    title: "Monsterjäger"
+    subtitle: "Meiste Mobs erledigt"
+    icon: sword
+    color: "#6fdc4f"
+    format: int
+    source: vanilla
+    stat: ["custom:mob_kills"]
+    ajlb-board: "statistic_mob_kills"
+  weltenbummler:
+    section: "Hauptranglisten"
+    title: "Weltenbummler"
+    subtitle: "Weiteste Strecke"
+    icon: boot
+    color: "#f0b3e6"
+    format: km
+    source: vanilla
+    sum:
+      - "custom:walk_one_cm"
+      - "custom:sprint_one_cm"
+      - "custom:crouch_one_cm"
+      - "custom:swim_one_cm"
+      - "custom:walk_on_water_one_cm"
+      - "custom:walk_under_water_one_cm"
+      - "custom:boat_one_cm"
+      - "custom:horse_one_cm"
+      - "custom:pig_one_cm"
+      - "custom:strider_one_cm"
+      - "custom:minecart_one_cm"
+      - "custom:aviate_one_cm"
+    scale: 0.00001            # Zentimeter -> Kilometer
+
+  questmeister:
+    section: "Weitere Ranglisten"
+    title: "Questmeister"
+    subtitle: "Meiste Quest-Punkte"
+    icon: scroll
+    color: "#ffb36b"
+    format: int
+    source: ajlb
+    ajlb-board: "quests_player_quest_points"
+  skillmeister:
+    section: "Weitere Ranglisten"
+    title: "Skill-Meister"
+    subtitle: "Höchstes mcMMO-Power-Level"
+    icon: bolt
+    color: "#b9a4ff"
+    format: int
+    source: mcmmo-power
+  erfolgsjaeger:
+    section: "Weitere Ranglisten"
+    title: "Erfolgsjäger"
+    subtitle: "Meiste Advancements"
+    icon: star
+    color: "#e9dcb8"
+    format: adv
+    source: advancements
+  zuchtmeister:
+    section: "Weitere Ranglisten"
+    title: "Zuchtmeister"
+    subtitle: "Meiste Tiere gezüchtet"
+    icon: heart
+    color: "#c6f26b"
+    format: int
+    source: vanilla
+    stat: ["custom:animals_bred"]
+    ajlb-board: "statistic_animals_bred"
+  einstecker:
+    section: "Weitere Ranglisten"
+    title: "Einstecker"
+    subtitle: "Meister erlittener Schaden"
+    icon: shield
+    color: "#c7d0dc"
+    format: int
+    source: vanilla
+    stat: ["custom:damage_taken"]
+    ajlb-board: "statistic_damage_taken"
+  duellant:
+    section: "Weitere Ranglisten"
+    title: "Duellant"
+    subtitle: "Meiste Spieler besiegt"
+    icon: swords
+    color: "#ff8f8f"
+    format: int
+    source: vanilla
+    stat: ["custom:player_kills"]
+
+  keksbaecker:
+    section: "Cookie Clicker"
+    title: "Keksbäcker"
+    subtitle: "Meiste Kekse gebacken"
+    icon: cookie
+    color: "#d9a066"
+    format: big
+    source: cookieclicker
+    column: COOKIES
+  klickfinger:
+    section: "Cookie Clicker"
+    title: "Klickfinger"
+    subtitle: "Meiste Klicks"
+    icon: cursor
+    color: "#f2e394"
+    format: int
+    source: cookieclicker
+    column: CLICKER_CLICKS
+  klickkraft:
+    section: "Cookie Clicker"
+    title: "Klickkraft"
+    subtitle: "Meiste Kekse pro Klick"
+    icon: gear
+    color: "#9fe3b5"
+    format: int
+    source: cookieclicker
+    column: PER_CLICK

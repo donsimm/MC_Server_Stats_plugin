@@ -1,0 +1,19 @@
+name: ServerStats
+version: ${project.version}
+main: com.github.donsimm.serverstats.ServerStatsPlugin
+api-version: '1.21'
+author: donsimm
+description: Erstellt aus Spielerstatistiken, Plugin-Daten und Ranglisten eine Webseite.
+softdepend: [Vault, mcMMO, PlaceholderAPI, AJLeaderboards, Essentials, CookieClicker]
+commands:
+  serverstats:
+    description: Link zur Stats-Seite, Opt-out und Verwaltung
+    usage: /<command> [link|optout|refresh|status|ajlb|reload]
+    aliases: [sstats]
+permissions:
+  serverstats.use:
+    description: Link anzeigen und Opt-out umschalten
+    default: true
+  serverstats.admin:
+    description: Aktualisieren, Status, Diagnose, Reload
+    default: op
