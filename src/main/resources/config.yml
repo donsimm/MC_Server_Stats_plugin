@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 5
+config-version: 6
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -27,6 +27,12 @@ http:
   port: 8123
   # Adresse, die /serverstats link den Spielern anzeigt
   public-url: "http://localhost:8123"
+
+# Schaltflaechen rechts im Menue. Eine leere Adresse blendet die jeweilige Schaltflaeche aus.
+links:
+  homepage-label: "Homepage"
+  homepage-url: "https://simmeneventsupport.wixsite.com/website"
+  discord-url: "https://discord.com/invite/9ssUcjEbZS"
 
 players:
   # Leer lassen = automatisch suchen (world/stats bzw. world/players/stats).

@@ -499,6 +499,11 @@ final class Collector {
 
         JsonObject json = StatsBuilder.build(s.title, s.subtitle, System.currentTimeMillis() / 1000, snap.categories,
                 snap.players, snap.ajlbPeriods, s.chips, snap.categoryMax, s.mcmmoRadarMax);
+        JsonObject links = new JsonObject();
+        links.addProperty("homepageLabel", s.homepageLabel);
+        links.addProperty("homepageUrl", safeUrl(s.homepageUrl));
+        links.addProperty("discordUrl", safeUrl(s.discordUrl));
+        json.add("links", links);
         Files.createDirectories(s.outputDir);
         writeJson(s.outputDir.resolve("stats.json"), json);
 
@@ -537,6 +542,32 @@ final class Collector {
         }
     }
 
+    /** Nur http(s)-Adressen werden an die Webseite weitergegeben. */
+    private static String safeUrl(String url) {
+        return url != null && (url.startsWith("https://") || url.startsWith("http://")) ? url.trim() : "";
+    }
+
+    /** Sucht ein eigenes Logo im Web-Ordner und, falls es dort fehlt, im Plugin-Ordner (falsch abgelegt). */
+    private String logoStatus(Settings s) {
+        String[] names = {"logo.png", "logo.jpg", "logo.jpeg", "logo.webp", "logo.gif"};
+        for (String name : names) {
+            Path file = s.outputDir.resolve(name);
+            if (Files.isRegularFile(file)) {
+                try {
+                    return name + " gefunden (" + Files.size(file) / 1024 + " KB), wird im Seitenkopf angezeigt";
+                } catch (IOException e) {
+                    return name + " gefunden";
+                }
+            }
+        }
+        for (String name : names) {
+            if (Files.isRegularFile(plugin.getDataFolder().toPath().resolve(name))) {
+                return name + " liegt im falschen Ordner. Bitte nach " + s.outputDir + " verschieben";
+            }
+        }
+        return "keine Datei gefunden. Erwartet: " + s.outputDir.resolve("logo.png");
+    }
+
     static void writeJson(Path file, JsonObject json) throws IOException {
         Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
         Files.writeString(tmp, GSON.toJson(json), StandardCharsets.UTF_8);
@@ -558,6 +589,7 @@ final class Collector {
         Path adv = findDir(s.advancementsDirOverride, "advancements", "players/advancements");
         out.put("Statistik-Ordner", stats == null ? "NICHT GEFUNDEN (" + describeCandidates("stats", "players/stats") + ")" : stats.toString());
         out.put("Advancement-Ordner", adv == null ? "NICHT GEFUNDEN (" + describeCandidates("advancements", "players/advancements") + ")" : adv.toString());
+        out.put("Logo", logoStatus(s));
         out.put("Vault", s.vaultEnabled ? (hooks.vault() ? "aktiv" : "nicht verfuegbar") : "aus");
         out.put("mcMMO", s.mcmmoEnabled ? (hooks.mcmmo() ? "aktiv" : "nicht verfuegbar") : "aus");
         out.put("PlaceholderAPI/AJLB", s.ajlbEnabled ? (hooks.papi() && hooks.ajlbInstalled() ? "aktiv" : "nicht verfuegbar") : "aus");

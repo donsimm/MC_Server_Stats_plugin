@@ -25,7 +25,11 @@ final class WebServer {
             "png", "image/png",
             "woff2", "font/woff2",
             "svg", "image/svg+xml",
-            "ico", "image/x-icon");
+            "ico", "image/x-icon",
+            "jpg", "image/jpeg",
+            "jpeg", "image/jpeg",
+            "webp", "image/webp",
+            "gif", "image/gif");
 
     private final HttpServer server;
     private final ExecutorService executor;
@@ -82,7 +86,7 @@ final class WebServer {
             String ext = name.contains(".") ? name.substring(name.lastIndexOf('.') + 1).toLowerCase() : "";
             String type = TYPES.getOrDefault(ext, "application/octet-stream");
             // Seite, Skripte, Stile und Daten nie zwischenspeichern, sonst mischen sich alte Dateien mit neuen Daten
-            if (ext.equals("json") || ext.equals("html") || ext.equals("js") || ext.equals("css")) {
+            if (ext.equals("json") || ext.equals("html") || ext.equals("js") || ext.equals("css") || name.startsWith("logo.")) {
                 exchange.getResponseHeaders().set("Cache-Control", "no-store");
             } else {
                 exchange.getResponseHeaders().set("Cache-Control", "public, max-age=3600");

@@ -102,6 +102,12 @@ button, input, select { font-family: var(--font); font-size: 15px; }
   border: 3px solid var(--ink); box-shadow: 4px 4px 0 #3a3a3a;
 }
 .nav a:hover { background: #e4dcc6; }
+.nav a.first-ext { margin-left: auto; }
+.nav a.ext { display: inline-flex; align-items: center; gap: 6px; }
+.nav a.icon { padding: 8px 12px; background: #5865f2; color: #fff; }
+.nav a.icon:hover { background: #7983f5; }
+.nav a.icon svg { display: block; }
+@media (max-width: 760px) { .nav a.first-ext { margin-left: 0; } }
 .nav a[aria-current="page"] { background: var(--gold); }
 
 /* Werkzeugleiste */

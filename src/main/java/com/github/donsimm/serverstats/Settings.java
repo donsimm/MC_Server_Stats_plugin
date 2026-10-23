@@ -55,6 +55,10 @@ final class Settings {
     final String cookieMysqlPassword;
     final String cookieTable;
 
+    final String homepageLabel;
+    final String homepageUrl;
+    final String discordUrl;
+
     final boolean jobsEnabled;
     final String jobsFolder;
 
@@ -115,6 +119,10 @@ final class Settings {
         cookieMysqlUser = c.getString("sources.cookieclicker.mysql.user", "root");
         cookieMysqlPassword = c.getString("sources.cookieclicker.mysql.password", "");
         cookieTable = c.getString("sources.cookieclicker.players-table", "players");
+
+        homepageLabel = c.getString("links.homepage-label", "Homepage");
+        homepageUrl = c.getString("links.homepage-url", "");
+        discordUrl = c.getString("links.discord-url", "");
 
         jobsEnabled = c.getBoolean("sources.jobs.enabled", true);
         jobsFolder = c.getString("sources.jobs.folder", "AethelJobs/playerdata");
