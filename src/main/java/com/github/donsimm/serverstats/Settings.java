@@ -64,6 +64,11 @@ final class Settings {
     final String autoPage;
     final int autoMinPlayers;
 
+    final boolean museumEnabled;
+    final String museumTitle;
+    final List<String> museumNamespaces;
+    final List<String> museumContains;
+
     final String homepageLabel;
     final String homepageUrl;
     final String discordUrl;
@@ -138,6 +143,11 @@ final class Settings {
         autoPage = c.getString("auto-stats.page", "Alle Statistiken");
         autoMinPlayers = Math.max(1, c.getInt("auto-stats.min-players", 1));
 
+        museumEnabled = c.getBoolean("museum.enabled", true);
+        museumTitle = c.getString("museum.title", "Museum");
+        museumNamespaces = lower(c.getStringList("museum.namespaces"));
+        museumContains = lower(c.getStringList("museum.contains"));
+
         homepageLabel = c.getString("links.homepage-label", "Homepage");
         homepageUrl = c.getString("links.homepage-url", "");
         discordUrl = c.getString("links.discord-url", "");
@@ -189,6 +199,16 @@ final class Settings {
                 chips.add(new StatsBuilder.Chip(String.valueOf(category), label == null ? String.valueOf(category) : String.valueOf(label)));
             }
         }
+    }
+
+    private static List<String> lower(List<String> in) {
+        List<String> out = new ArrayList<>();
+        for (String s : in) {
+            if (!s.isBlank()) {
+                out.add(s.trim().toLowerCase(Locale.ROOT));
+            }
+        }
+        return out;
     }
 
     private static List<String> list(ConfigurationSection s, String key) {

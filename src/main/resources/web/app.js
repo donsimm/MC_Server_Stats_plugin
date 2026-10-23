@@ -343,6 +343,17 @@ function applyCatFilter() {
   const q = catFilter.trim().toLowerCase();
   document.querySelectorAll('#view .grid .card[data-title]').forEach(el => { el.hidden = !!q && !el.dataset.title.includes(q); });
 }
+function museumView() {
+  const M = DATA.museum, items = M.items.slice().sort((a, b) => a.name.localeCompare(b.name, 'de'));
+  const got = items.filter(i => i.by.length).length;
+  const cards = items.map(i => {
+    const who = i.by.map(u => `<a href="#profil-${u}" title="${esc(nameOf(u))}">${avatar(u)}</a>`).join('');
+    return `<div class="muse ${i.by.length ? 'have' : 'miss'}"><b>${esc(i.name)}</b>` +
+      (i.by.length ? `<span class="muse-by">${who}</span><small>${i.by.length} Spieler</small>` : '<small>noch nicht gesammelt</small>') + '</div>';
+  }).join('');
+  return `<h2 class="sec">${esc(M.title || 'Museum')}</h2><p class="muted">${nf.format(got)} von ${nf.format(items.length)} Köpfen gesammelt (alle Spieler zusammen)</p>` +
+    `<div class="muse-bar"><i style="width:${items.length ? Math.round(got * 100 / items.length) : 0}%"></i></div><div class="muse-grid">${cards}</div>`;
+}
 function spielerView() {
   const list = Object.entries(DATA.players).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));
   const cards = list.map(([u, p]) => {
@@ -525,6 +536,7 @@ function buildPages() {
 }
 function currentTab() {
   if (cur === 'start') return 'start';
+  if (cur === 'museum') return 'museum';
   if (cur === 'spieler' || cur.startsWith('profil-')) return 'spieler';
   if (cur.startsWith('seite-')) return cur;
   if (cur.startsWith('kat-') && IDX.cat[cur.slice(4)]) return pageRoute(IDX.cat[cur.slice(4)].page);
@@ -532,7 +544,8 @@ function currentTab() {
 }
 function renderNav() {
   const tab = currentTab();
-  const items = [['start', MAIN_PAGE], ...PAGES.filter(p => p !== MAIN_PAGE).map(p => [pageRoute(p), p]), ['spieler', 'Spieler']];
+  const items = [['start', MAIN_PAGE], ...PAGES.filter(p => p !== MAIN_PAGE).map(p => [pageRoute(p), p]),
+    ...(DATA.museum ? [['museum', DATA.museum.title || 'Museum']] : []), ['spieler', 'Spieler']];
   const links = DATA.links || {};
   const tabs = items.map(([id, label]) => `<a href="#${id}" data-go="${id}"${id === tab ? ' aria-current="page"' : ''}>${esc(label)}</a>`).join('');
   // Externe Symbole rechts: Homepage und Discord (Adressen kommen aus der config.yml)
@@ -547,6 +560,7 @@ function render() {
   if (cur.startsWith('kat-') && IDX.cat[cur.slice(4)]) view.innerHTML = katView(IDX.cat[cur.slice(4)]);
   else if (cur.startsWith('profil-') && DATA.players[cur.slice(7)]) view.innerHTML = profilView(cur.slice(7));
   else if (cur === 'spieler') view.innerHTML = spielerView();
+  else if (cur === 'museum' && DATA.museum) view.innerHTML = museumView();
   else if (cur.startsWith('seite-') && PAGES.find(p => 'seite-' + slug(p) === cur)) view.innerHTML = pageView(PAGES.find(p => 'seite-' + slug(p) === cur));
   else { cur = 'start'; view.innerHTML = startView(); }
   renderNav();

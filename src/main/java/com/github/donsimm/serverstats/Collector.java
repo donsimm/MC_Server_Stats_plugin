@@ -59,6 +59,9 @@ final class Collector {
         Path jobsDir;
         Path skyDir;
         Path oneFile;
+        /** Museum: Advancement-ID -> Anzeigename (leer = Museum aus). */
+        final Map<String, String> museum = new java.util.LinkedHashMap<>();
+        final Map<UUID, Set<String>> museumDone = new HashMap<>();
     }
 
     private final ServerStatsPlugin plugin;
@@ -196,6 +199,54 @@ final class Collector {
         return result;
     }
 
+    /** Museum: alle geladenen Advancements der gewaehlten Namensraeume (Datapack "All Mob Heads"). */
+    private void gatherMuseum(Settings s, Snapshot snap) {
+        Map<String, Integer> perNamespace = new java.util.TreeMap<>();
+        Map<String, List<String>> idsByNamespace = new HashMap<>();
+        for (Iterator<Advancement> it = Bukkit.advancementIterator(); it.hasNext(); ) {
+            org.bukkit.NamespacedKey key = it.next().getKey();
+            String ns = key.getNamespace().toLowerCase(Locale.ROOT);
+            if (ns.equals("minecraft") || ns.equals("bukkit")) {
+                continue;
+            }
+            perNamespace.merge(ns, 1, Integer::sum);
+            idsByNamespace.computeIfAbsent(ns, k -> new ArrayList<>()).add(key.getNamespace() + ":" + key.getKey());
+        }
+        List<String> chosen = new ArrayList<>();
+        if (!s.museumNamespaces.isEmpty()) {
+            chosen.addAll(s.museumNamespaces);
+        } else {
+            for (String ns : perNamespace.keySet()) {
+                if (ns.contains("head") || ns.contains("mob") || ns.contains("skull")) {
+                    chosen.add(ns);
+                }
+            }
+        }
+        for (String ns : chosen) {
+            for (String id : idsByNamespace.getOrDefault(ns, List.of())) {
+                String path = id.substring(id.indexOf(':') + 1);
+                String lowerPath = path.toLowerCase(Locale.ROOT);
+                if (lowerPath.equals("root") || lowerPath.endsWith("/root") || lowerPath.startsWith("recipes/")) {
+                    continue;
+                }
+                if (!s.museumContains.isEmpty() && s.museumContains.stream().noneMatch(lowerPath::contains)) {
+                    continue;
+                }
+                snap.museum.put(id, prettyName(path));
+            }
+        }
+        if (snap.museum.isEmpty()) {
+            snap.notes.add("Museum: keine passenden Advancements gefunden. Namensraeume mit Advancements ausser minecraft: "
+                    + (perNamespace.isEmpty() ? "keine" : perNamespace)
+                    + ". Passenden Namensraum unter museum.namespaces in der config.yml eintragen.");
+        }
+    }
+
+    private static String prettyName(String path) {
+        String last = path.substring(path.lastIndexOf('/') + 1).replace('_', ' ').replace('-', ' ').trim();
+        return last.isEmpty() ? path : Character.toUpperCase(last.charAt(0)) + last.substring(1);
+    }
+
     private Snapshot gather(Settings s) {
         Snapshot snap = new Snapshot();
         long now = System.currentTimeMillis();
@@ -254,6 +305,10 @@ final class Collector {
                 }
                 snap.categoryMax.put(c.id(), count);
             }
+        }
+
+        if (s.museumEnabled && snap.advDir != null) {
+            gatherMuseum(s, snap);
         }
 
         // Spielerliste: alle Statistik-Dateien plus aktuell Online
@@ -447,6 +502,18 @@ final class Collector {
                     customStats.computeIfAbsent(key, k -> new HashMap<>()).put(p.uuid, e.getValue());
                 }
             }
+            if (!snap.museum.isEmpty() && snap.advDir != null) {
+                Path file = snap.advDir.resolve(p.uuid + ".json");
+                if (Files.isRegularFile(file)) {
+                    try {
+                        Set<String> done = AdvancementsFile.doneIds(file);
+                        done.retainAll(snap.museum.keySet());
+                        snap.museumDone.put(p.uuid, done);
+                    } catch (IOException | RuntimeException e) {
+                        readErrors++;
+                    }
+                }
+            }
             for (CategoryDef c : snap.categories) {
                 switch (c.source()) {
                     case "vanilla" -> {
@@ -601,6 +668,30 @@ final class Collector {
         links.addProperty("homepageUrl", safeUrl(s.homepageUrl));
         links.addProperty("discordUrl", safeUrl(s.discordUrl));
         json.add("links", links);
+        if (!snap.museum.isEmpty()) {
+            Set<UUID> listed = new java.util.HashSet<>();
+            for (PlayerData p : snap.players) {
+                listed.add(p.uuid);
+            }
+            JsonObject museum = new JsonObject();
+            museum.addProperty("title", s.museumTitle);
+            JsonArray items = new JsonArray();
+            for (Map.Entry<String, String> e : snap.museum.entrySet()) {
+                JsonObject item = new JsonObject();
+                item.addProperty("id", e.getKey());
+                item.addProperty("name", e.getValue());
+                JsonArray by = new JsonArray();
+                for (Map.Entry<UUID, Set<String>> d : snap.museumDone.entrySet()) {
+                    if (listed.contains(d.getKey()) && d.getValue().contains(e.getKey())) {
+                        by.add(d.getKey().toString());
+                    }
+                }
+                item.add("by", by);
+                items.add(item);
+            }
+            museum.add("items", items);
+            json.add("museum", museum);
+        }
         Files.createDirectories(s.outputDir);
         writeJson(s.outputDir.resolve("stats.json"), json);
 

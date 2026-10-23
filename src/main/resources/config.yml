@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 10
+config-version: 11
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -41,6 +41,16 @@ links:
   homepage-label: "Homepage"
   homepage-url: "https://simmeneventsupport.wixsite.com/website"
   discord-url: "https://discord.com/invite/9ssUcjEbZS"
+
+# Museum: sammelt die Advancements des Datapacks "All Mob Heads" aller Spieler und zeigt, welche Koepfe schon gesammelt wurden.
+museum:
+  enabled: true
+  title: "Museum"
+  # Namensraeume der Datapack-Advancements. Leer = automatisch (Namensraum mit "head", "mob" oder "skull" im Namen).
+  # Wird nichts gefunden, steht die Liste der vorhandenen Namensraeume im Log bzw. unter /serverstats status.
+  namespaces: []
+  # Optional: nur Advancements, deren Pfad eines dieser Woerter enthaelt (z. B. ["head"]). Leer = alle.
+  contains: []
 
 players:
   # Leer lassen = automatisch suchen (world/stats bzw. world/players/stats).

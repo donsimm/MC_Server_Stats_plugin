@@ -247,3 +247,14 @@ h2.sec small { color: var(--muted); font-size: 13px; font-weight: 400; margin-le
 @media (prefers-reduced-motion: reduce) {
   .tile:hover { transform: none; }
 }
+
+/* Museum */
+.muse-bar { height: 18px; border: 3px solid var(--paper); margin: 6px 0 18px; background: transparent; }
+.muse-bar i { display: block; height: 100%; background: var(--gold, #ffd36e); }
+.muse-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 12px; }
+.muse { border: 3px solid var(--paper); padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+.muse.have { background: color-mix(in srgb, var(--gold, #ffd36e) 22%, transparent); }
+.muse.miss { opacity: .45; border-style: dashed; }
+.muse-by { display: flex; flex-wrap: wrap; gap: 3px; }
+.muse-by .av { width: 24px; height: 24px; }
+.muse small { opacity: .8; }
