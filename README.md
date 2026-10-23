@@ -43,6 +43,8 @@ Eigenes Logo: eine Datei `logo.png` in `plugins/ServerStats/web/` ersetzt im Sei
 | Kontostand | Vault (EssentialsX Economy o. ä.) |
 | Skills, Power-Level, Radar | mcMMO (`ExperienceAPI`, Flatfile oder SQL egal) |
 | Zeitfenster Monat/Woche/Heute, Quest-Punkte | AJLeaderboards über PlaceholderAPI |
+| SkyBlock (Insel-Level, Challenges, Inselteam) | uSkyBlock: `plugins/uSkyBlock/islands/<x,z>.yml` und `data/challenge-progress.db`, nur lesend; der Insel-Level gilt für jedes Mitglied |
+| OneBlock (Level, Mitbewohner) | OneBlock (MrMarL): `plugins/Oneblock/PlData.json`, nur lesend; nur Speicherart json, kein H2/MySQL |
 | Jobs (Level je Beruf, Job-Meister) | Spielerdateien von AethelJobs (`plugins/AethelJobs/playerdata/<uuid>.yml`), nur lesend; MySQL wird nicht unterstützt |
 | Prestige, Kekse, Klicks | Datenbank des Plugins CookieClickerZ (`plugins/CookieClickerZ/userData.db`, Tabelle `players`), nur lesend |
 | Online-Liste | Paper-API, Sitzungsdauer und Dimension vom Plugin selbst; AFK über EssentialsX |

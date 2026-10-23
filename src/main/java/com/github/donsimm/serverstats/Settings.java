@@ -55,6 +55,11 @@ final class Settings {
     final String cookieMysqlPassword;
     final String cookieTable;
 
+    final boolean skyblockEnabled;
+    final String skyblockFolder;
+    final boolean oneblockEnabled;
+    final String oneblockFile;
+
     final boolean autoStats;
     final String autoPage;
     final int autoMinPlayers;
@@ -123,6 +128,11 @@ final class Settings {
         cookieMysqlUser = c.getString("sources.cookieclicker.mysql.user", "root");
         cookieMysqlPassword = c.getString("sources.cookieclicker.mysql.password", "");
         cookieTable = c.getString("sources.cookieclicker.players-table", "players");
+
+        skyblockEnabled = c.getBoolean("sources.skyblock.enabled", true);
+        skyblockFolder = c.getString("sources.skyblock.folder", "uSkyBlock");
+        oneblockEnabled = c.getBoolean("sources.oneblock.enabled", true);
+        oneblockFile = c.getString("sources.oneblock.file", "Oneblock/PlData.json");
 
         autoStats = c.getBoolean("auto-stats.enabled", true);
         autoPage = c.getString("auto-stats.page", "Alle Statistiken");

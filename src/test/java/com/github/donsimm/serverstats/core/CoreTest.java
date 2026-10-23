@@ -68,6 +68,21 @@ class CoreTest {
     }
 
     @Test
+    void oneblockDataIsParsedAndEmptySlotsAreSkipped() {
+        String json = """
+                {"0":{"uuid":"00000000-0000-0000-0000-00000000000a","lvl":7,"breaks":42,"visit":true,"invited":["00000000-0000-0000-0000-00000000000b"]},
+                 "1":null,
+                 "2":{"uuid":"kaputt","lvl":1},
+                 "id":3}""";
+        Map<UUID, OneblockData.Island> islands = OneblockData.parse(json);
+        assertEquals(1, islands.size());
+        OneblockData.Island island = islands.get(UUID.fromString("00000000-0000-0000-0000-00000000000a"));
+        assertEquals(7, island.level());
+        assertEquals(42, island.breaks());
+        assertEquals(1, island.invited());
+    }
+
+    @Test
     void autoStatsCreatesCategoriesForUnusedCustomCounters() {
         UUID a = UUID.fromString("00000000-0000-0000-0000-00000000000a");
         UUID b = UUID.fromString("00000000-0000-0000-0000-00000000000b");

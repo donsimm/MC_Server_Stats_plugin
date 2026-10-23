@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 8
+config-version: 9
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -89,6 +89,16 @@ sources:
     enabled: true
     # relativ zum plugins-Ordner
     folder: "AethelJobs/playerdata"
+  skyblock:
+    # Plugin uSkyBlock. Gelesen werden islands/<x,z>.yml und data/challenge-progress.db (nur lesend).
+    enabled: true
+    # relativ zum plugins-Ordner
+    folder: "uSkyBlock"
+  oneblock:
+    # Plugin OneBlock (MrMarL), Speicherart json (PlData.json). H2 und MySQL werden nicht unterstuetzt.
+    enabled: true
+    # relativ zum plugins-Ordner
+    file: "Oneblock/PlData.json"
   ajlb:
     # AJLeaderboards ueber PlaceholderAPI. Nur fuer Zeitfenster (Monat, Woche, Heute) und Kategorien mit source: ajlb.
     # Die Platzhalter-Schreibweise kann je nach AJLB-Version abweichen: mit /serverstats ajlb <board> pruefen.
@@ -112,9 +122,9 @@ chips:
 
 # Ranglisten. Die Reihenfolge hier ist die Reihenfolge auf der Seite.
 #   page:      "Übersicht" = Startseite, sonst Reiter in der Navigation (mcMMO, Cookie Clicker, Jobs). Neue Namen ergeben neue Reiter.
-#   format:  int | dur (Wert in Stunden) | km | big (Mio./Mrd./Bio. ...) | adv (x / Gesamtzahl) | level ("Level 16")
+#   format:  int | dur (Wert in Stunden) | km | big (Mio./Mrd./Bio. ...) | adv (x / Gesamtzahl) | dec (eine Nachkommastelle) | level ("Level 16")
 #   icon:    clock gem skull pick sword swords boot scroll bolt star heart shield cookie cursor gear
-#   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker (column: COOKIES, CLICKS, PER_CLICK, PRESTIGE) | jobs (column: Job-Name oder *) | ajlb
+#   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker (column: COOKIES, CLICKS, PER_CLICK, PRESTIGE) | jobs (column: Job-Name oder *) | skyblock (column: LEVEL, CHALLENGES, COMPLETIONS, PARTY) | oneblock (column: LEVEL, INVITED) | ajlb
 #   vanilla: stat (Liste, erster Treffer zaehlt) oder sum (Liste, addiert) oder group-sum (ganze Gruppe), plus scale
 #   ajlb-board: AJLeaderboards-Board fuer Zeitfenster (optional)
 categories:
@@ -538,6 +548,60 @@ categories:
     format: level
     source: jobs
     column: "*"
+  sky-level:
+    page: "SkyBlock"
+    title: "Insel-Level"
+    subtitle: "Höchster Level der Insel"
+    icon: star
+    color: "#a8f0ff"
+    format: dec
+    source: skyblock
+    column: "LEVEL"
+  sky-challenges:
+    page: "SkyBlock"
+    title: "Challenges"
+    subtitle: "Meiste verschiedene Challenges der Insel"
+    icon: star
+    color: "#b8f5c8"
+    format: int
+    source: skyblock
+    column: "CHALLENGES"
+  sky-completions:
+    page: "SkyBlock"
+    title: "Challenge-Abschlüsse"
+    subtitle: "Meiste Abschlüsse insgesamt"
+    icon: star
+    color: "#ffe08a"
+    format: int
+    source: skyblock
+    column: "COMPLETIONS"
+  sky-team:
+    page: "SkyBlock"
+    title: "Inselteam"
+    subtitle: "Grösstes Team auf einer Insel"
+    icon: star
+    color: "#f0b3e6"
+    format: int
+    source: skyblock
+    column: "PARTY"
+  oneblock-level:
+    page: "OneBlock"
+    title: "OneBlock-Level"
+    subtitle: "Höchstes Level, bei Gleichstand die meisten Blöcke"
+    icon: star
+    color: "#ffd23f"
+    format: level
+    source: oneblock
+    column: "LEVEL"
+  oneblock-team:
+    page: "OneBlock"
+    title: "Mitbewohner"
+    subtitle: "Meiste eingeladene Spieler auf einer Insel"
+    icon: star
+    color: "#c6f26b"
+    format: int
+    source: oneblock
+    column: "INVITED"
   benutzt:
     page: "Alle Statistiken"
     title: "Gegenstände benutzt"

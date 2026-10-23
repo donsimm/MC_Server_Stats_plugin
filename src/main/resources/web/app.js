@@ -243,6 +243,7 @@ function fmt(c, v) {
     case 'adv': return `${Math.round(v)} / ${c.max || '?'}`;
     case 'big': return big(v);
     case 'level': return `Level ${Math.floor(v + 1e-9)}`;
+    case 'dec': return nf1.format(v);
     default: return nf.format(Math.round(v));
   }
 }

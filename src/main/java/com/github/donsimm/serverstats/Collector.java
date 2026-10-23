@@ -5,6 +5,7 @@ import com.github.donsimm.serverstats.core.AjlbEntry;
 import com.github.donsimm.serverstats.core.AutoStats;
 import com.github.donsimm.serverstats.core.CategoryDef;
 import com.github.donsimm.serverstats.core.NumberParse;
+import com.github.donsimm.serverstats.core.OneblockData;
 import com.github.donsimm.serverstats.core.PlayerData;
 import com.github.donsimm.serverstats.core.StatsBuilder;
 import com.github.donsimm.serverstats.core.VanillaStats;
@@ -56,6 +57,8 @@ final class Collector {
         Path statsDir;
         Path advDir;
         Path jobsDir;
+        Path skyDir;
+        Path oneFile;
     }
 
     private final ServerStatsPlugin plugin;
@@ -210,6 +213,14 @@ final class Collector {
                     + describeCandidates("stats", "players/stats"));
         }
 
+        Path pluginsDir = plugin.getDataFolder().toPath().toAbsolutePath().getParent();
+        if (s.skyblockEnabled && Files.isDirectory(pluginsDir.resolve(s.skyblockFolder).resolve("islands"))) {
+            snap.skyDir = pluginsDir.resolve(s.skyblockFolder);
+        }
+        if (s.oneblockEnabled && Files.isRegularFile(pluginsDir.resolve(s.oneblockFile))) {
+            snap.oneFile = pluginsDir.resolve(s.oneblockFile);
+        }
+
         // Welche Kategorien haben eine verfuegbare Quelle?
         boolean vault = s.vaultEnabled && hooks.vault();
         boolean mcmmo = s.mcmmoEnabled && hooks.mcmmo();
@@ -222,6 +233,8 @@ final class Collector {
                 case "mcmmo-power" -> mcmmo;
                 case "cookieclicker" -> s.cookieEnabled;
                 case "jobs" -> snap.jobsDir != null;
+                case "skyblock" -> snap.skyDir != null;
+                case "oneblock" -> snap.oneFile != null;
                 case "ajlb" -> ajlb && !c.ajlbBoard().isBlank();
                 default -> false;
             };
@@ -399,6 +412,15 @@ final class Collector {
 
         Map<UUID, Map<String, double[]>> jobsData = snap.jobsDir == null ? null : JobsReader.read(snap.jobsDir);
         Map<String, Map<UUID, Long>> customStats = new HashMap<>();
+        Map<UUID, SkyblockReader.Info> skyData = snap.skyDir == null ? null : SkyblockReader.read(snap.skyDir, plugin.getLogger());
+        Map<UUID, OneblockData.Island> oneData = null;
+        if (snap.oneFile != null) {
+            try {
+                oneData = OneblockData.parse(Files.readString(snap.oneFile, StandardCharsets.UTF_8));
+            } catch (IOException | RuntimeException e) {
+                notes.add("OneBlock: PlData.json nicht lesbar (" + e.getMessage() + "). Nutzt OneBlock H2 oder MySQL statt JSON? Das wird nicht unterstuetzt.");
+            }
+        }
 
         for (PlayerData p : snap.players) {
             p.jobs = jobsData == null ? null : jobsData.get(p.uuid);
@@ -458,6 +480,34 @@ final class Collector {
                                     }
                                 }
                             }
+                            if (value > 0) {
+                                p.values.put(c.id(), value);
+                            }
+                        }
+                    }
+                    case "skyblock" -> {
+                        SkyblockReader.Info info = skyData == null ? null : skyData.get(p.uuid);
+                        if (info != null) {
+                            double value = switch (c.column().toUpperCase(Locale.ROOT)) {
+                                case "LEVEL" -> info.level();
+                                case "CHALLENGES" -> info.challenges();
+                                case "COMPLETIONS" -> info.completions();
+                                case "PARTY" -> info.partySize() > 1 ? info.partySize() : 0;
+                                default -> 0;
+                            };
+                            if (value > 0) {
+                                p.values.put(c.id(), value);
+                            }
+                        }
+                    }
+                    case "oneblock" -> {
+                        OneblockData.Island island = oneData == null ? null : oneData.get(p.uuid);
+                        if (island != null) {
+                            double value = switch (c.column().toUpperCase(Locale.ROOT)) {
+                                case "LEVEL" -> island.level() + Math.min(island.breaks(), 999_999) / 1_000_000.0; // Blöcke entscheiden bei gleichem Level
+                                case "INVITED" -> island.invited();
+                                default -> 0;
+                            };
                             if (value > 0) {
                                 p.values.put(c.id(), value);
                             }

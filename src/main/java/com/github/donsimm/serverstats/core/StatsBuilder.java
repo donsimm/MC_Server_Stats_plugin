@@ -175,6 +175,8 @@ public final class StatsBuilder {
             case "mcmmo-power" -> "mcMMO";
             case "cookieclicker" -> "CookieClickerZ";
             case "jobs" -> "AethelJobs";
+            case "skyblock" -> "uSkyBlock";
+            case "oneblock" -> "OneBlock";
             case "ajlb" -> "AJLeaderboards";
             default -> c.source();
         };
