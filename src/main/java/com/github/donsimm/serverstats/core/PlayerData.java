@@ -16,6 +16,8 @@ public final class PlayerData {
     /** mcMMO-Skills (Enum-Name -&gt; Level), null wenn nicht verfuegbar. */
     public Map<String, Integer> mcmmoSkills;
     public int mcmmoPower;
+    /** Job-Name -&gt; {Level, XP}, null wenn keine Job-Daten vorliegen. */
+    public Map<String, double[]> jobs;
 
     public PlayerData(UUID uuid) {
         this.uuid = uuid;

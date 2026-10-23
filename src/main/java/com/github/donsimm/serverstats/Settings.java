@@ -55,6 +55,9 @@ final class Settings {
     final String cookieMysqlPassword;
     final String cookieTable;
 
+    final boolean jobsEnabled;
+    final String jobsFolder;
+
     final boolean ajlbEnabled;
     final int ajlbTop;
     final String ajlbNamePlaceholder;
@@ -112,6 +115,9 @@ final class Settings {
         cookieMysqlUser = c.getString("sources.cookieclicker.mysql.user", "root");
         cookieMysqlPassword = c.getString("sources.cookieclicker.mysql.password", "");
         cookieTable = c.getString("sources.cookieclicker.players-table", "players");
+
+        jobsEnabled = c.getBoolean("sources.jobs.enabled", true);
+        jobsFolder = c.getString("sources.jobs.folder", "AethelJobs/playerdata");
 
         ajlbEnabled = c.getBoolean("sources.ajlb.enabled", true);
         ajlbTop = Math.max(1, Math.min(100, c.getInt("sources.ajlb.top", 30)));

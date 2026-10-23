@@ -68,6 +68,18 @@ class CoreTest {
     }
 
     @Test
+    void builderWritesJobsAndListsPlayersWithOnlyJobData() {
+        UUID a = UUID.fromString("00000000-0000-0000-0000-00000000000a");
+        PlayerData pa = new PlayerData(a);
+        pa.name = "Alpha";
+        pa.jobs = Map.of("Miner", new double[]{16, 2917.99});
+        JsonObject json = StatsBuilder.build("T", "S", 1000, List.of(), List.of(pa), Map.of(), List.of(), Map.of(), 1000);
+        JsonObject miner = json.getAsJsonObject("players").getAsJsonObject(a.toString()).getAsJsonObject("jobs").getAsJsonObject("Miner");
+        assertEquals(16, miner.get("level").getAsInt());
+        assertEquals(2917.99, miner.get("xp").getAsDouble(), 1e-9);
+    }
+
+    @Test
     void builderSortsFiltersAndMapsAjlbNames() {
         UUID a = UUID.fromString("00000000-0000-0000-0000-00000000000a");
         UUID b = UUID.fromString("00000000-0000-0000-0000-00000000000b");

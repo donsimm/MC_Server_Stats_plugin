@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 3
+config-version: 4
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -70,6 +70,11 @@ sources:
       user: "root"
       password: ""
     players-table: "players"
+  jobs:
+    # Plugin AethelJobs. Die Spielerdateien (playerdata/<uuid>.yml) werden nur gelesen.
+    enabled: true
+    # relativ zum plugins-Ordner
+    folder: "AethelJobs/playerdata"
   ajlb:
     # AJLeaderboards ueber PlaceholderAPI. Nur fuer Zeitfenster (Monat, Woche, Heute) und Kategorien mit source: ajlb.
     # Die Platzhalter-Schreibweise kann je nach AJLB-Version abweichen: mit /serverstats ajlb <board> pruefen.
@@ -92,17 +97,15 @@ chips:
   - { category: keksbaecker, label: "Kekse gebacken" }
 
 # Ranglisten. Die Reihenfolge hier ist die Reihenfolge auf der Seite.
-#   page:      Reiter in der Navigation (z. B. Spielwelt, Unterwegs, Wirtschaft, mcMMO, Cookie Clicker)
-#   highlight: true = erscheint zusaetzlich auf der Uebersichtsseite
-#   format:  int | dur (Wert in Stunden) | km | big (Mio./Mrd.) | adv (x / Gesamtzahl)
+#   page:      "Übersicht" = Startseite, sonst Reiter in der Navigation (mcMMO, Cookie Clicker, Jobs). Neue Namen ergeben neue Reiter.
+#   format:  int | dur (Wert in Stunden) | km | big (Mio./Mrd./Bio. ...) | adv (x / Gesamtzahl) | level ("Level 16")
 #   icon:    clock gem skull pick sword swords boot scroll bolt star heart shield cookie cursor gear
-#   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker (column: COOKIES, CLICKS, PER_CLICK, PRESTIGE) | ajlb
+#   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker (column: COOKIES, CLICKS, PER_CLICK, PRESTIGE) | jobs (column: Job-Name oder *) | ajlb
 #   vanilla: stat (Liste, erster Treffer zaehlt) oder sum (Liste, addiert) oder group-sum (ganze Gruppe), plus scale
 #   ajlb-board: AJLeaderboards-Board fuer Zeitfenster (optional)
 categories:
   dauerzocker:
-    page: "Spielwelt"
-    highlight: true
+    page: "Übersicht"
     title: "Dauerzocker"
     subtitle: "Meiste Spielzeit"
     icon: clock
@@ -114,8 +117,7 @@ categories:
     ajlb-board: "statistic_hours_played"
 
   diamantenbank:
-    page: "Wirtschaft"
-    highlight: true
+    page: "Übersicht"
     title: "Diamantenbank"
     subtitle: "Wer hat, der hat"
     icon: gem
@@ -124,8 +126,7 @@ categories:
     source: vault
 
   friedhof:
-    page: "Spielwelt"
-    highlight: true
+    page: "Übersicht"
     title: "Friedhof"
     subtitle: "Hier liegen sie. Immer wieder."
     icon: skull
@@ -137,8 +138,7 @@ categories:
     ajlb-board: "statistic_deaths"
 
   abrissbirne:
-    page: "Spielwelt"
-    highlight: true
+    page: "Übersicht"
     title: "Abrissbirne"
     subtitle: "Meiste Blöcke abgebaut"
     icon: pick
@@ -149,8 +149,7 @@ categories:
     ajlb-board: "statistic_mine_block"
 
   monsterjaeger:
-    page: "Spielwelt"
-    highlight: true
+    page: "Übersicht"
     title: "Monsterjäger"
     subtitle: "Meiste Mobs erledigt"
     icon: sword
@@ -161,8 +160,7 @@ categories:
     ajlb-board: "statistic_mob_kills"
 
   weltenbummler:
-    page: "Unterwegs"
-    highlight: true
+    page: "Übersicht"
     title: "Weltenbummler"
     subtitle: "Weiteste Strecke"
     icon: boot
@@ -185,7 +183,7 @@ categories:
     scale: 0.00001            # Zentimeter -> Kilometer
 
   erfolgsjaeger:
-    page: "Spielwelt"
+    page: "Übersicht"
     title: "Erfolgsjäger"
     subtitle: "Meiste Advancements"
     icon: star
@@ -194,7 +192,7 @@ categories:
     source: advancements
 
   zuchtmeister:
-    page: "Spielwelt"
+    page: "Übersicht"
     title: "Zuchtmeister"
     subtitle: "Meiste Tiere gezüchtet"
     icon: heart
@@ -205,7 +203,7 @@ categories:
     ajlb-board: "statistic_animals_bred"
 
   handwerker:
-    page: "Spielwelt"
+    page: "Übersicht"
     title: "Handwerker"
     subtitle: "Meiste Gegenstände hergestellt"
     icon: hammer
@@ -216,7 +214,7 @@ categories:
     ajlb-board: "statistic_craft_item"
 
   einstecker:
-    page: "Spielwelt"
+    page: "Übersicht"
     title: "Einstecker"
     subtitle: "Meister erlittener Schaden"
     icon: shield
@@ -227,7 +225,7 @@ categories:
     ajlb-board: "statistic_damage_taken"
 
   duellant:
-    page: "Spielwelt"
+    page: "Übersicht"
     title: "Duellant"
     subtitle: "Meiste Spieler besiegt"
     icon: swords
@@ -237,7 +235,7 @@ categories:
     stat: ["custom:player_kills"]
 
   pruegelknabe:
-    page: "Spielwelt"
+    page: "Übersicht"
     title: "Prügelknabe"
     subtitle: "Meist von Spielern getötet"
     icon: skull
@@ -247,7 +245,7 @@ categories:
     stat: ["killed_by:player"]
 
   unsterblich:
-    page: "Spielwelt"
+    page: "Übersicht"
     title: "Unsterblich"
     subtitle: "Meiste Totems der Unsterblichkeit"
     icon: heart
@@ -257,7 +255,7 @@ categories:
     stat: ["used:totem_of_undying"]
 
   feuerwerker:
-    page: "Spielwelt"
+    page: "Übersicht"
     title: "Feuerwerker"
     subtitle: "Meiste Feuerwerksraketen gezündet"
     icon: rocket
@@ -268,7 +266,7 @@ categories:
     ajlb-board: "statistic_use_item:firework_rocket"
 
   schleicher:
-    page: "Spielwelt"
+    page: "Übersicht"
     title: "Schleicher"
     subtitle: "Meiste Zeit geschlichen"
     icon: eye
@@ -279,7 +277,7 @@ categories:
     scale: 0.0000138889        # Ticks -> Stunden
 
   huepfer:
-    page: "Spielwelt"
+    page: "Übersicht"
     title: "Hüpfer"
     subtitle: "Meiste Sprünge"
     icon: spring
@@ -290,7 +288,7 @@ categories:
     ajlb-board: "statistic_jump"
 
   laeufer:
-    page: "Unterwegs"
+    page: "Übersicht"
     title: "Läufer"
     subtitle: "Meiste Strecke zu Fuss"
     icon: boot
@@ -303,7 +301,7 @@ categories:
     ajlb-scale: 0.00001
 
   sprinter:
-    page: "Unterwegs"
+    page: "Übersicht"
     title: "Sprinter"
     subtitle: "Meiste Strecke gesprintet"
     icon: bolt
@@ -316,7 +314,7 @@ categories:
     ajlb-scale: 0.00001
 
   wasserratte:
-    page: "Unterwegs"
+    page: "Übersicht"
     title: "Wasserratte"
     subtitle: "Meiste Strecke geschwommen"
     icon: wave
@@ -329,7 +327,7 @@ categories:
     ajlb-scale: 0.00001
 
   kapitaen:
-    page: "Unterwegs"
+    page: "Übersicht"
     title: "Kapitän"
     subtitle: "Meiste Strecke im Boot"
     icon: boat
@@ -342,7 +340,7 @@ categories:
     ajlb-scale: 0.00001
 
   elytrapilot:
-    page: "Unterwegs"
+    page: "Übersicht"
     title: "Elytra-Pilot"
     subtitle: "Meiste Strecke im Gleitflug"
     icon: wing
@@ -355,7 +353,7 @@ categories:
     ajlb-scale: 0.00001
 
   reiter:
-    page: "Unterwegs"
+    page: "Übersicht"
     title: "Reiter"
     subtitle: "Meiste Strecke auf Pferd, Schwein und Strider"
     icon: heart
@@ -366,7 +364,7 @@ categories:
     scale: 0.00001
 
   kletterer:
-    page: "Unterwegs"
+    page: "Übersicht"
     title: "Kletterer"
     subtitle: "Meiste Strecke geklettert"
     icon: arrow
@@ -379,7 +377,7 @@ categories:
     ajlb-scale: 0.00001
 
   questmeister:
-    page: "Wirtschaft"
+    page: "Übersicht"
     title: "Questmeister"
     subtitle: "Meiste Quest-Punkte"
     icon: scroll
@@ -435,3 +433,57 @@ categories:
     format: int
     source: cookieclicker
     column: PRESTIGE
+  bergarbeiter:
+    page: "Jobs"
+    title: "Bergarbeiter"
+    subtitle: "Höchstes Level als Bergarbeiter"
+    icon: star
+    color: "#c9c9d9"
+    format: level
+    source: jobs
+    column: "Miner"
+  farmer:
+    page: "Jobs"
+    title: "Farmer"
+    subtitle: "Höchstes Level als Farmer"
+    icon: star
+    color: "#c6f26b"
+    format: level
+    source: jobs
+    column: "Farmer"
+  jaeger:
+    page: "Jobs"
+    title: "Jäger"
+    subtitle: "Höchstes Level als Jäger"
+    icon: star
+    color: "#ff9a9a"
+    format: level
+    source: jobs
+    column: "Hunter"
+  fischer:
+    page: "Jobs"
+    title: "Fischer"
+    subtitle: "Höchstes Level als Fischer"
+    icon: star
+    color: "#7fd4ff"
+    format: level
+    source: jobs
+    column: "Fisher"
+  holzfaeller:
+    page: "Jobs"
+    title: "Holzfäller"
+    subtitle: "Höchstes Level als Holzfäller"
+    icon: star
+    color: "#e0b88a"
+    format: level
+    source: jobs
+    column: "Woodcutter"
+  jobmeister:
+    page: "Jobs"
+    title: "Job-Meister"
+    subtitle: "Höchste Summe aller Job-Level"
+    icon: star
+    color: "#ffe08a"
+    format: level
+    source: jobs
+    column: "*"

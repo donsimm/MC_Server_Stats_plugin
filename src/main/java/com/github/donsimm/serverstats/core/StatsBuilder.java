@@ -119,13 +119,24 @@ public final class StatsBuilder {
         JsonObject playerObject = new JsonObject();
         for (PlayerData p : players) {
             boolean hasSkills = p.mcmmoSkills != null && !p.mcmmoSkills.isEmpty();
-            if (!listed.containsKey(p.uuid) && !hasSkills) {
+            boolean hasJobs = p.jobs != null && !p.jobs.isEmpty();
+            if (!listed.containsKey(p.uuid) && !hasSkills && !hasJobs) {
                 continue;
             }
             JsonObject o = new JsonObject();
             o.addProperty("name", p.name);
             o.addProperty("first", p.first);
             o.addProperty("last", p.last);
+            if (hasJobs) {
+                JsonObject jobs = new JsonObject();
+                for (Map.Entry<String, double[]> e : new java.util.TreeMap<>(p.jobs).entrySet()) {
+                    JsonObject job = new JsonObject();
+                    job.addProperty("level", (int) e.getValue()[0]);
+                    job.add("xp", number(e.getValue()[1]));
+                    jobs.add(e.getKey(), job);
+                }
+                o.add("jobs", jobs);
+            }
             if (hasSkills) {
                 JsonObject skills = new JsonObject();
                 for (Map.Entry<String, Integer> e : new java.util.TreeMap<>(p.mcmmoSkills).entrySet()) {
@@ -163,6 +174,7 @@ public final class StatsBuilder {
             case "vault" -> "Vault (Kontostand)";
             case "mcmmo-power" -> "mcMMO";
             case "cookieclicker" -> "CookieClickerZ";
+            case "jobs" -> "AethelJobs";
             case "ajlb" -> "AJLeaderboards";
             default -> c.source();
         };

@@ -16,6 +16,13 @@ Spielerprofilen, Skill-Radar und Online-Liste erstellt (dunkles Neo-Brutalism-De
 
 Voraussetzung: Paper mit Java 21 oder neuer. Optional: Vault, mcMMO, PlaceholderAPI + AJLeaderboards, EssentialsX, CookieClicker.
 
+## Seitenaufbau und Logo
+
+Menü: **Übersicht** (alle allgemeinen Ranglisten), **mcMMO** (Skill-Meister und eine Rangliste je Skill), **Cookie Clicker**, **Jobs**, **Spieler**.
+Welche Rangliste auf welcher Seite steht, bestimmt `page` in der `config.yml` (`"Übersicht"` = Startseite, andere Namen ergeben neue Reiter).
+
+Eigenes Logo: eine Datei `logo.png` in `plugins/ServerStats/web/` ersetzt im Seitenkopf Grasblock, Titel und Untertitel. Das Plugin überschreibt diese Datei nie.
+
 ## Befehle
 
 | Befehl | Wer | Zweck |
@@ -36,6 +43,7 @@ Voraussetzung: Paper mit Java 21 oder neuer. Optional: Vault, mcMMO, Placeholder
 | Kontostand | Vault (EssentialsX Economy o. ä.) |
 | Skills, Power-Level, Radar | mcMMO (`ExperienceAPI`, Flatfile oder SQL egal) |
 | Zeitfenster Monat/Woche/Heute, Quest-Punkte | AJLeaderboards über PlaceholderAPI |
+| Jobs (Level je Beruf, Job-Meister) | Spielerdateien von AethelJobs (`plugins/AethelJobs/playerdata/<uuid>.yml`), nur lesend; MySQL wird nicht unterstützt |
 | Kekse, Klicks, Kekse pro Klick, Prestige | Datenbank des Plugins CookieClickerZ (`plugins/CookieClickerZ/userData.db`, Tabelle `players`), nur lesend |
 | Online-Liste | Paper-API, Sitzungsdauer und Dimension vom Plugin selbst; AFK über EssentialsX |
 | Köpfe | Mojang-Sitzungsserver, als PNG zwischengespeichert; ohne Kopf zeigt die Seite ein erzeugtes Pixel-Gesicht |

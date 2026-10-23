@@ -242,6 +242,7 @@ function fmt(c, v) {
     case 'km': return nf1.format(v) + ' km';
     case 'adv': return `${Math.round(v)} / ${c.max || '?'}`;
     case 'big': return big(v);
+    case 'level': return `Level ${Math.floor(v + 1e-9)}`;
     default: return nf.format(Math.round(v));
   }
 }
@@ -287,7 +288,7 @@ function rowHTML(u, v, i, c, max) {
 }
 function headHTML(c) {
   const tag = onlyTotal(c) ? '<span class="tag">nur Gesamt</span>' : '';
-  return `<div class="card-h"><div class="ico">${icoSVG(c.icon)}</div><div><h3>${esc(c.title)}</h3><p>${esc(c.subtitle)}</p></div>${tag}</div>`;
+  return `<div class="card-h"><div><h3>${esc(c.title)}</h3><p>${esc(c.subtitle)}</p></div>${tag}</div>`;
 }
 function cardHTML(c) {
   const b = boardOf(c);
@@ -316,6 +317,7 @@ function onlineInner() {
 
 /* ---------- Ansichten ---------- */
 function gridOf(cats) {
+  cats = cats.filter(c => (c.boards.all || []).length);
   return cats.length ? `<div class="grid">${cats.map(cardHTML).join('')}</div>` : '<p class="empty">Keine Ranglisten in diesem Bereich.</p>';
 }
 function startView() {
@@ -324,12 +326,10 @@ function startView() {
     const c = IDX.cat[chip.category];
     if (c) chips.push([fmtChip(c, chip.value), chip.label]);
   }
-  const real = DATA.categories.filter(c => !c.synthetic);
-  let hl = real.filter(c => c.highlight);
-  if (!hl.length) hl = real.slice(0, 6);
+  const main = DATA.categories.filter(c => c.page === MAIN_PAGE);
   return `<div class="chips">${chips.map(([b, s]) => `<div class="chip-stat"><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join('')}</div>` +
-    `<section id="online-sec">${onlineInner()}</section>${periodCtl(hl)}` +
-    `<h2 class="sec">Highlights<small>alle Ranglisten findest du oben unter den Reitern</small></h2>${gridOf(hl)}`;
+    `<section id="online-sec">${onlineInner()}</section>${periodCtl(main)}` +
+    `<h2 class="sec">Ranglisten</h2>${gridOf(main)}`;
 }
 function pageView(title) {
   const cats = DATA.categories.filter(c => c.page === title);
@@ -348,7 +348,7 @@ function spielerView() {
 function katView(c) {
   const b = boardOf(c), max = b.length ? Math.max(1, b[0][1]) : 1;
   const rows = b.length ? `<ol class="rows">${b.map(([u, v], i) => rowHTML(u, v, i, c, max)).join('')}</ol>` : '<p class="none">Noch keine Daten.</p>';
-  return `<a class="back" href="#seite-${slug(c.page)}" data-go="seite-${slug(c.page)}">← ${esc(c.page)}</a>${periodCtl([c])}` +
+  return `<a class="back" href="#${pageRoute(c.page)}" data-go="${pageRoute(c.page)}">← ${esc(c.page)}</a>${periodCtl([c])}` +
     `<article class="card narrow bars${c.night ? ' night' : ''}" style="${cardVars(c)}">${headHTML(c)}${rows}` +
     `<div class="card-f"><span>${b.length} Spieler</span><span class="src">Quelle: ${esc(c.source)}</span></div></article>`;
 }
@@ -396,7 +396,7 @@ function mcmmoCard(u) {
     `<span class="num">${nf.format(v)}${otherP ? ` <small>${nf.format(otherP.mcmmo.skills[k] || 0)}</small>` : ''}</span></li>`; }).join('');
   const candidates = Object.entries(DATA.players).filter(([id, p]) => id !== u && p.mcmmo).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));
   const opts = '<option value="">– keiner –</option>' + candidates.map(([id, p]) => `<option value="${id}"${id === cmp ? ' selected' : ''}>${esc(p.name)}</option>`).join('');
-  return `<h2 class="sec">Skills</h2><article class="card" style="--card:#b9a4ff"><div class="card-h"><div class="ico">${icoSVG('bolt')}</div><div><h3>mcMMO-Skills</h3><p>Skillradar und Level je Fertigkeit</p></div></div>` +
+  return `<h2 class="sec">Skills</h2><article class="card" style="--card:#b9a4ff"><div class="card-h"><div><h3>mcMMO-Skills</h3><p>Skillradar und Level je Fertigkeit</p></div></div>` +
     `<div class="mm"><div>${radar(u, otherP, keys, maxes)}<div class="legend"><span><i style="background:#ffd23f"></i>${esc(P.name)}</span>${otherP ? `<span><i style="background:#4de3d5"></i>${esc(otherP.name)}</span>` : ''}</div></div>` +
     `<div><div class="power"><b>${nf.format(P.mcmmo.power)}</b><span>Power-Level</span></div>` +
     `<div class="ctrl"><div class="seg" role="group" aria-label="Skala"><button type="button" data-mode="abs" aria-pressed="${mode === 'abs'}">Absolut</button><button type="button" data-mode="rel" aria-pressed="${mode === 'rel'}">Relativ</button></div>` +
@@ -404,6 +404,17 @@ function mcmmoCard(u) {
     `<ul class="skills">${list}</ul>` +
     `<p class="note">${mode === 'abs' ? 'Absolut: Skala bis Level ' + nf.format(DATA.mcmmoRadarMax) + ' (in der Config einstellbar).' : 'Relativ: 100 % entspricht dem besten Spieler des Servers im jeweiligen Skill.'} Verwerten und Schmelzen fehlen, weil mcMMO sie als Child-Skills ohne eigene Erfahrung führt.</p></div></div>` +
     `<div class="card-f"><span></span><span class="src">Quelle: mcMMO</span></div></article>`;
+}
+
+const JOB_LABELS = { Miner: 'Bergarbeiter', Farmer: 'Farmer', Hunter: 'Jäger', Fisher: 'Fischer', Woodcutter: 'Holzfäller' };
+const jobLabel = k => JOB_LABELS[k] || k;
+function jobsCard(u) {
+  const P = DATA.players[u];
+  if (!P.jobs) return '';
+  const rows = Object.entries(P.jobs).sort((a, b) => b[1].level - a[1].level || b[1].xp - a[1].xp)
+    .map(([k, j]) => `<li><span>${esc(jobLabel(k))}</span><span class="meter"><i style="width:${Math.min(100, j.level / 100 * 100)}%"></i></span><span class="num">Level ${j.level} <small>${nf.format(Math.round(j.xp))} XP</small></span></li>`).join('');
+  return `<h2 class="sec">Jobs</h2><article class="card" style="--card:#ffe08a"><div class="card-h"><div><h3>AethelJobs</h3><p>Level und XP je Beruf</p></div></div>` +
+    `<ul class="skills jobs">${rows}</ul><div class="card-f"><span></span><span class="src">Quelle: AethelJobs</span></div></article>`;
 }
 
 function profilView(u) {
@@ -419,13 +430,15 @@ function profilView(u) {
       `<div class="pl"><span class="rank${rk <= 3 ? ' top' : ''}">Platz ${rk}</span><span>von ${total}</span></div></a>`;
   }).join('');
   return `<a class="back" href="#start" data-go="start">← Übersicht</a>${hero}` +
-    (tiles ? `<h2 class="sec">Platzierungen</h2><div class="tiles">${tiles}</div>` : '') + mcmmoCard(u);
+    (tiles ? `<h2 class="sec">Platzierungen</h2><div class="tiles">${tiles}</div>` : '') + jobsCard(u) + mcmmoCard(u);
 }
 
 const slug = t => String(t).toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const SKILL_ICONS = { ACROBATICS: 'spring', ALCHEMY: 'gem', ARCHERY: 'arrow', AXES: 'hammer', CROSSBOWS: 'arrow', EXCAVATION: 'pick', FISHING: 'wave', HERBALISM: 'heart', MACES: 'hammer', MINING: 'pick', REPAIR: 'gear', SPEARS: 'sword', SWORDS: 'sword', TAMING: 'heart', TRIDENTS: 'wave', UNARMED: 'shield', WOODCUTTING: 'hammer' };
 const SKILL_COLORS = ['#b9a4ff', '#a8c8ff', '#b8f5c8', '#ffd36e', '#ff9fc0', '#7fd4ff', '#f7c8a0', '#d6c2ff', '#b5e07a'];
 let PAGES = [];
+const MAIN_PAGE = 'Übersicht';
+const pageRoute = p => p === MAIN_PAGE ? 'start' : 'seite-' + slug(p);
 
 /** Pro mcMMO-Skill eine eigene Rangliste (aus den Spielerdaten), fuer den Reiter "mcMMO". */
 function addSkillCategories() {
@@ -445,12 +458,12 @@ function currentTab() {
   if (cur === 'start') return 'start';
   if (cur === 'spieler' || cur.startsWith('profil-')) return 'spieler';
   if (cur.startsWith('seite-')) return cur;
-  if (cur.startsWith('kat-') && IDX.cat[cur.slice(4)]) return 'seite-' + slug(IDX.cat[cur.slice(4)].page);
+  if (cur.startsWith('kat-') && IDX.cat[cur.slice(4)]) return pageRoute(IDX.cat[cur.slice(4)].page);
   return 'start';
 }
 function renderNav() {
   const tab = currentTab();
-  const items = [['start', 'Übersicht'], ...PAGES.map(p => ['seite-' + slug(p), p]), ['spieler', 'Spieler']];
+  const items = [['start', MAIN_PAGE], ...PAGES.filter(p => p !== MAIN_PAGE).map(p => [pageRoute(p), p]), ['spieler', 'Spieler']];
   $('nav').innerHTML = items.map(([id, label]) => `<a href="#${id}" data-go="${id}"${id === tab ? ' aria-current="page"' : ''}>${esc(label)}</a>`).join('');
 }
 
@@ -487,8 +500,8 @@ async function loadStats() {
     next.categories.forEach(c => { if (!c.page) c.page = c.section || 'Ranglisten'; });
     DATA = next; addSkillCategories(); buildIndex(); buildPages();
     document.title = DATA.title;
-    $('site-title').textContent = DATA.title;
-    $('site-sub').textContent = DATA.subtitle || '';
+    if ($('site-title')) $('site-title').textContent = DATA.title;
+    if ($('site-sub')) $('site-sub').textContent = DATA.subtitle || '';
     if (changed) { render(); renderFooter(); }
   } catch (e) {
     showError('Noch keine Daten. Der Server erzeugt stats.json kurz nach dem Start (oder mit /serverstats refresh). ' + e.message);
@@ -535,6 +548,14 @@ q.addEventListener('keydown', e => {
 sug.addEventListener('click', () => { q.value = ''; });
 
 $('logo').innerHTML = grassSVG();
+// Eigenes Logo: liegt eine Datei logo.png im Ordner der Webseite, ersetzt sie Grasblock, Titel und Untertitel
+const logoProbe = new Image();
+logoProbe.onload = () => {
+  const brand = document.querySelector('.brand');
+  brand.classList.add('has-logo');
+  brand.innerHTML = '<img class="logo-img" src="logo.png" alt="Startseite">';
+};
+logoProbe.src = 'logo.png';
 (async () => {
   await Promise.all([loadStats(), loadOnline()]);
   render();

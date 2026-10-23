@@ -75,6 +75,8 @@ button, input, select { font-family: var(--font); font-size: 15px; }
 .brand { display: flex; align-items: center; gap: 14px; text-decoration: none; min-width: 0; }
 .logo { flex: none; display: block; line-height: 0; }
 .logo svg { width: 56px; height: 56px; display: block; }
+.brand.has-logo { gap: 0; }
+.logo-img { display: block; height: 96px; width: auto; max-width: 100%; }
 .brand h1 { margin: 0; font-size: 34px; line-height: 1; letter-spacing: .5px; }
 .brand p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
 .search { position: relative; margin-left: auto; width: min(100%, 320px); }
@@ -192,6 +194,7 @@ h2.sec small { color: var(--muted); font-size: 13px; font-weight: 400; margin-le
 .skills .meter i { display: block; height: 100%; background: var(--ink); }
 .skills .num { min-width: 60px; text-align: right; }
 .skills .num small { opacity: .65; font-weight: 400; }
+.skills.jobs .num { min-width: 150px; }
 .power { display: flex; align-items: baseline; gap: 12px; margin-top: 6px; }
 .power b { font-size: 44px; line-height: 1; }
 .ctrl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 10px 0 4px; }
@@ -216,6 +219,7 @@ h2.sec small { color: var(--muted); font-size: 13px; font-weight: 400; margin-le
 @media (max-width: 760px) {
   .mm { grid-template-columns: minmax(0, 1fr); }
   .brand h1 { font-size: 28px; }
+  .logo-img { height: 72px; }
   .hero h1 { font-size: 32px; }
   .search { margin-left: 0; width: 100%; }
   .skills li { grid-template-columns: 96px minmax(0, 1fr) auto; }

@@ -54,6 +54,7 @@ final class Collector {
         final List<String> notes = new ArrayList<>();
         Path statsDir;
         Path advDir;
+        Path jobsDir;
     }
 
     private final ServerStatsPlugin plugin;
@@ -197,6 +198,12 @@ final class Collector {
 
         snap.statsDir = findDir(s.statsDirOverride, "stats", "players/stats");
         snap.advDir = findDir(s.advancementsDirOverride, "advancements", "players/advancements");
+        if (s.jobsEnabled) {
+            snap.jobsDir = JobsReader.locate(s, plugin.getDataFolder().toPath().toAbsolutePath().getParent());
+            if (snap.jobsDir == null) {
+                snap.notes.add("AethelJobs: Ordner nicht gefunden (erwartet: plugins/" + s.jobsFolder + "), Job-Ranglisten fehlen.");
+            }
+        }
         if (snap.statsDir == null) {
             snap.notes.add("Kein Statistik-Ordner gefunden (players.stats-dir in der config.yml setzen). Gesucht: "
                     + describeCandidates("stats", "players/stats"));
@@ -213,6 +220,7 @@ final class Collector {
                 case "vault" -> vault;
                 case "mcmmo-power" -> mcmmo;
                 case "cookieclicker" -> s.cookieEnabled;
+                case "jobs" -> snap.jobsDir != null;
                 case "ajlb" -> ajlb && !c.ajlbBoard().isBlank();
                 default -> false;
             };
@@ -388,7 +396,10 @@ final class Collector {
             }
         }
 
+        Map<UUID, Map<String, double[]>> jobsData = snap.jobsDir == null ? null : JobsReader.read(snap.jobsDir);
+
         for (PlayerData p : snap.players) {
+            p.jobs = jobsData == null ? null : jobsData.get(p.uuid);
             VanillaStats stats = null;
             if (snap.statsDir != null) {
                 Path file = snap.statsDir.resolve(p.uuid + ".json");
@@ -419,6 +430,28 @@ final class Collector {
                                 } catch (IOException | RuntimeException e) {
                                     readErrors++;
                                 }
+                            }
+                        }
+                    }
+                    case "jobs" -> {
+                        if (p.jobs != null) {
+                            double value = 0;
+                            if (c.column().equals("*")) {
+                                double xp = 0;
+                                for (double[] job : p.jobs.values()) {
+                                    value += job[0];
+                                    xp += job[1];
+                                }
+                                value += Math.min(xp, 999_999) / 1_000_000;
+                            } else {
+                                for (Map.Entry<String, double[]> job : p.jobs.entrySet()) {
+                                    if (job.getKey().equalsIgnoreCase(c.column())) {
+                                        value = job.getValue()[0] + Math.min(job.getValue()[1], 999_999) / 1_000_000; // XP entscheidet bei gleichem Level
+                                    }
+                                }
+                            }
+                            if (value > 0) {
+                                p.values.put(c.id(), value);
                             }
                         }
                     }
