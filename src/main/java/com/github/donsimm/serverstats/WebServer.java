@@ -17,19 +17,19 @@ import java.util.logging.Logger;
 
 /** Kleiner Datei-Webserver (nur GET/HEAD, nur Dateien unterhalb des Ausgabeordners). */
 final class WebServer {
-    private static final Map<String, String> TYPES = Map.of(
-            "html", "text/html; charset=utf-8",
-            "js", "text/javascript; charset=utf-8",
-            "css", "text/css; charset=utf-8",
-            "json", "application/json; charset=utf-8",
-            "png", "image/png",
-            "woff2", "font/woff2",
-            "svg", "image/svg+xml",
-            "ico", "image/x-icon",
-            "jpg", "image/jpeg",
-            "jpeg", "image/jpeg",
-            "webp", "image/webp",
-            "gif", "image/gif");
+    private static final Map<String, String> TYPES = Map.ofEntries(
+            Map.entry("html", "text/html; charset=utf-8"),
+            Map.entry("js", "text/javascript; charset=utf-8"),
+            Map.entry("css", "text/css; charset=utf-8"),
+            Map.entry("json", "application/json; charset=utf-8"),
+            Map.entry("png", "image/png"),
+            Map.entry("woff2", "font/woff2"),
+            Map.entry("svg", "image/svg+xml"),
+            Map.entry("ico", "image/x-icon"),
+            Map.entry("jpg", "image/jpeg"),
+            Map.entry("jpeg", "image/jpeg"),
+            Map.entry("webp", "image/webp"),
+            Map.entry("gif", "image/gif"));
 
     private final HttpServer server;
     private final ExecutorService executor;
