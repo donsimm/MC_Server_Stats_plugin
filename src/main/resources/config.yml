@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 11
+config-version: 12
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -35,6 +35,23 @@ auto-stats:
   page: "Alle Statistiken"
   # Mindestanzahl Spieler mit einem Wert ueber 0, damit die Rangliste erscheint
   min-players: 1
+
+# Live-Anzeige (online): Welt -> Symbol. Angezeigt wird "Symbol Weltname". Unbekannte Welten erscheinen nur mit Namen.
+worlds:
+  DoNs_World: "🌍"
+  DoNs_World_nether: "☠"
+  DoNs_World_the_end: "★"
+  farmwelt: "⛏"
+  farmwelt_nether: "⛏"
+  farmwelt_the_end: "⛏"
+  Creativ_World: "🎨"
+  OneBlock_World: "🧊"
+  Skyblock_World: "☁"
+  skyworld: "🗻"
+  skyworld_nether: "🗻"
+  Plot_World_A: "🏙"
+  witp: "□"
+  iep: "○"
 
 # Schaltflaechen rechts im Menue. Eine leere Adresse blendet die jeweilige Schaltflaeche aus.
 links:

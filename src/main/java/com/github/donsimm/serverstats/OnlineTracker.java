@@ -50,7 +50,7 @@ final class OnlineTracker implements Listener {
             JsonObject o = new JsonObject();
             o.addProperty("uuid", id.toString());
             o.addProperty("name", player.getName());
-            o.addProperty("dim", dimension(player));
+            o.addProperty("dim", dimension(player, settings));
             o.addProperty("sessionMin", Math.max(0, (now - since) / 60000));
             o.addProperty("ping", player.getPing());
             o.addProperty("afk", essentialsAfk && hooks.afk(player));
@@ -62,12 +62,10 @@ final class OnlineTracker implements Listener {
         return root;
     }
 
-    private static String dimension(Player player) {
-        return switch (player.getWorld().getEnvironment()) {
-            case NORMAL -> "Oberwelt";
-            case NETHER -> "Nether";
-            case THE_END -> "Ende";
-            default -> "Andere Welt";
-        };
+    /** Weltname mit Symbol aus der config.yml (worlds:), sonst der Weltname selbst. */
+    private static String dimension(Player player, Settings settings) {
+        String name = player.getWorld().getName();
+        String symbol = settings.worldSymbols.get(name.toLowerCase(java.util.Locale.ROOT));
+        return symbol == null || symbol.isEmpty() ? name : symbol + " " + name;
     }
 }

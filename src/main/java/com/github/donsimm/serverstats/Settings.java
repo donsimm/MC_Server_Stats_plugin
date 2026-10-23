@@ -69,6 +69,9 @@ final class Settings {
     final List<String> museumNamespaces;
     final List<String> museumContains;
 
+    /** Weltname (klein geschrieben) -> Symbol fuer die Live-Anzeige. */
+    final Map<String, String> worldSymbols = new java.util.HashMap<>();
+
     final String homepageLabel;
     final String homepageUrl;
     final String discordUrl;
@@ -147,6 +150,14 @@ final class Settings {
         museumTitle = c.getString("museum.title", "Museum");
         museumNamespaces = lower(c.getStringList("museum.namespaces"));
         museumContains = lower(c.getStringList("museum.contains"));
+
+        ConfigurationSection worlds = c.getConfigurationSection("worlds");
+        if (worlds != null) {
+            for (String name : worlds.getKeys(false)) {
+                // Farbcodes (§x, &x) und Leerzeichen entfernen, nur das Symbol bleibt
+                worldSymbols.put(name.toLowerCase(Locale.ROOT), String.valueOf(worlds.get(name)).replaceAll("[§&][0-9a-fk-orA-FK-OR]", "").trim());
+            }
+        }
 
         homepageLabel = c.getString("links.homepage-label", "Homepage");
         homepageUrl = c.getString("links.homepage-url", "");
