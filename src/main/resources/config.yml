@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 4
+config-version: 5
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -395,6 +395,15 @@ categories:
     format: int
     source: mcmmo-power
 
+  prestige:
+    page: "Cookie Clicker"
+    title: "Prestige-König"
+    subtitle: "Höchste Prestige-Stufe"
+    icon: star
+    color: "#ffe08a"
+    format: int
+    source: cookieclicker
+    column: PRESTIGE
   keksbaecker:
     page: "Cookie Clicker"
     title: "Keksbäcker"
@@ -415,24 +424,6 @@ categories:
     source: cookieclicker
     column: CLICKS
 
-  klickkraft:
-    page: "Cookie Clicker"
-    title: "Klickkraft"
-    subtitle: "Meiste Kekse pro Klick"
-    icon: gear
-    color: "#9fe3b5"
-    format: int
-    source: cookieclicker
-    column: PER_CLICK
-  prestige:
-    page: "Cookie Clicker"
-    title: "Prestige-König"
-    subtitle: "Höchste Prestige-Stufe"
-    icon: star
-    color: "#ffe08a"
-    format: int
-    source: cookieclicker
-    column: PRESTIGE
   bergarbeiter:
     page: "Jobs"
     title: "Bergarbeiter"

@@ -209,7 +209,7 @@ document.addEventListener('error', e => {
 const $ = id => document.getElementById(id);
 const view = $('view');
 let DATA = null, ONLINE = { players: [] }, IDX = null;
-let period = 'all', mode = 'abs', cmp = '', cur = (location.hash || '').slice(1) || 'start';
+let period = 'all', mode = 'abs', cmp = '', jmode = 'rel', cmpj = '', cur = (location.hash || '').slice(1) || 'start';
 let onlineSig = '';
 
 const PERIOD_NAMES = { all: 'Gesamt', month: 'Monat', week: 'Woche', day: 'Heute' };
@@ -358,32 +358,59 @@ function skillKeys() {
   Object.values(DATA.players).forEach(p => p.mcmmo && Object.keys(p.mcmmo.skills).forEach(k => keys.add(k)));
   return [...keys].sort((a, b) => skillLabel(a).localeCompare(skillLabel(b), 'de'));
 }
+const mcmmoValue = (pl, k) => (pl.mcmmo && pl.mcmmo.skills[k]) || 0;
 function skillMax(keys) {
-  return keys.map(k => mode === 'abs' ? DATA.mcmmoRadarMax : Math.max(1, ...Object.values(DATA.players).map(p => (p.mcmmo && p.mcmmo.skills[k]) || 0)));
+  return keys.map(k => mode === 'abs' ? DATA.mcmmoRadarMax : Math.max(1, ...Object.values(DATA.players).map(p => mcmmoValue(p, k))));
 }
 
-function radar(u, other, keys, maxes) {
-  const P = DATA.players[u], n = keys.length, R = 118, cx = 200, cy = 200;
+/**
+ * Radar als SVG. Die Beschriftungen werden gegeneinander verschoben, damit sie sich nicht überlagern.
+ * valueOf(spieler, schluessel) liefert den Wert, maxes die Skala je Achse.
+ */
+function radarSvg(aria, keys, labelOf, valueOf, maxes, me, other) {
+  const n = keys.length, R = 118, cx = 200, cy = 200;
   const pt = (i, f, r = R) => { const a = i * 2 * Math.PI / n - Math.PI / 2; return [cx + Math.cos(a) * r * f, cy + Math.sin(a) * r * f]; };
   const fix = a => a.map(v => v.toFixed(1)).join(',');
-  const poly = (pl, dx = 0, dy = 0) => keys.map((k, i) => { const [x, y] = pt(i, Math.min(1, ((pl.mcmmo.skills[k]) || 0) / maxes[i])); return (x + dx).toFixed(1) + ',' + (y + dy).toFixed(1); }).join(' ');
-  let s = `<svg viewBox="-50 4 500 392" role="img" aria-label="mcMMO-Skillradar von ${esc(P.name)}">`;
+  const poly = (pl, dx = 0, dy = 0) => keys.map((k, i) => { const [x, y] = pt(i, Math.min(1, valueOf(pl, k) / maxes[i])); return (x + dx).toFixed(1) + ',' + (y + dy).toFixed(1); }).join(' ');
+  let s = `<svg viewBox="-60 -4 520 420" role="img" aria-label="${esc(aria)}">`;
   [.25, .5, .75, 1].forEach(f => { s += `<polygon class="ring${f === 1 ? ' out' : ''}" points="${keys.map((_, i) => fix(pt(i, f))).join(' ')}"/>`; });
   keys.forEach((_, i) => { const [x, y] = pt(i, 1); s += `<line class="axis" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`; });
-  s += `<polygon points="${poly(P, 5, 5)}" fill="#0c0a12"/>`;
+  s += `<polygon points="${poly(me, 5, 5)}" fill="#0c0a12"/>`;
   if (other) {
     s += `<polygon points="${poly(other, 5, 5)}" fill="#0c0a12" opacity=".5"/>`;
     s += `<polygon points="${poly(other)}" fill="#4de3d5" fill-opacity=".6" stroke="#0c0a12" stroke-width="3" stroke-dasharray="7 4"/>`;
   }
-  s += `<polygon points="${poly(P)}" fill="#ffd23f" fill-opacity=".88" stroke="#0c0a12" stroke-width="3" stroke-linejoin="miter"/>`;
-  keys.forEach((k, i) => { const [x, y] = pt(i, Math.min(1, (P.mcmmo.skills[k] || 0) / maxes[i])); s += `<rect x="${(x - 3.5).toFixed(1)}" y="${(y - 3.5).toFixed(1)}" width="7" height="7" fill="#0c0a12"/>`; });
-  keys.forEach((k, i) => {
-    const [x, y] = pt(i, 1, R + 14), a = i * 2 * Math.PI / n - Math.PI / 2, c = Math.cos(a), sn = Math.sin(a);
+  s += `<polygon points="${poly(me)}" fill="#ffd23f" fill-opacity=".88" stroke="#0c0a12" stroke-width="3" stroke-linejoin="miter"/>`;
+  keys.forEach((k, i) => { const [x, y] = pt(i, Math.min(1, valueOf(me, k) / maxes[i])); s += `<rect x="${(x - 3.5).toFixed(1)}" y="${(y - 3.5).toFixed(1)}" width="7" height="7" fill="#0c0a12"/>`; });
+
+  // Beschriftungen: Position und grobe Breite berechnen, dann in der oberen und unteren Hälfte entzerren
+  const labels = keys.map((k, i) => {
+    const a = i * 2 * Math.PI / n - Math.PI / 2, c = Math.cos(a), sn = Math.sin(a);
+    const [x, y] = pt(i, 1, R + 14);
     const anchor = c > 0.2 ? 'start' : c < -0.2 ? 'end' : 'middle';
-    const dy = sn > 0.3 ? '0.85em' : sn < -0.3 ? '-0.1em' : '0.35em';
-    s += `<text class="rl" x="${x.toFixed(1)}" y="${y.toFixed(1)}" dy="${dy}" text-anchor="${anchor}">${esc(skillLabel(k))}</text>`;
+    const text = labelOf(k), w = text.length * 8;
+    const x0 = anchor === 'start' ? x : anchor === 'end' ? x - w : x - w / 2;
+    return { text, x, by: y + (sn > 0.3 ? 12 : sn < -0.3 ? -2 : 5), x0, x1: x0 + w, anchor, bottom: sn >= 0 };
   });
+  for (const bottom of [true, false]) {
+    const half = labels.filter(l => l.bottom === bottom).sort((p, q) => p.x0 - q.x0);
+    half.forEach((l, i) => {
+      for (let guard = 0; guard < 6; guard++) {
+        const clash = half.slice(0, i).some(e => e.x0 < l.x1 && l.x0 < e.x1 && Math.abs(l.by - e.by) < 15);
+        if (!clash) break;
+        l.by += bottom ? 15 : -15;
+      }
+    });
+  }
+  labels.forEach(l => { s += `<text class="rl" x="${l.x.toFixed(1)}" y="${l.by.toFixed(1)}" text-anchor="${l.anchor}">${esc(l.text)}</text>`; });
   return s + '</svg>';
+}
+
+function legendHTML(P, otherP) {
+  return `<div class="legend"><span><i style="background:#ffd23f"></i>${esc(P.name)}</span>${otherP ? `<span><i style="background:#4de3d5"></i>${esc(otherP.name)}</span>` : ''}</div>`;
+}
+function scaleCtl(attr, current) {
+  return `<div class="seg" role="group" aria-label="Skala"><button type="button" ${attr}="abs" aria-pressed="${current === 'abs'}">Absolut</button><button type="button" ${attr}="rel" aria-pressed="${current === 'rel'}">Relativ</button></div>`;
 }
 
 function mcmmoCard(u) {
@@ -391,16 +418,15 @@ function mcmmoCard(u) {
   if (!P.mcmmo) return '';
   const keys = skillKeys(), maxes = skillMax(keys);
   const otherP = cmp && cmp !== u && DATA.players[cmp] && DATA.players[cmp].mcmmo ? DATA.players[cmp] : null;
-  const order = keys.map((k, i) => i).sort((a, b) => (P.mcmmo.skills[keys[b]] || 0) - (P.mcmmo.skills[keys[a]] || 0));
-  const list = order.map(i => { const k = keys[i], v = P.mcmmo.skills[k] || 0; return `<li><span>${esc(skillLabel(k))}</span><span class="meter"><i style="width:${Math.min(100, v / maxes[i] * 100).toFixed(1)}%"></i></span>` +
-    `<span class="num">${nf.format(v)}${otherP ? ` <small>${nf.format(otherP.mcmmo.skills[k] || 0)}</small>` : ''}</span></li>`; }).join('');
+  const order = keys.map((k, i) => i).sort((a, b) => mcmmoValue(P, keys[b]) - mcmmoValue(P, keys[a]));
+  const list = order.map(i => { const k = keys[i], v = mcmmoValue(P, k); return `<li><span>${esc(skillLabel(k))}</span><span class="meter"><i style="width:${Math.min(100, v / maxes[i] * 100).toFixed(1)}%"></i></span>` +
+    `<span class="num">${nf.format(v)}${otherP ? ` <small>${nf.format(mcmmoValue(otherP, k))}</small>` : ''}</span></li>`; }).join('');
   const candidates = Object.entries(DATA.players).filter(([id, p]) => id !== u && p.mcmmo).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));
   const opts = '<option value="">– keiner –</option>' + candidates.map(([id, p]) => `<option value="${id}"${id === cmp ? ' selected' : ''}>${esc(p.name)}</option>`).join('');
   return `<h2 class="sec">Skills</h2><article class="card" style="--card:#b9a4ff"><div class="card-h"><div><h3>mcMMO-Skills</h3><p>Skillradar und Level je Fertigkeit</p></div></div>` +
-    `<div class="mm"><div>${radar(u, otherP, keys, maxes)}<div class="legend"><span><i style="background:#ffd23f"></i>${esc(P.name)}</span>${otherP ? `<span><i style="background:#4de3d5"></i>${esc(otherP.name)}</span>` : ''}</div></div>` +
+    `<div class="mm"><div>${radarSvg('mcMMO-Skillradar von ' + P.name, keys, skillLabel, mcmmoValue, maxes, P, otherP)}${legendHTML(P, otherP)}</div>` +
     `<div><div class="power"><b>${nf.format(P.mcmmo.power)}</b><span>Power-Level</span></div>` +
-    `<div class="ctrl"><div class="seg" role="group" aria-label="Skala"><button type="button" data-mode="abs" aria-pressed="${mode === 'abs'}">Absolut</button><button type="button" data-mode="rel" aria-pressed="${mode === 'rel'}">Relativ</button></div>` +
-    `<label for="cmp">Vergleichen mit</label><select id="cmp">${opts}</select></div>` +
+    `<div class="ctrl">${scaleCtl('data-mode', mode)}<label for="cmp">Vergleichen mit</label><select id="cmp">${opts}</select></div>` +
     `<ul class="skills">${list}</ul>` +
     `<p class="note">${mode === 'abs' ? 'Absolut: Skala bis Level ' + nf.format(DATA.mcmmoRadarMax) + ' (in der Config einstellbar).' : 'Relativ: 100 % entspricht dem besten Spieler des Servers im jeweiligen Skill.'} Verwerten und Schmelzen fehlen, weil mcMMO sie als Child-Skills ohne eigene Erfahrung führt.</p></div></div>` +
     `<div class="card-f"><span></span><span class="src">Quelle: mcMMO</span></div></article>`;
@@ -408,13 +434,37 @@ function mcmmoCard(u) {
 
 const JOB_LABELS = { Miner: 'Bergarbeiter', Farmer: 'Farmer', Hunter: 'Jäger', Fisher: 'Fischer', Woodcutter: 'Holzfäller' };
 const jobLabel = k => JOB_LABELS[k] || k;
+const JOB_ABS_MAX = 100;
+const jobValue = (pl, k) => (pl.jobs && pl.jobs[k] ? pl.jobs[k].level : 0);
+const jobTotal = pl => Object.values(pl.jobs || {}).reduce((a, j) => a + j.level, 0);
+function jobKeys() {
+  const keys = new Set();
+  Object.values(DATA.players).forEach(p => p.jobs && Object.keys(p.jobs).forEach(k => keys.add(k)));
+  return [...keys].sort((a, b) => jobLabel(a).localeCompare(jobLabel(b), 'de'));
+}
+function jobMax(keys) {
+  return keys.map(k => jmode === 'abs' ? JOB_ABS_MAX : Math.max(1, ...Object.values(DATA.players).map(p => jobValue(p, k))));
+}
 function jobsCard(u) {
   const P = DATA.players[u];
   if (!P.jobs) return '';
-  const rows = Object.entries(P.jobs).sort((a, b) => b[1].level - a[1].level || b[1].xp - a[1].xp)
-    .map(([k, j]) => `<li><span>${esc(jobLabel(k))}</span><span class="meter"><i style="width:${Math.min(100, j.level / 100 * 100)}%"></i></span><span class="num">Level ${j.level} <small>${nf.format(Math.round(j.xp))} XP</small></span></li>`).join('');
-  return `<h2 class="sec">Jobs</h2><article class="card" style="--card:#ffe08a"><div class="card-h"><div><h3>AethelJobs</h3><p>Level und XP je Beruf</p></div></div>` +
-    `<ul class="skills jobs">${rows}</ul><div class="card-f"><span></span><span class="src">Quelle: AethelJobs</span></div></article>`;
+  const keys = jobKeys(), maxes = jobMax(keys);
+  const otherP = cmpj && cmpj !== u && DATA.players[cmpj] && DATA.players[cmpj].jobs ? DATA.players[cmpj] : null;
+  const order = keys.map((k, i) => i).sort((a, b) => jobValue(P, keys[b]) - jobValue(P, keys[a]) || ((P.jobs[keys[b]] || {}).xp || 0) - ((P.jobs[keys[a]] || {}).xp || 0));
+  const list = order.map(i => {
+    const k = keys[i], j = P.jobs[k];
+    return `<li><span>${esc(jobLabel(k))}</span><span class="meter"><i style="width:${Math.min(100, jobValue(P, k) / maxes[i] * 100).toFixed(1)}%"></i></span>` +
+      `<span class="num">Level ${jobValue(P, k)}${j ? ` <small>${nf.format(Math.round(j.xp))} XP</small>` : ''}${otherP ? ` <small>· ${jobValue(otherP, k)}</small>` : ''}</span></li>`;
+  }).join('');
+  const candidates = Object.entries(DATA.players).filter(([id, p]) => id !== u && p.jobs).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));
+  const opts = '<option value="">– keiner –</option>' + candidates.map(([id, p]) => `<option value="${id}"${id === cmpj ? ' selected' : ''}>${esc(p.name)}</option>`).join('');
+  return `<h2 class="sec">Jobs</h2><article class="card" style="--card:#ffe08a"><div class="card-h"><div><h3>AethelJobs</h3><p>Jobradar und Level je Beruf</p></div></div>` +
+    `<div class="mm"><div>${radarSvg('Jobradar von ' + P.name, keys, jobLabel, jobValue, maxes, P, otherP)}${legendHTML(P, otherP)}</div>` +
+    `<div><div class="power"><b>${nf.format(jobTotal(P))}</b><span>Gesamtlevel</span></div>` +
+    `<div class="ctrl">${scaleCtl('data-jmode', jmode)}<label for="cmpj">Vergleichen mit</label><select id="cmpj">${opts}</select></div>` +
+    `<ul class="skills jobs">${list}</ul>` +
+    `<p class="note">${jmode === 'abs' ? 'Absolut: Skala bis Level ' + JOB_ABS_MAX + '.' : 'Relativ: 100 % entspricht dem besten Spieler des Servers im jeweiligen Job.'} Das Gesamtlevel ist die Summe aller Job-Level.</p></div></div>` +
+    `<div class="card-f"><span></span><span class="src">Quelle: AethelJobs</span></div></article>`;
 }
 
 function profilView(u) {
@@ -524,9 +574,14 @@ document.addEventListener('click', e => {
   if (pb) { period = pb.dataset.period; render(); return; }
   const mb = e.target.closest('[data-mode]');
   if (mb) { mode = mb.dataset.mode; render(); return; }
+  const jb = e.target.closest('[data-jmode]');
+  if (jb) { jmode = jb.dataset.jmode; render(); return; }
   if (!e.target.closest('.search')) hideSug();
 });
-document.addEventListener('change', e => { if (e.target.id === 'cmp') { cmp = e.target.value; render(); } });
+document.addEventListener('change', e => {
+  if (e.target.id === 'cmp') { cmp = e.target.value; render(); }
+  if (e.target.id === 'cmpj') { cmpj = e.target.value; render(); }
+});
 window.addEventListener('hashchange', () => { const t = location.hash.slice(1) || 'start'; if (t !== cur) { cur = t; render(); } });
 
 const q = $('q'), sug = $('sug');
