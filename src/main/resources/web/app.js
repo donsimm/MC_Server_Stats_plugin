@@ -127,25 +127,21 @@ function grassSVG() {
 const SKIN = ['#f1c9a5', '#d9a579', '#b9835a', '#8d5a3b', '#f7d9c4', '#6e4429'];
 const HAIR = ['#2b1b12', '#5a3a20', '#c9a227', '#d04a2a', '#1d1d1d', '#9aa0a6', '#7b3fbf', '#2e6bd0'];
 const IRIS = ['#3b6fd4', '#2f8f4e', '#6b4a2b', '#7b3fbf'];
-function fallbackAvatar(name) {
-  const r = rng(hash(name) ^ 0x9e3779b9);
-  const pick = a => a[Math.floor(r() * a.length)];
-  const skin = pick(SKIN), hair = pick(HAIR), iris = pick(IRIS), dark = 'rgba(0,0,0,.25)';
-  const beard = r() < 0.35, side = r() < 0.5, shades = r() < 0.15;
+function fallbackAvatar() {
+  // Neutraler Standardkopf (wie ein Spieler ohne eigenen Skin), solange kein echter Kopf vorhanden ist
+  const skin = '#c69c7b', hair = '#4a3222', iris = '#4b4ea8', mouth = '#8d5a47';
   const rects = [];
   const put = (x, y, w, c) => rects.push(`<rect x="${x}" y="${y}" width="${w}" height="1" fill="${c}"/>`);
   for (let y = 0; y < 8; y++) put(0, y, 8, skin);
-  put(1, 0, 6, hair); put(0, 1, 8, hair);
-  if (side) { put(0, 2, 1, hair); put(7, 2, 1, hair); } else { put(0, 2, 2, hair); put(6, 2, 2, hair); }
-  if (shades) { put(1, 3, 6, '#14121c'); } else { put(1, 3, 1, '#fff'); put(2, 3, 1, iris); put(5, 3, 1, iris); put(6, 3, 1, '#fff'); }
-  put(3, 4, 2, dark);
-  if (beard) { put(1, 5, 6, hair); put(1, 6, 6, hair); put(2, 7, 4, hair); put(3, 5, 2, '#a05a4a'); } else { put(2, 5, 4, '#a05a4a'); }
+  put(1, 0, 6, hair); put(0, 1, 8, hair); put(0, 2, 1, hair); put(7, 2, 1, hair);
+  put(1, 3, 1, '#fff'); put(2, 3, 1, iris); put(5, 3, 1, iris); put(6, 3, 1, '#fff');
+  put(3, 4, 2, 'rgba(0,0,0,.25)'); put(2, 5, 4, mouth);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" shape-rendering="crispEdges">${rects.join('')}</svg>`;
   return 'data:image/svg+xml,' + encodeURIComponent(svg);
 }
 document.addEventListener('error', e => {
   const t = e.target;
-  if (t && t.tagName === 'IMG' && t.dataset.n && !t.dataset.fb) { t.dataset.fb = '1'; t.src = fallbackAvatar(t.dataset.n); }
+  if (t && t.tagName === 'IMG' && t.dataset.n && !t.dataset.fb) { t.dataset.fb = '1'; t.src = fallbackAvatar(); }
 }, true);
 
 /* ---------- Zustand ---------- */

@@ -49,6 +49,8 @@ final class HeadService {
     private final Map<UUID, Long> missUntil = new ConcurrentHashMap<>();
     private volatile long pauseUntil;
     private volatile boolean disabled;
+    private volatile String lastFailure = "";
+    private final Set<String> loggedFailures = ConcurrentHashMap.newKeySet();
 
     HeadService(Path webDir, int refreshDays, Logger log) {
         this.dir = webDir.resolve("heads");
@@ -71,6 +73,26 @@ final class HeadService {
         }
     }
 
+    /** Fuer /serverstats status. */
+    String summary() {
+        long files = 0;
+        try (java.util.stream.Stream<Path> stream = Files.isDirectory(dir) ? Files.list(dir) : java.util.stream.Stream.<Path>empty()) {
+            files = stream.filter(p -> p.getFileName().toString().endsWith(".png")).count();
+        } catch (IOException ignored) {
+            // nur Anzeige
+        }
+        return files + " Koepfe gespeichert, " + queued.size() + " in Warteschlange, " + missUntil.size() + " ohne Skin"
+                + (lastFailure.isEmpty() ? "" : ", letzter Grund: " + lastFailure) + (disabled ? " (DEAKTIVIERT)" : "");
+    }
+
+    private void fail(UUID id, String reason) {
+        missUntil.put(id, System.currentTimeMillis() + MISS_RETRY_MS);
+        lastFailure = reason;
+        if (loggedFailures.add(reason)) {
+            log.warning("Kopf fuer " + id + " nicht geladen: " + reason + " (weitere gleiche Meldungen werden nicht wiederholt)");
+        }
+    }
+
     private boolean isFresh(UUID id) {
         Path file = dir.resolve(id + ".png");
         try {
@@ -89,18 +111,18 @@ final class HeadService {
             Files.createDirectories(dir);
             String skinUrl = skinUrl(id);
             if (skinUrl == null) {
-                missUntil.put(id, System.currentTimeMillis() + MISS_RETRY_MS);
+                fail(id, lastFailure.startsWith("Mojang") ? lastFailure : "Mojang kennt keinen Skin fuer diese UUID (Offline-Modus-Server?)");
                 return;
             }
             HttpResponse<byte[]> png = http.send(HttpRequest.newBuilder(URI.create(skinUrl)).timeout(Duration.ofSeconds(15)).build(),
                     HttpResponse.BodyHandlers.ofByteArray());
             if (png.statusCode() != 200) {
-                missUntil.put(id, System.currentTimeMillis() + MISS_RETRY_MS);
+                fail(id, "Skin-Download HTTP " + png.statusCode());
                 return;
             }
             BufferedImage skin = ImageIO.read(new ByteArrayInputStream(png.body()));
             if (skin == null || skin.getWidth() < 64 || skin.getHeight() < 16) {
-                missUntil.put(id, System.currentTimeMillis() + MISS_RETRY_MS);
+                fail(id, "Skin-Bild nicht lesbar oder zu klein");
                 return;
             }
             BufferedImage head = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
@@ -123,8 +145,7 @@ final class HeadService {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (IOException | RuntimeException e) {
-            missUntil.put(id, System.currentTimeMillis() + MISS_RETRY_MS);
-            log.fine("Kopf fuer " + id + " nicht geladen: " + e);
+            fail(id, e.getClass().getSimpleName() + ": " + e.getMessage());
         } catch (NoClassDefFoundError | UnsatisfiedLinkError e) {
             disabled = true;
             log.warning("Spielerkoepfe deaktiviert: Java-Bildbibliothek (java.desktop) fehlt auf diesem Server (" + e + ").");
@@ -141,9 +162,11 @@ final class HeadService {
                 HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() == 429) {
             pauseUntil = System.currentTimeMillis() + 10 * 60 * 1000;
+            lastFailure = "Mojang: zu viele Anfragen (HTTP 429), Pause 10 Minuten";
             return null;
         }
         if (response.statusCode() != 200) {
+            lastFailure = response.statusCode() == 204 || response.statusCode() == 404 ? "" : "Mojang: HTTP " + response.statusCode();
             return null;
         }
         JsonArray properties = JsonParser.parseString(response.body()).getAsJsonObject().getAsJsonArray("properties");

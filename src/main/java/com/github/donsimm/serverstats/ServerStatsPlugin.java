@@ -115,6 +115,13 @@ public final class ServerStatsPlugin extends JavaPlugin {
     /** Hauptthread: Online-Liste einsammeln, danach asynchron schreiben. */
     private void writeOnline() {
         JsonObject json = online.snapshot(hooks, settings, optOut, settings.essentialsEnabled);
+        if (heads != null) {
+            List<java.util.UUID> ids = new java.util.ArrayList<>();
+            for (var element : json.getAsJsonArray("players")) {
+                ids.add(java.util.UUID.fromString(element.getAsJsonObject().get("uuid").getAsString()));
+            }
+            heads.enqueue(ids);
+        }
         Path file = settings.outputDir.resolve("online.json");
         Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
             try {
@@ -124,6 +131,10 @@ public final class ServerStatsPlugin extends JavaPlugin {
                 getLogger().log(Level.WARNING, "online.json konnte nicht geschrieben werden", e);
             }
         });
+    }
+
+    String headStatus() {
+        return heads == null ? "aus (heads.enabled: false)" : heads.summary();
     }
 
     String webStatus() {

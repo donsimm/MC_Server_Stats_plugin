@@ -62,6 +62,7 @@ final class StatsCommand implements CommandExecutor, TabCompleter {
                 }
                 sender.sendMessage("§7- Webserver: §f" + plugin.webStatus());
                 sender.sendMessage("§7- Ausgabeordner: §f" + plugin.settings().outputDir);
+                sender.sendMessage("§7- Koepfe: §f" + plugin.headStatus());
                 for (String line : plugin.collector().statusLines()) {
                     sender.sendMessage("§7- §f" + line);
                 }
