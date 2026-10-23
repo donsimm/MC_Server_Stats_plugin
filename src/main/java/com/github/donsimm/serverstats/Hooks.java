@@ -118,15 +118,15 @@ final class Hooks {
         }
     }
 
+    /** Kein (geladenes) Profil: normal bei neuen Spielern oder wenn mcMMO das Profil noch nicht geladen hat. */
     private static boolean noProfile(Throwable t) {
         Throwable cause = t.getCause() != null ? t.getCause() : t;
-        return cause.getClass().getSimpleName().equals("InvalidPlayerException");
+        String name = cause.getClass().getSimpleName();
+        return name.equals("InvalidPlayerException") || name.equals("McMMOPlayerNotFoundException");
     }
 
-    /** Skill-Level aller Hauptskills, null wenn der Spieler bei mcMMO kein Profil hat oder nichts gelesen werden konnte. */
-    Map<String, Integer> mcmmoLevels(UUID uuid) {
-        Player online = Bukkit.getPlayer(uuid);
-        boolean useOnline = online != null && mmLevelOnline != null;
+    /** Liest alle Hauptskills. Mit player != null ueber die Online-API, sonst ueber die Offline-API (UUID). */
+    private Map<String, Integer> readLevels(UUID uuid, Player player) {
         Map<String, Integer> result = new LinkedHashMap<>();
         for (Object skill : mmSkills) {
             String name = ((Enum<?>) skill).name();
@@ -134,14 +134,14 @@ final class Hooks {
                 continue; // Child-Skills ohne eigene Erfahrung
             }
             try {
-                Object value = useOnline ? mmLevelOnline.invoke(null, online, name) : mmLevel.invoke(null, uuid, name);
+                Object value = player != null ? mmLevelOnline.invoke(null, player, name) : mmLevel.invoke(null, uuid, name);
                 int level = ((Number) value).intValue();
                 if (level >= 0) {
                     result.put(name, level);
                 }
             } catch (ReflectiveOperationException | RuntimeException e) {
                 if (noProfile(e)) {
-                    return null; // Spieler hat kein mcMMO-Profil: normal, kein Fehler
+                    return null;
                 }
                 Throwable cause = e.getCause() != null ? e.getCause() : e;
                 report("mcmmo-level-" + name, "mcMMO: Skill " + name + " nicht lesbar (" + cause.getClass().getSimpleName() + ": " + cause.getMessage()
@@ -151,12 +151,31 @@ final class Hooks {
         return result.isEmpty() ? null : result;
     }
 
-    int mcmmoPower(UUID uuid) {
-        try {
-            Player online = Bukkit.getPlayer(uuid);
-            if (online != null && mmPowerOnline != null) {
-                return ((Number) mmPowerOnline.invoke(null, online)).intValue();
+    /**
+     * Skill-Level aller Hauptskills. Online-Spieler zuerst ueber die Online-API; ist ihr Profil dort nicht geladen,
+     * wird die Offline-API (liest direkt aus der mcMMO-Datenbank) versucht. null = kein Profil.
+     */
+    Map<String, Integer> mcmmoLevels(UUID uuid) {
+        Player online = Bukkit.getPlayer(uuid);
+        if (online != null && mmLevelOnline != null) {
+            Map<String, Integer> levels = readLevels(uuid, online);
+            if (levels != null) {
+                return levels;
             }
+        }
+        return readLevels(uuid, null);
+    }
+
+    int mcmmoPower(UUID uuid) {
+        Player online = Bukkit.getPlayer(uuid);
+        if (online != null && mmPowerOnline != null) {
+            try {
+                return ((Number) mmPowerOnline.invoke(null, online)).intValue();
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                // Profil nicht geladen: weiter mit der Offline-Abfrage
+            }
+        }
+        try {
             return ((Number) mmPower.invoke(null, uuid)).intValue();
         } catch (ReflectiveOperationException | RuntimeException e) {
             return 0;

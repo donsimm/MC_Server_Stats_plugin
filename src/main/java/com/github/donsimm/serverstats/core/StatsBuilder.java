@@ -97,7 +97,8 @@ public final class StatsBuilder {
 
             JsonObject object = new JsonObject();
             object.addProperty("id", category.id());
-            object.addProperty("section", category.section());
+            object.addProperty("page", category.page());
+            object.addProperty("highlight", category.highlight());
             object.addProperty("title", category.title());
             object.addProperty("subtitle", category.subtitle());
             object.addProperty("icon", category.icon());

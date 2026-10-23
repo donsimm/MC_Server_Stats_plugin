@@ -5,6 +5,8 @@ import java.util.List;
 /**
  * Eine Rangliste, wie sie in der config.yml unter "categories" steht.
  *
+ * @param page       Name des Reiters auf der Webseite (z. B. "Spielwelt", "Unterwegs")
+ * @param highlight  true: erscheint zusaetzlich auf der Uebersichtsseite
  * @param source     vanilla, advancements, vault, mcmmo-power, cookieclicker oder ajlb
  * @param stat       Vanilla: Liste von "gruppe:schluessel", der erste vorhandene Eintrag zaehlt
  * @param sum        Vanilla: alle Eintraege werden addiert
@@ -14,7 +16,7 @@ import java.util.List;
  * @param ajlbBoard  AJLeaderboards-Board fuer Zeitfenster (oder als Quelle bei source=ajlb)
  * @param ajlbScale  Faktor auf die AJLB-Werte
  */
-public record CategoryDef(String id, String section, String title, String subtitle, String icon, String color,
+public record CategoryDef(String id, String page, boolean highlight, String title, String subtitle, String icon, String color,
                           boolean night, String format, String source, List<String> stat, List<String> sum,
                           String groupSum, double scale, String column, String ajlbBoard, double ajlbScale) {
 }

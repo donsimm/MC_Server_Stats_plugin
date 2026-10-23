@@ -1,5 +1,9 @@
 # ServerStats - Konfiguration
 # Nach Aenderungen: /serverstats reload
+#
+# config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
+# und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
+config-version: 2
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -86,7 +90,9 @@ chips:
   - { category: weltenbummler, label: "Strecke gesamt" }
   - { category: keksbaecker, label: "Kekse gebacken" }
 
-# Ranglisten. Die Reihenfolge hier ist die Reihenfolge auf der Seite, Abschnitte entstehen aus "section".
+# Ranglisten. Die Reihenfolge hier ist die Reihenfolge auf der Seite.
+#   page:      Reiter in der Navigation (z. B. Spielwelt, Unterwegs, Wirtschaft, mcMMO, Cookie Clicker)
+#   highlight: true = erscheint zusaetzlich auf der Uebersichtsseite
 #   format:  int | dur (Wert in Stunden) | km | big (Mio./Mrd.) | adv (x / Gesamtzahl)
 #   icon:    clock gem skull pick sword swords boot scroll bolt star heart shield cookie cursor gear
 #   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker | ajlb
@@ -94,7 +100,8 @@ chips:
 #   ajlb-board: AJLeaderboards-Board fuer Zeitfenster (optional)
 categories:
   dauerzocker:
-    section: "Hauptranglisten"
+    page: "Spielwelt"
+    highlight: true
     title: "Dauerzocker"
     subtitle: "Meiste Spielzeit"
     icon: clock
@@ -104,16 +111,20 @@ categories:
     stat: ["custom:play_time", "custom:play_one_minute"]
     scale: 0.0000138889        # Ticks -> Stunden
     ajlb-board: "statistic_hours_played"
+
   diamantenbank:
-    section: "Hauptranglisten"
+    page: "Wirtschaft"
+    highlight: true
     title: "Diamantenbank"
     subtitle: "Wer hat, der hat"
     icon: gem
     color: "#4de3d5"
     format: int
     source: vault
+
   friedhof:
-    section: "Hauptranglisten"
+    page: "Spielwelt"
+    highlight: true
     title: "Friedhof"
     subtitle: "Hier liegen sie. Immer wieder."
     icon: skull
@@ -123,8 +134,10 @@ categories:
     source: vanilla
     stat: ["custom:deaths"]
     ajlb-board: "statistic_deaths"
+
   abrissbirne:
-    section: "Hauptranglisten"
+    page: "Spielwelt"
+    highlight: true
     title: "Abrissbirne"
     subtitle: "Meiste Blöcke abgebaut"
     icon: pick
@@ -133,8 +146,10 @@ categories:
     source: vanilla
     group-sum: "mined"
     ajlb-board: "statistic_mine_block"
+
   monsterjaeger:
-    section: "Hauptranglisten"
+    page: "Spielwelt"
+    highlight: true
     title: "Monsterjäger"
     subtitle: "Meiste Mobs erledigt"
     icon: sword
@@ -143,8 +158,10 @@ categories:
     source: vanilla
     stat: ["custom:mob_kills"]
     ajlb-board: "statistic_mob_kills"
+
   weltenbummler:
-    section: "Hauptranglisten"
+    page: "Unterwegs"
+    highlight: true
     title: "Weltenbummler"
     subtitle: "Weiteste Strecke"
     icon: boot
@@ -166,33 +183,17 @@ categories:
       - "custom:aviate_one_cm"
     scale: 0.00001            # Zentimeter -> Kilometer
 
-  questmeister:
-    section: "Weitere Ranglisten"
-    title: "Questmeister"
-    subtitle: "Meiste Quest-Punkte"
-    icon: scroll
-    color: "#ffb36b"
-    format: int
-    source: ajlb
-    ajlb-board: "quests_player_quest_points"
-  skillmeister:
-    section: "Weitere Ranglisten"
-    title: "Skill-Meister"
-    subtitle: "Höchstes mcMMO-Power-Level"
-    icon: bolt
-    color: "#b9a4ff"
-    format: int
-    source: mcmmo-power
   erfolgsjaeger:
-    section: "Weitere Ranglisten"
+    page: "Spielwelt"
     title: "Erfolgsjäger"
     subtitle: "Meiste Advancements"
     icon: star
     color: "#e9dcb8"
     format: adv
     source: advancements
+
   zuchtmeister:
-    section: "Weitere Ranglisten"
+    page: "Spielwelt"
     title: "Zuchtmeister"
     subtitle: "Meiste Tiere gezüchtet"
     icon: heart
@@ -201,8 +202,20 @@ categories:
     source: vanilla
     stat: ["custom:animals_bred"]
     ajlb-board: "statistic_animals_bred"
+
+  handwerker:
+    page: "Spielwelt"
+    title: "Handwerker"
+    subtitle: "Meiste Gegenstände hergestellt"
+    icon: hammer
+    color: "#ffb87a"
+    format: int
+    source: vanilla
+    group-sum: "crafted"
+    ajlb-board: "statistic_craft_item"
+
   einstecker:
-    section: "Weitere Ranglisten"
+    page: "Spielwelt"
     title: "Einstecker"
     subtitle: "Meister erlittener Schaden"
     icon: shield
@@ -211,8 +224,9 @@ categories:
     source: vanilla
     stat: ["custom:damage_taken"]
     ajlb-board: "statistic_damage_taken"
+
   duellant:
-    section: "Weitere Ranglisten"
+    page: "Spielwelt"
     title: "Duellant"
     subtitle: "Meiste Spieler besiegt"
     icon: swords
@@ -221,8 +235,61 @@ categories:
     source: vanilla
     stat: ["custom:player_kills"]
 
+  pruegelknabe:
+    page: "Spielwelt"
+    title: "Prügelknabe"
+    subtitle: "Meist von Spielern getötet"
+    icon: skull
+    color: "#ff9a9a"
+    format: int
+    source: vanilla
+    stat: ["killed_by:player"]
+
+  unsterblich:
+    page: "Spielwelt"
+    title: "Unsterblich"
+    subtitle: "Meiste Totems der Unsterblichkeit"
+    icon: heart
+    color: "#9be8d0"
+    format: int
+    source: vanilla
+    stat: ["used:totem_of_undying"]
+
+  feuerwerker:
+    page: "Spielwelt"
+    title: "Feuerwerker"
+    subtitle: "Meiste Feuerwerksraketen gezündet"
+    icon: rocket
+    color: "#ffd36e"
+    format: int
+    source: vanilla
+    stat: ["used:firework_rocket"]
+    ajlb-board: "statistic_use_item:firework_rocket"
+
+  schleicher:
+    page: "Spielwelt"
+    title: "Schleicher"
+    subtitle: "Meiste Zeit geschlichen"
+    icon: eye
+    color: "#c9c9d9"
+    format: dur
+    source: vanilla
+    stat: ["custom:sneak_time"]
+    scale: 0.0000138889        # Ticks -> Stunden
+
+  huepfer:
+    page: "Spielwelt"
+    title: "Hüpfer"
+    subtitle: "Meiste Sprünge"
+    icon: spring
+    color: "#ff9fc0"
+    format: int
+    source: vanilla
+    stat: ["custom:jump"]
+    ajlb-board: "statistic_jump"
+
   laeufer:
-    section: "Unterwegs"
+    page: "Unterwegs"
     title: "Läufer"
     subtitle: "Meiste Strecke zu Fuss"
     icon: boot
@@ -235,7 +302,7 @@ categories:
     ajlb-scale: 0.00001
 
   sprinter:
-    section: "Unterwegs"
+    page: "Unterwegs"
     title: "Sprinter"
     subtitle: "Meiste Strecke gesprintet"
     icon: bolt
@@ -248,7 +315,7 @@ categories:
     ajlb-scale: 0.00001
 
   wasserratte:
-    section: "Unterwegs"
+    page: "Unterwegs"
     title: "Wasserratte"
     subtitle: "Meiste Strecke geschwommen"
     icon: wave
@@ -261,7 +328,7 @@ categories:
     ajlb-scale: 0.00001
 
   kapitaen:
-    section: "Unterwegs"
+    page: "Unterwegs"
     title: "Kapitän"
     subtitle: "Meiste Strecke im Boot"
     icon: boat
@@ -274,7 +341,7 @@ categories:
     ajlb-scale: 0.00001
 
   elytrapilot:
-    section: "Unterwegs"
+    page: "Unterwegs"
     title: "Elytra-Pilot"
     subtitle: "Meiste Strecke im Gleitflug"
     icon: wing
@@ -287,7 +354,7 @@ categories:
     ajlb-scale: 0.00001
 
   reiter:
-    section: "Unterwegs"
+    page: "Unterwegs"
     title: "Reiter"
     subtitle: "Meiste Strecke auf Pferd, Schwein und Strider"
     icon: heart
@@ -298,7 +365,7 @@ categories:
     scale: 0.00001
 
   kletterer:
-    section: "Unterwegs"
+    page: "Unterwegs"
     title: "Kletterer"
     subtitle: "Meiste Strecke geklettert"
     icon: arrow
@@ -310,72 +377,27 @@ categories:
     ajlb-board: "statistic_climb_one_cm"
     ajlb-scale: 0.00001
 
-  huepfer:
-    section: "Unterwegs"
-    title: "Hüpfer"
-    subtitle: "Meiste Sprünge"
-    icon: spring
-    color: "#ff9fc0"
+  questmeister:
+    page: "Wirtschaft"
+    title: "Questmeister"
+    subtitle: "Meiste Quest-Punkte"
+    icon: scroll
+    color: "#ffb36b"
     format: int
-    source: vanilla
-    stat: ["custom:jump"]
-    ajlb-board: "statistic_jump"
+    source: ajlb
+    ajlb-board: "quests_player_quest_points"
 
-  schleicher:
-    section: "Weitere Ranglisten"
-    title: "Schleicher"
-    subtitle: "Meiste Zeit geschlichen"
-    icon: eye
-    color: "#c9c9d9"
-    format: dur
-    source: vanilla
-    stat: ["custom:sneak_time"]
-    scale: 0.0000138889        # Ticks -> Stunden
-
-  handwerker:
-    section: "Weitere Ranglisten"
-    title: "Handwerker"
-    subtitle: "Meiste Gegenstände hergestellt"
-    icon: hammer
-    color: "#ffb87a"
+  skillmeister:
+    page: "mcMMO"
+    title: "Skill-Meister"
+    subtitle: "Höchstes mcMMO-Power-Level"
+    icon: bolt
+    color: "#b9a4ff"
     format: int
-    source: vanilla
-    group-sum: "crafted"
-    ajlb-board: "statistic_craft_item"
-
-  pruegelknabe:
-    section: "Weitere Ranglisten"
-    title: "Prügelknabe"
-    subtitle: "Meist von Spielern getötet"
-    icon: skull
-    color: "#ff9a9a"
-    format: int
-    source: vanilla
-    stat: ["killed_by:player"]
-
-  feuerwerker:
-    section: "Weitere Ranglisten"
-    title: "Feuerwerker"
-    subtitle: "Meiste Feuerwerksraketen gezündet"
-    icon: rocket
-    color: "#ffd36e"
-    format: int
-    source: vanilla
-    stat: ["used:firework_rocket"]
-    ajlb-board: "statistic_use_item:firework_rocket"
-
-  unsterblich:
-    section: "Weitere Ranglisten"
-    title: "Unsterblich"
-    subtitle: "Meiste Totems der Unsterblichkeit"
-    icon: heart
-    color: "#9be8d0"
-    format: int
-    source: vanilla
-    stat: ["used:totem_of_undying"]
+    source: mcmmo-power
 
   keksbaecker:
-    section: "Cookie Clicker"
+    page: "Cookie Clicker"
     title: "Keksbäcker"
     subtitle: "Meiste Kekse gebacken"
     icon: cookie
@@ -383,8 +405,9 @@ categories:
     format: big
     source: cookieclicker
     column: COOKIES
+
   klickfinger:
-    section: "Cookie Clicker"
+    page: "Cookie Clicker"
     title: "Klickfinger"
     subtitle: "Meiste Klicks"
     icon: cursor
@@ -392,8 +415,9 @@ categories:
     format: int
     source: cookieclicker
     column: CLICKER_CLICKS
+
   klickkraft:
-    section: "Cookie Clicker"
+    page: "Cookie Clicker"
     title: "Klickkraft"
     subtitle: "Meiste Kekse pro Klick"
     icon: gear

@@ -131,7 +131,8 @@ final class Settings {
                 }
                 categories.add(new CategoryDef(
                         id,
-                        s.getString("section", "Ranglisten"),
+                        s.getString("page", s.getString("section", "Ranglisten")),
+                        s.getBoolean("highlight", false),
                         s.getString("title", id),
                         s.getString("subtitle", ""),
                         s.getString("icon", "star"),

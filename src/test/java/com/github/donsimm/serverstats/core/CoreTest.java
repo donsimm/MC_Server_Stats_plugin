@@ -20,7 +20,7 @@ class CoreTest {
              "DataVersion":4440}""";
 
     private static CategoryDef cat(String id, List<String> stat, List<String> sum, String groupSum, double scale) {
-        return new CategoryDef(id, "S", id, "", "clock", "#fff", false, "int", "vanilla", stat, sum, groupSum, scale,
+        return new CategoryDef(id, "S", false, id, "", "clock", "#fff", false, "int", "vanilla", stat, sum, groupSum, scale,
                 "", "", 1);
     }
 

@@ -294,10 +294,11 @@ function cardHTML(c) {
   return `<article class="card${c.night ? ' night' : ''}" style="${cardVars(c)}">${headHTML(c)}${rows}` +
     `<div class="card-f"><a href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}">Alle ${b.length} anzeigen →</a><span class="src">Quelle: ${esc(c.source)}</span></div></article>`;
 }
-function periodCtl() {
+function periodCtl(cats) {
   const periods = new Set(['all']);
-  DATA.categories.forEach(c => c.periods.forEach(p => periods.add(p)));
+  (cats || DATA.categories).forEach(c => c.periods.forEach(p => periods.add(p)));
   if (periods.size < 2) return '';
+  if (!periods.has(period)) period = 'all';
   return `<div class="bar-tools"><span class="label">Zeitraum</span><div class="seg" role="group" aria-label="Zeitraum">` +
     Object.entries(PERIOD_NAMES).filter(([k]) => periods.has(k)).map(([k, n]) => `<button type="button" data-period="${k}" aria-pressed="${k === period}">${n}</button>`).join('') +
     `</div></div><p class="hint">Zeitfenster gibt es nur für Ranglisten, die AJLeaderboards mitzählt. Alle anderen zeigen weiter den Gesamtwert («nur Gesamt»).</p>`;
@@ -313,27 +314,40 @@ function onlineInner() {
 }
 
 /* ---------- Ansichten ---------- */
+function gridOf(cats) {
+  return cats.length ? `<div class="grid">${cats.map(cardHTML).join('')}</div>` : '<p class="empty">Keine Ranglisten in diesem Bereich.</p>';
+}
 function startView() {
   const chips = [[ONLINE.players.length + ' online', 'gerade auf dem Server'], [Object.keys(DATA.players).length, 'Spieler erfasst']];
   for (const chip of DATA.chips) {
     const c = IDX.cat[chip.category];
     if (c) chips.push([fmtChip(c, chip.value), chip.label]);
   }
-  const sections = [];
-  for (const c of DATA.categories) {
-    let s = sections.find(x => x.title === c.section);
-    if (!s) { s = { title: c.section, cats: [] }; sections.push(s); }
-    s.cats.push(c);
-  }
+  const real = DATA.categories.filter(c => !c.synthetic);
+  let hl = real.filter(c => c.highlight);
+  if (!hl.length) hl = real.slice(0, 6);
   return `<div class="chips">${chips.map(([b, s]) => `<div class="chip-stat"><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join('')}</div>` +
-    `<section id="online-sec">${onlineInner()}</section>${periodCtl()}` +
-    sections.map(s => `<h2 class="sec">${esc(s.title)}</h2><div class="grid">${s.cats.map(cardHTML).join('')}</div>`).join('');
+    `<section id="online-sec">${onlineInner()}</section>${periodCtl(hl)}` +
+    `<h2 class="sec">Highlights<small>alle Ranglisten findest du oben unter den Reitern</small></h2>${gridOf(hl)}`;
+}
+function pageView(title) {
+  const cats = DATA.categories.filter(c => c.page === title);
+  return `<h2 class="sec" style="margin-top:0">${esc(title)}<small>${cats.length} Ranglisten</small></h2>${periodCtl(cats)}${gridOf(cats)}`;
+}
+function spielerView() {
+  const list = Object.entries(DATA.players).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));
+  const cards = list.map(([u, p]) => {
+    const on = ONLINE.players.find(x => x.uuid === u);
+    return `<a class="pcard" href="#profil-${u}" data-go="profil-${u}">${avatar(u)}<b>${on ? '<i class="dot"></i>' : ''}${esc(p.name)}</b>` +
+      `<span>${on ? 'online · ' + esc(on.dim) : 'zuletzt online ' + agoStr(p.last)}${p.mcmmo ? ' · mcMMO ' + nf.format(p.mcmmo.power) : ''}</span></a>`;
+  }).join('');
+  return `<h2 class="sec" style="margin-top:0">Spieler<small>${list.length} erfasst, Suche oben rechts</small></h2><div class="online">${cards}</div>`;
 }
 
 function katView(c) {
   const b = boardOf(c), max = b.length ? Math.max(1, b[0][1]) : 1;
   const rows = b.length ? `<ol class="rows">${b.map(([u, v], i) => rowHTML(u, v, i, c, max)).join('')}</ol>` : '<p class="none">Noch keine Daten.</p>';
-  return `<a class="back" href="#start" data-go="start">← Übersicht</a>${periodCtl()}` +
+  return `<a class="back" href="#seite-${slug(c.page)}" data-go="seite-${slug(c.page)}">← ${esc(c.page)}</a>${periodCtl([c])}` +
     `<article class="card narrow bars${c.night ? ' night' : ''}" style="${cardVars(c)}">${headHTML(c)}${rows}` +
     `<div class="card-f"><span>${b.length} Spieler</span><span class="src">Quelle: ${esc(c.source)}</span></div></article>`;
 }
@@ -396,7 +410,7 @@ function profilView(u) {
   const state = on ? `online seit ${sessStr(on.sessionMin)} · ${esc(on.dim)} · Ping ${on.ping} ms${on.afk ? ' · AFK' : ''}` : `Zuletzt online ${agoStr(P.last)}`;
   const hero = `<div class="hero"><article class="card" style="--card:#8fd0ff"><img class="av" src="heads/${u}.png" alt="" data-n="${esc(P.name)}">` +
     `<div><h1>${esc(P.name)}${on ? '<span class="pill">online</span>' : ''}</h1><p>Erstbeitritt ${dateStr(P.first)} · ${state}</p></div></article></div>`;
-  const tiles = DATA.categories.filter(c => IDX.val[c.id][u] !== undefined).map(c => {
+  const tiles = DATA.categories.filter(c => !c.synthetic && IDX.val[c.id][u] !== undefined).map(c => {
     const rk = IDX.rank[c.id][u], total = (c.boards.all || []).length;
     return `<a class="card tile${c.night ? ' night' : ''}" href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}" style="${cardVars(c)}">` +
       `<div class="card-h"><div class="ico">${icoSVG(c.icon)}</div><div><h3>${esc(c.title)}</h3></div></div>` +
@@ -407,11 +421,46 @@ function profilView(u) {
     (tiles ? `<h2 class="sec">Platzierungen</h2><div class="tiles">${tiles}</div>` : '') + mcmmoCard(u);
 }
 
+const slug = t => String(t).toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const SKILL_ICONS = { ACROBATICS: 'spring', ALCHEMY: 'gem', ARCHERY: 'arrow', AXES: 'hammer', CROSSBOWS: 'arrow', EXCAVATION: 'pick', FISHING: 'wave', HERBALISM: 'heart', MACES: 'hammer', MINING: 'pick', REPAIR: 'gear', SPEARS: 'sword', SWORDS: 'sword', TAMING: 'heart', TRIDENTS: 'wave', UNARMED: 'shield', WOODCUTTING: 'hammer' };
+const SKILL_COLORS = ['#b9a4ff', '#a8c8ff', '#b8f5c8', '#ffd36e', '#ff9fc0', '#7fd4ff', '#f7c8a0', '#d6c2ff', '#b5e07a'];
+let PAGES = [];
+
+/** Pro mcMMO-Skill eine eigene Rangliste (aus den Spielerdaten), fuer den Reiter "mcMMO". */
+function addSkillCategories() {
+  DATA.categories = DATA.categories.filter(c => !c.synthetic);
+  skillKeys().forEach((k, i) => {
+    const board = Object.entries(DATA.players).filter(([, p]) => p.mcmmo && p.mcmmo.skills[k] > 0)
+      .map(([u, p]) => [u, p.mcmmo.skills[k]]).sort((a, b) => b[1] - a[1]);
+    DATA.categories.push({ id: 'mcmmo-' + k.toLowerCase(), page: 'mcMMO', highlight: false, synthetic: true, title: skillLabel(k), subtitle: 'mcMMO-Level',
+      icon: SKILL_ICONS[k] || 'star', color: SKILL_COLORS[i % SKILL_COLORS.length], night: false, format: 'int', source: 'mcMMO', periods: ['all'], boards: { all: board } });
+  });
+}
+function buildPages() {
+  PAGES = [];
+  DATA.categories.forEach(c => { if (!PAGES.includes(c.page)) PAGES.push(c.page); });
+}
+function currentTab() {
+  if (cur === 'start') return 'start';
+  if (cur === 'spieler' || cur.startsWith('profil-')) return 'spieler';
+  if (cur.startsWith('seite-')) return cur;
+  if (cur.startsWith('kat-') && IDX.cat[cur.slice(4)]) return 'seite-' + slug(IDX.cat[cur.slice(4)].page);
+  return 'start';
+}
+function renderNav() {
+  const tab = currentTab();
+  const items = [['start', 'Übersicht'], ...PAGES.map(p => ['seite-' + slug(p), p]), ['spieler', 'Spieler']];
+  $('nav').innerHTML = items.map(([id, label]) => `<a href="#${id}" data-go="${id}"${id === tab ? ' aria-current="page"' : ''}>${esc(label)}</a>`).join('');
+}
+
 function render() {
   if (!DATA) return;
   if (cur.startsWith('kat-') && IDX.cat[cur.slice(4)]) view.innerHTML = katView(IDX.cat[cur.slice(4)]);
   else if (cur.startsWith('profil-') && DATA.players[cur.slice(7)]) view.innerHTML = profilView(cur.slice(7));
+  else if (cur === 'spieler') view.innerHTML = spielerView();
+  else if (cur.startsWith('seite-') && PAGES.find(p => 'seite-' + slug(p) === cur)) view.innerHTML = pageView(PAGES.find(p => 'seite-' + slug(p) === cur));
   else { cur = 'start'; view.innerHTML = startView(); }
+  renderNav();
 }
 function renderFooter() {
   const sources = [...new Set(DATA.categories.map(c => c.source))];
@@ -434,7 +483,7 @@ async function loadStats() {
   try {
     const next = await getJSON('stats.json');
     const changed = !DATA || next.generated !== DATA.generated;
-    DATA = next; buildIndex();
+    DATA = next; addSkillCategories(); buildIndex(); buildPages();
     document.title = DATA.title;
     $('site-title').textContent = DATA.title;
     $('site-sub').textContent = DATA.subtitle || '';

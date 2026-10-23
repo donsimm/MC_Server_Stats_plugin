@@ -93,6 +93,15 @@ button, input, select { font-family: var(--font); font-size: 15px; }
 }
 .suggest button:hover, .suggest button:focus-visible { background: var(--gold); outline-offset: -3px; }
 
+/* Navigation */
+.nav { display: flex; flex-wrap: wrap; gap: 10px 12px; margin-bottom: 26px; }
+.nav a {
+  padding: 8px 16px; background: var(--paper); color: var(--ink); font-weight: 700; text-decoration: none;
+  border: 3px solid var(--ink); box-shadow: 4px 4px 0 #3a3a3a;
+}
+.nav a:hover { background: #e4dcc6; }
+.nav a[aria-current="page"] { background: var(--gold); }
+
 /* Werkzeugleiste */
 .bar-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-bottom: 8px; }
 .seg { display: inline-flex; border: 3px solid var(--ink); box-shadow: 4px 4px 0 #3a3a3a; background: var(--paper); }

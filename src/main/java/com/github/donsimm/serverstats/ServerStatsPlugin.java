@@ -1,13 +1,17 @@
 package com.github.donsimm.serverstats;
 
 import com.google.gson.JsonObject;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.io.IOException;
+import java.io.File;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -33,6 +37,7 @@ public final class ServerStatsPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        migrateConfig();
         optOut = new OptOutStore(getDataFolder().toPath().resolve("optout.txt"), getLogger());
         hooks = new Hooks(getLogger());
         online = new OnlineTracker();
@@ -51,6 +56,29 @@ public final class ServerStatsPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         stop();
+    }
+
+    /** Ersetzt eine veraltete config.yml durch die neue Standard-Config (die alte wird gesichert). */
+    private void migrateConfig() {
+        try (InputStream in = getResource("config.yml")) {
+            if (in == null) {
+                return;
+            }
+            int target = YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8)).getInt("config-version", 1);
+            int current = getConfig().getInt("config-version", 1);
+            if (current >= target) {
+                return;
+            }
+            File file = new File(getDataFolder(), "config.yml");
+            File backup = new File(getDataFolder(), "config-v" + current + ".yml.bak");
+            Files.move(file.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            saveDefaultConfig();
+            reloadConfig();
+            getLogger().warning("config.yml war veraltet (Version " + current + ", neu " + target + "). Die alte Datei liegt als "
+                    + backup.getName() + " daneben. Eigene Einstellungen (z. B. Port, public-url, CookieClicker-Datei) bitte in die neue config.yml uebernehmen.");
+        } catch (IOException e) {
+            getLogger().log(Level.WARNING, "config.yml konnte nicht aktualisiert werden", e);
+        }
     }
 
     private void start() {
