@@ -160,6 +160,11 @@ final class HeadService {
         return head;
     }
 
+    private final ExecutorService skinWorker = Executors.newFixedThreadPool(4, r -> {
+        Thread t = new Thread(r, "ServerStats-MuseumHeads");
+        t.setDaemon(true);
+        return t;
+    });
     private final Set<String> queuedSkins = ConcurrentHashMap.newKeySet();
 
     /** Museum: Kopfbild aus einer Textur-Adresse (nur textures.minecraft.net) als heads/&lt;name&gt;.png speichern. */
@@ -176,7 +181,7 @@ final class HeadService {
             // dann neu laden
         }
         if (queuedSkins.add(name)) {
-            worker.execute(() -> {
+            skinWorker.execute(() -> {
                 try {
                     Files.createDirectories(dir);
                     HttpResponse<byte[]> png = http.send(HttpRequest.newBuilder(URI.create(skinUrl)).timeout(Duration.ofSeconds(15)).build(),
@@ -189,7 +194,6 @@ final class HeadService {
                     Path tmp = dir.resolve(name + ".png.tmp");
                     ImageIO.write(cropHead(skin), "png", tmp.toFile());
                     Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING);
-                    Thread.sleep(200);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (IOException | RuntimeException e) {
@@ -237,5 +241,6 @@ final class HeadService {
 
     void shutdown() {
         worker.shutdownNow();
+        skinWorker.shutdownNow();
     }
 }

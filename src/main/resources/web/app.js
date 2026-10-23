@@ -343,29 +343,72 @@ function applyCatFilter() {
   const q = catFilter.trim().toLowerCase();
   document.querySelectorAll('#view .grid .card[data-title]').forEach(el => { el.hidden = !!q && !el.dataset.title.includes(q); });
 }
-function museumView() {
-  const M = DATA.museum, items = M.items.slice().sort((a, b) => a.name.localeCompare(b.name, 'de'));
-  const got = items.filter(i => i.by.length).length;
+/* Museum: Baby und ausgewachsen werden zu einem Eintrag, "End line"-Sammelerfolge entfallen. */
+const MUSE = { q: '', cat: '', player: '', st: '' };
+let MUSE_ITEMS = null;
+function museumItems() {
+  if (MUSE_ITEMS && MUSE_ITEMS.src === DATA.museum) return MUSE_ITEMS.list;
+  const map = new Map();
+  for (const i of DATA.museum.items) {
+    if (/^end line/i.test(i.name)) continue;
+    const baby = /\bbaby\b/i.test(i.name);
+    const key = i.name.toLowerCase().replace(/^kill\s+/, '').replace(/\bbaby\s+/, '').replace(/\s+/g, ' ').trim();
+    let e = map.get(key);
+    if (!e) map.set(key, e = { name: '', cat: '', img: '', by: new Set(), adult: false });
+    i.by.forEach(u => e.by.add(u));
+    if (!baby || !e.adult) {
+      if (!baby) e.adult = true;
+      if (!baby || !e.name) {
+        e.name = baby ? i.name.replace(/^kill\s+/i, '').replace(/\bbaby\s+/i, '').replace(/^./, c => c.toUpperCase()) : i.name;
+        e.cat = i.cat || 'Weitere';
+      }
+      if (i.img && (!baby || !e.img)) e.img = i.img;
+    } else if (i.img && !e.img) e.img = i.img;
+  }
+  const list = [...map.values()].map(e => ({ name: e.name, cat: e.cat, img: e.img, by: [...e.by] }));
+  list.sort((a, b) => a.name.localeCompare(b.name, 'de'));
+  MUSE_ITEMS = { src: DATA.museum, list };
+  return list;
+}
+function museumList() {
+  const all = museumItems(), q = MUSE.q.trim().toLowerCase(), pl = MUSE.player;
+  const has = i => pl ? i.by.includes(pl) : i.by.length > 0;
+  const shown = all.filter(i => (!MUSE.cat || i.cat === MUSE.cat) && (!q || i.name.toLowerCase().includes(q) || i.cat.toLowerCase().includes(q)) &&
+    (!MUSE.st || (MUSE.st === 'have') === has(i)));
+  const got = all.filter(has).length;
   const cats = [];
-  items.forEach(i => {
-    const k = i.cat || 'Weitere';
-    let c = cats.find(x => x.title === k);
-    if (!c) cats.push(c = { title: k, items: [] });
+  shown.forEach(i => {
+    let c = cats.find(x => x.title === i.cat);
+    if (!c) cats.push(c = { title: i.cat, items: [] });
     c.items.push(i);
   });
   cats.sort((a, b) => a.title.localeCompare(b.title, 'de'));
   const card = i => {
-    const who = i.by.map(u => `<a href="#profil-${u}" title="${esc(nameOf(u))}">${avatar(u)}</a>`).join('');
-    const img = i.img ? `<img class="mob" src="heads/${esc(i.img)}.png" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : '<span class="mob"></span>';
-    return `<div class="muse ${i.by.length ? 'have' : 'miss'}">${img}<b>${esc(i.name)}</b>` +
-      (i.by.length ? `<span class="muse-by">${who}</span><small>${i.by.length} Spieler</small>` : '<small>noch nicht gesammelt</small>') + '</div>';
+    const on = has(i), by = i.by.slice(0, 4), more = i.by.length - by.length;
+    const who = by.map(u => `<a href="#profil-${u}" title="${esc(nameOf(u))}">${avatar(u)}</a>`).join('') + (more > 0 ? `<span class="more">+${more}</span>` : '');
+    const img = `<img class="mob" src="${i.img ? 'heads/' + esc(i.img) + '.png' : fallbackAvatar()}" alt="" loading="lazy" data-n="${esc(i.name)}">`;
+    return `<div class="muse ${on ? 'have' : 'miss'}">${img}<div class="muse-t"><b>${esc(i.name)}</b>` +
+      (i.by.length ? `<span class="muse-by">${who}</span><small>${pl ? (on ? 'gesammelt' : nf.format(i.by.length) + ' Spieler') : nf.format(i.by.length) + ' Spieler'}</small>` : '<small>noch nicht gesammelt</small>') + '</div></div>';
   };
   const sections = cats.map(c => {
-    const have = c.items.filter(i => i.by.length).length;
+    const have = c.items.filter(has).length;
     return `<h2 class="sec">${esc(c.title)}<small>${nf.format(have)} / ${nf.format(c.items.length)}</small></h2><div class="muse-grid">${c.items.map(card).join('')}</div>`;
-  }).join('');
-  return `<h2 class="sec">${esc(M.title || 'Museum')}</h2><p class="muted">${nf.format(got)} von ${nf.format(items.length)} Köpfen gesammelt (alle Spieler zusammen)</p>` +
-    `<div class="muse-bar"><i style="width:${items.length ? Math.round(got * 100 / items.length) : 0}%"></i></div>${sections}`;
+  }).join('') || '<p class="empty">Keine Treffer.</p>';
+  const who = pl ? nameOf(pl) + ' hat ' : '';
+  return `<p class="muted">${esc(who)}${nf.format(got)} von ${nf.format(all.length)} Köpfen gesammelt${pl ? '' : ' (alle Spieler zusammen)'}</p>` +
+    `<div class="muse-bar"><i style="width:${all.length ? Math.round(got * 100 / all.length) : 0}%"></i></div>${sections}`;
+}
+function museumView() {
+  const all = museumItems();
+  const cats = [...new Set(all.map(i => i.cat))].sort((a, b) => a.localeCompare(b, 'de'));
+  const users = [...new Set(DATA.museum.items.flatMap(i => i.by))].sort((a, b) => nameOf(a).localeCompare(nameOf(b), 'de'));
+  const opt = (v, l, cur) => `<option value="${esc(v)}"${v === cur ? ' selected' : ''}>${esc(l)}</option>`;
+  return `<h2 class="sec">${esc(DATA.museum.title || 'Museum')}</h2>` +
+    `<div class="filter muse-filter"><input id="mq" type="search" value="${esc(MUSE.q)}" placeholder="Kopf suchen …" autocomplete="off">` +
+    `<select id="mcat" aria-label="Kategorie">${opt('', 'Alle Kategorien', MUSE.cat)}${cats.map(c => opt(c, c, MUSE.cat)).join('')}</select>` +
+    `<select id="mpl" aria-label="Spieler">${opt('', 'Alle Spieler', MUSE.player)}${users.map(u => opt(u, nameOf(u), MUSE.player)).join('')}</select>` +
+    `<select id="mst" aria-label="Status">${opt('', 'Gesammelt und fehlend', MUSE.st)}${opt('have', 'Nur gesammelt', MUSE.st)}${opt('miss', 'Nur fehlend', MUSE.st)}</select></div>` +
+    `<div id="muse-list">${museumList()}</div>`;
 }
 function spielerView() {
   const list = Object.entries(DATA.players).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));
@@ -631,10 +674,15 @@ document.addEventListener('click', e => {
   if (jb) { jmode = jb.dataset.jmode; render(); return; }
   if (!e.target.closest('.search')) hideSug();
 });
-document.addEventListener('input', e => { if (e.target.id === 'catfilter') { catFilter = e.target.value; applyCatFilter(); } });
+document.addEventListener('input', e => {
+  if (e.target.id === 'catfilter') { catFilter = e.target.value; applyCatFilter(); }
+  if (e.target.id === 'mq') { MUSE.q = e.target.value; $('muse-list').innerHTML = museumList(); }
+});
 document.addEventListener('change', e => {
   if (e.target.id === 'cmp') { cmp = e.target.value; render(); }
   if (e.target.id === 'cmpj') { cmpj = e.target.value; render(); }
+  const mk = { mcat: 'cat', mpl: 'player', mst: 'st' }[e.target.id];
+  if (mk) { MUSE[mk] = e.target.value; $('muse-list').innerHTML = museumList(); }
 });
 window.addEventListener('hashchange', () => { const t = location.hash.slice(1) || 'start'; if (t !== cur) { cur = t; render(); } });
 

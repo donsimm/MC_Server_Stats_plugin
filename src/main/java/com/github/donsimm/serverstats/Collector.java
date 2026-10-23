@@ -263,6 +263,10 @@ final class Collector {
                 snap.museum.put(id, new MuseumItem(title != null ? title : prettyName(path), category, skinUrl(byId.get(id))));
             }
         }
+        long noSkin = snap.museum.values().stream().filter(m -> m.skinUrl().isEmpty()).count();
+        if (noSkin > 0) {
+            snap.notes.add("Museum: " + noSkin + " von " + snap.museum.size() + " Advancements ohne Kopf-Textur im Symbol (kein Bild).");
+        }
         if (snap.museum.isEmpty()) {
             snap.notes.add("Museum: keine passenden Advancements gefunden. Namensraeume mit Advancements ausser minecraft: "
                     + (perNamespace.isEmpty() ? "keine" : perNamespace)

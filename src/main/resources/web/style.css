@@ -249,15 +249,19 @@ h2.sec small { color: var(--muted); font-size: 13px; font-weight: 400; margin-le
 }
 
 /* Museum */
-.muse-bar { height: 18px; border: 3px solid var(--paper); margin: 6px 0 18px; background: transparent; }
-.muse-bar i { display: block; height: 100%; background: var(--gold, #ffd36e); }
-.muse-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 12px; }
-.muse { border: 3px solid var(--paper); padding: 10px; display: flex; flex-direction: column; gap: 6px; }
-.muse.have { background: color-mix(in srgb, var(--gold, #ffd36e) 22%, transparent); }
-.muse.miss { opacity: .45; border-style: dashed; }
-.muse-by { display: flex; flex-wrap: wrap; gap: 3px; }
-.muse-by .av { width: 24px; height: 24px; }
-.muse small { opacity: .8; }
-.muse { position: relative; padding-left: 62px; min-height: 66px; justify-content: center; }
-.muse .mob { position: absolute; left: 8px; top: 8px; width: 46px; height: 46px; image-rendering: pixelated; }
-.muse.miss .mob { filter: grayscale(1) brightness(.5); }
+.muse-bar { height: 18px; border: 3px solid var(--paper); margin: 6px 0 18px; }
+.muse-bar i { display: block; height: 100%; background: #3fb950; }
+.muse-filter { gap: 10px; }
+.muse-filter select { padding: 9px 10px; background: var(--paper); color: var(--ink); border: 3px solid #000; box-shadow: 4px 4px 0 #3a3a3a; border-radius: 0; max-width: 100%; font: inherit; }
+.muse-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 12px; }
+.muse { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 10px; height: 92px; padding: 8px 10px; border: 3px solid var(--paper); overflow: hidden; }
+.muse.have { background: color-mix(in srgb, #3fb950 24%, #000); border-color: #6fdc7c; }
+.muse.miss { opacity: .5; border-style: dashed; }
+.muse .mob { width: 52px; height: 52px; image-rendering: pixelated; background: #222; }
+.muse.miss .mob { filter: grayscale(1) brightness(.55); }
+.muse-t { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.muse-t b { font-size: 14px; line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.muse-by { display: flex; align-items: center; gap: 3px; }
+.muse-by .av { width: 22px; height: 22px; border-width: 2px; }
+.muse-by .more { font-size: 12px; opacity: .85; margin-left: 2px; }
+.muse small { opacity: .8; font-size: 12px; }
