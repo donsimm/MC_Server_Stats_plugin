@@ -55,6 +55,10 @@ final class Settings {
     final String cookieMysqlPassword;
     final String cookieTable;
 
+    final boolean autoStats;
+    final String autoPage;
+    final int autoMinPlayers;
+
     final String homepageLabel;
     final String homepageUrl;
     final String discordUrl;
@@ -119,6 +123,10 @@ final class Settings {
         cookieMysqlUser = c.getString("sources.cookieclicker.mysql.user", "root");
         cookieMysqlPassword = c.getString("sources.cookieclicker.mysql.password", "");
         cookieTable = c.getString("sources.cookieclicker.players-table", "players");
+
+        autoStats = c.getBoolean("auto-stats.enabled", true);
+        autoPage = c.getString("auto-stats.page", "Alle Statistiken");
+        autoMinPlayers = Math.max(1, c.getInt("auto-stats.min-players", 1));
 
         homepageLabel = c.getString("links.homepage-label", "Homepage");
         homepageUrl = c.getString("links.homepage-url", "");

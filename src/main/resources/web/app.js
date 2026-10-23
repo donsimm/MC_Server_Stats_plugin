@@ -293,7 +293,7 @@ function headHTML(c) {
 function cardHTML(c) {
   const b = boardOf(c);
   const rows = b.length ? `<ol class="rows">${b.slice(0, 10).map(([u, v], i) => rowHTML(u, v, i, c)).join('')}</ol>` : '<p class="none">Noch keine Daten.</p>';
-  return `<article class="card${c.night ? ' night' : ''}" style="${cardVars(c)}">${headHTML(c)}${rows}` +
+  return `<article class="card${c.night ? ' night' : ''}" data-title="${esc(c.title.toLowerCase())}" style="${cardVars(c)}">${headHTML(c)}${rows}` +
     `<div class="card-f"><a href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}">Alle ${b.length} anzeigen →</a><span class="src">Quelle: ${esc(c.source)}</span></div></article>`;
 }
 function periodCtl(cats) {
@@ -331,9 +331,16 @@ function startView() {
     `<section id="online-sec">${onlineInner()}</section>${periodCtl(main)}` +
     `<h2 class="sec">Ranglisten</h2>${gridOf(main)}`;
 }
+let catFilter = '';
 function pageView(title) {
   const cats = DATA.categories.filter(c => c.page === title);
-  return `<h2 class="sec" style="margin-top:0">${esc(title)}<small>${cats.length} Ranglisten</small></h2>${periodCtl(cats)}${gridOf(cats)}`;
+  // Seiten mit vielen Ranglisten bekommen ein Suchfeld
+  const filter = cats.length > 20 ? `<div class="filter"><label for="catfilter">Rangliste suchen</label><input id="catfilter" type="search" value="${esc(catFilter)}" placeholder="z. B. Truhen, Fische, Schaden …" autocomplete="off"></div>` : '';
+  return `<h2 class="sec" style="margin-top:0">${esc(title)}<small>${cats.length} Ranglisten</small></h2>${filter}${periodCtl(cats)}${gridOf(cats)}`;
+}
+function applyCatFilter() {
+  const q = catFilter.trim().toLowerCase();
+  document.querySelectorAll('#view .grid .card[data-title]').forEach(el => { el.hidden = !!q && !el.dataset.title.includes(q); });
 }
 function spielerView() {
   const list = Object.entries(DATA.players).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));
@@ -467,12 +474,21 @@ function jobsCard(u) {
     `<div class="card-f"><span></span><span class="src">Quelle: AethelJobs</span></div></article>`;
 }
 
+function statsDetails(u) {
+  const rows = DATA.categories.filter(c => c.auto && IDX.val[c.id][u] !== undefined).map(c => {
+    const rk = IDX.rank[c.id][u];
+    return `<tr><td><a href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}">${esc(c.title)}</a></td><td class="r">${fmt(c, IDX.val[c.id][u])}</td><td class="r">Platz ${rk}</td></tr>`;
+  }).join('');
+  if (!rows) return '';
+  return `<h2 class="sec">Alle Statistiken</h2><details class="allstats"><summary>${DATA.categories.filter(c => c.auto && IDX.val[c.id][u] !== undefined).length} Werte anzeigen</summary><div class="tablewrap"><table><tbody>${rows}</tbody></table></div></details>`;
+}
+
 function profilView(u) {
   const P = DATA.players[u], on = ONLINE.players.find(p => p.uuid === u);
   const state = on ? `online seit ${sessStr(on.sessionMin)} · ${esc(on.dim)} · Ping ${on.ping} ms${on.afk ? ' · AFK' : ''}` : `Zuletzt online ${agoStr(P.last)}`;
   const hero = `<div class="hero"><article class="card" style="--card:#8fd0ff"><img class="av" src="heads/${u}.png" alt="" data-n="${esc(P.name)}">` +
     `<div><h1>${esc(P.name)}${on ? '<span class="pill">online</span>' : ''}</h1><p>Erstbeitritt ${dateStr(P.first)} · ${state}</p></div></article></div>`;
-  const tiles = DATA.categories.filter(c => !c.synthetic && IDX.val[c.id][u] !== undefined).map(c => {
+  const tiles = DATA.categories.filter(c => !c.synthetic && !c.auto && IDX.val[c.id][u] !== undefined).map(c => {
     const rk = IDX.rank[c.id][u], total = (c.boards.all || []).length;
     return `<a class="card tile${c.night ? ' night' : ''}" href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}" style="${cardVars(c)}">` +
       `<div class="card-h"><div><h3>${esc(c.title)}</h3></div></div>` +
@@ -480,7 +496,7 @@ function profilView(u) {
       `<div class="pl"><span class="rank${rk <= 3 ? ' top' : ''}">Platz ${rk}</span><span>von ${total}</span></div></a>`;
   }).join('');
   return `<a class="back" href="#start" data-go="start">← Übersicht</a>${hero}` +
-    (tiles ? `<h2 class="sec">Platzierungen</h2><div class="tiles">${tiles}</div>` : '') + jobsCard(u) + mcmmoCard(u);
+    (tiles ? `<h2 class="sec">Platzierungen</h2><div class="tiles">${tiles}</div>` : '') + jobsCard(u) + mcmmoCard(u) + statsDetails(u);
 }
 
 const slug = t => String(t).toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -531,6 +547,7 @@ function render() {
   else if (cur.startsWith('seite-') && PAGES.find(p => 'seite-' + slug(p) === cur)) view.innerHTML = pageView(PAGES.find(p => 'seite-' + slug(p) === cur));
   else { cur = 'start'; view.innerHTML = startView(); }
   renderNav();
+  applyCatFilter();
 }
 function renderFooter() {
   const sources = [...new Set(DATA.categories.map(c => c.source))];
@@ -584,6 +601,7 @@ document.addEventListener('click', e => {
   if (jb) { jmode = jb.dataset.jmode; render(); return; }
   if (!e.target.closest('.search')) hideSug();
 });
+document.addEventListener('input', e => { if (e.target.id === 'catfilter') { catFilter = e.target.value; applyCatFilter(); } });
 document.addEventListener('change', e => {
   if (e.target.id === 'cmp') { cmp = e.target.value; render(); }
   if (e.target.id === 'cmpj') { cmpj = e.target.value; render(); }

@@ -90,6 +90,12 @@ public final class VanillaStats {
         return value == null ? -1 : value;
     }
 
+    /** Alle Eintraege einer Gruppe (Schluessel mit "minecraft:"-Vorsatz), z. B. group("custom"). */
+    public Map<String, Long> group(String group) {
+        Map<String, Long> entries = groups.get(ns(group));
+        return entries == null ? Map.of() : entries;
+    }
+
     /** Summe aller Eintraege einer Gruppe, z. B. "mined". */
     public long groupSum(String group) {
         Map<String, Long> entries = groups.get(ns(group));

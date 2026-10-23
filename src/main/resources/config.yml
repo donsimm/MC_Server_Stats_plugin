@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 7
+config-version: 8
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -27,6 +27,14 @@ http:
   port: 8123
   # Adresse, die /serverstats link den Spielern anzeigt
   public-url: "http://localhost:8123"
+
+# Weitere Statistiken automatisch als Ranglisten: jeder Zaehler aus minecraft:custom (Truhen geoeffnet, Fische gefangen,
+# Schaden ausgeteilt, ...), der noch keine eigene Rangliste unten hat, bekommt eine auf der Seite "page".
+auto-stats:
+  enabled: true
+  page: "Alle Statistiken"
+  # Mindestanzahl Spieler mit einem Wert ueber 0, damit die Rangliste erscheint
+  min-players: 1
 
 # Schaltflaechen rechts im Menue. Eine leere Adresse blendet die jeweilige Schaltflaeche aus.
 links:
@@ -530,3 +538,39 @@ categories:
     format: level
     source: jobs
     column: "*"
+  benutzt:
+    page: "Alle Statistiken"
+    title: "Gegenstände benutzt"
+    subtitle: "Alle Gegenstände zusammen"
+    icon: star
+    color: "#c7d0dc"
+    format: int
+    source: vanilla
+    group-sum: "used"
+  zerbrochen:
+    page: "Alle Statistiken"
+    title: "Gegenstände zerbrochen"
+    subtitle: "Werkzeuge und Rüstung bis zum Bruch"
+    icon: star
+    color: "#c7d0dc"
+    format: int
+    source: vanilla
+    group-sum: "broken"
+  aufgehoben:
+    page: "Alle Statistiken"
+    title: "Gegenstände aufgehoben"
+    subtitle: "Alle Gegenstände zusammen"
+    icon: star
+    color: "#c7d0dc"
+    format: int
+    source: vanilla
+    group-sum: "picked_up"
+  getoetet-worden:
+    page: "Alle Statistiken"
+    title: "Getötet worden"
+    subtitle: "Von Mobs und Spielern zusammen"
+    icon: star
+    color: "#c7d0dc"
+    format: int
+    source: vanilla
+    group-sum: "killed_by"

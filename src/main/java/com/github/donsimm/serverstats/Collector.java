@@ -2,6 +2,7 @@ package com.github.donsimm.serverstats;
 
 import com.github.donsimm.serverstats.core.AdvancementsFile;
 import com.github.donsimm.serverstats.core.AjlbEntry;
+import com.github.donsimm.serverstats.core.AutoStats;
 import com.github.donsimm.serverstats.core.CategoryDef;
 import com.github.donsimm.serverstats.core.NumberParse;
 import com.github.donsimm.serverstats.core.PlayerData;
@@ -397,6 +398,7 @@ final class Collector {
         }
 
         Map<UUID, Map<String, double[]>> jobsData = snap.jobsDir == null ? null : JobsReader.read(snap.jobsDir);
+        Map<String, Map<UUID, Long>> customStats = new HashMap<>();
 
         for (PlayerData p : snap.players) {
             p.jobs = jobsData == null ? null : jobsData.get(p.uuid);
@@ -409,6 +411,12 @@ final class Collector {
                     } catch (IOException | RuntimeException e) {
                         readErrors++;
                     }
+                }
+            }
+            if (s.autoStats && stats != null) {
+                for (Map.Entry<String, Long> e : stats.group("custom").entrySet()) {
+                    String key = e.getKey().startsWith("minecraft:") ? e.getKey().substring("minecraft:".length()) : e.getKey();
+                    customStats.computeIfAbsent(key, k -> new HashMap<>()).put(p.uuid, e.getValue());
                 }
             }
             for (CategoryDef c : snap.categories) {
@@ -497,8 +505,40 @@ final class Collector {
             }
         }
 
+        if (s.autoStats && !customStats.isEmpty()) {
+            // Zaehler, die schon eine eigene Rangliste haben, nicht doppelt anlegen
+            java.util.Set<String> used = new java.util.HashSet<>();
+            for (CategoryDef c : s.categories) {
+                List<String> specs = new ArrayList<>(c.stat());
+                specs.addAll(c.sum());
+                for (String spec : specs) {
+                    String key = spec.replace("minecraft:", "");
+                    if (key.startsWith("custom:")) {
+                        used.add(key.substring("custom:".length()));
+                    }
+                }
+            }
+            AutoStats.Result auto = AutoStats.build(customStats, used, s.autoPage, s.autoMinPlayers);
+            snap.categories.addAll(auto.categories());
+            for (PlayerData p : snap.players) {
+                for (Map.Entry<String, Map<UUID, Double>> e : auto.values().entrySet()) {
+                    Double v = e.getValue().get(p.uuid);
+                    if (v != null) {
+                        p.values.put(e.getKey(), v);
+                    }
+                }
+            }
+        }
+
         JsonObject json = StatsBuilder.build(s.title, s.subtitle, System.currentTimeMillis() / 1000, snap.categories,
                 snap.players, snap.ajlbPeriods, s.chips, snap.categoryMax, s.mcmmoRadarMax);
+        // Ranglisten der Sammelseite fuer die Webseite kennzeichnen (erscheinen nicht als Kacheln im Profil)
+        for (JsonElement element : json.getAsJsonArray("categories")) {
+            JsonObject category = element.getAsJsonObject();
+            if (s.autoPage.equals(category.get("page").getAsString())) {
+                category.addProperty("auto", true);
+            }
+        }
         JsonObject links = new JsonObject();
         links.addProperty("homepageLabel", s.homepageLabel);
         links.addProperty("homepageUrl", safeUrl(s.homepageUrl));

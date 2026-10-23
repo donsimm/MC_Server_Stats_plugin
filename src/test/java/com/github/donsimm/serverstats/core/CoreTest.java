@@ -68,6 +68,27 @@ class CoreTest {
     }
 
     @Test
+    void autoStatsCreatesCategoriesForUnusedCustomCounters() {
+        UUID a = UUID.fromString("00000000-0000-0000-0000-00000000000a");
+        UUID b = UUID.fromString("00000000-0000-0000-0000-00000000000b");
+        Map<String, Map<UUID, Long>> perKey = Map.of(
+                "open_chest", Map.of(a, 10L, b, 4L),
+                "deaths", Map.of(a, 3L),
+                "swim_one_cm", Map.of(a, 200000L),
+                "damage_dealt", Map.of(a, 50L),
+                "some_new_stat", Map.of(a, 0L));
+        AutoStats.Result r = AutoStats.build(perKey, java.util.Set.of("deaths"), "Alle Statistiken", 1);
+        List<String> ids = r.categories().stream().map(CategoryDef::id).toList();
+        assertTrue(ids.contains("stat-open-chest"));
+        assertTrue(!ids.contains("stat-deaths"), "bereits konfigurierte Zaehler werden ausgelassen");
+        assertTrue(!ids.contains("stat-some-new-stat"), "Zaehler ohne Werte ueber 0 werden ausgelassen");
+        assertEquals("Truhen geöffnet", r.categories().stream().filter(c -> c.id().equals("stat-open-chest")).findFirst().get().title());
+        assertEquals(2.0, r.values().get("stat-swim-one-cm").get(a), 1e-9);
+        assertEquals(5.0, r.values().get("stat-damage-dealt").get(a), 1e-9);
+        assertEquals("Some new stat", AutoStats.title("some_new_stat"));
+    }
+
+    @Test
     void builderWritesJobsAndListsPlayersWithOnlyJobData() {
         UUID a = UUID.fromString("00000000-0000-0000-0000-00000000000a");
         PlayerData pa = new PlayerData(a);
