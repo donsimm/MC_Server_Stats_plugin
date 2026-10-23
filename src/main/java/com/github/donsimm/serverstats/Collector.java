@@ -256,6 +256,7 @@ final class Collector {
 
         Map<UUID, String> userCache = readUserCache();
         int unnamed = 0;
+        int mcmmoMissing = 0;
         for (UUID id : ids) {
             if (s.excludeUuids.contains(id) || optOut.contains(id)) {
                 continue;
@@ -294,7 +295,9 @@ final class Collector {
             }
             if (mcmmo) {
                 Map<String, Integer> levels = hooks.mcmmoLevels(id);
-                if (levels != null) {
+                if (levels == null) {
+                    mcmmoMissing++;
+                } else {
                     p.mcmmoSkills = levels;
                     int power = hooks.mcmmoPower(id);
                     if (power <= 0) {
@@ -309,6 +312,9 @@ final class Collector {
                 }
             }
             snap.players.add(p);
+        }
+        if (mcmmoMissing > 0) {
+            snap.notes.add(mcmmoMissing + " von " + snap.players.size() + " Spielern haben (noch) kein mcMMO-Profil. Das ist normal, wenn sie mcMMO nie benutzt haben.");
         }
         if (unnamed > 0) {
             snap.notes.add(unnamed + " Spieler ohne bekannten Namen uebersprungen (nie auf diesem Server gewesen?).");
