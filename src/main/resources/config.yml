@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 17
+config-version: 18
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -74,11 +74,11 @@ players:
   stats-dir: ""
   advancements-dir: ""
   exclude-uuids: []
-  exclude-names: []
+  exclude-names: ["ReicherSchweizer"]
   # Spieler, die laenger nicht online waren, ausblenden (0 = alle zeigen)
-  max-inactive-days: 0
+  max-inactive-days: 200
   # Spieler im Vanish-Modus nicht in der Online-Liste zeigen
-  hide-vanished: true
+  hide-vanished: false
 
 # Spielerkoepfe (werden von den Mojang-Servern geholt, einmal pro Spieler zwischengespeichert)
 heads:
