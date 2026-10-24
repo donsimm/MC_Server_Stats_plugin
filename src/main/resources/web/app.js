@@ -216,7 +216,8 @@ const PERIOD_NAMES = { week: 'Letzte 7 Tage', month: 'Letzter Monat', year: 'Let
 const PERIOD_SHORT = { week: '7 Tage', month: 'Monat', year: 'Jahr', all: 'Gesamt' };
 const PERIOD_DAYS = { week: 7, month: 30, year: 365 };
 let cardPeriod = {};   // Zeitraum je Karte (ueberschreibt die Auswahl oben)
-const periodOf = c => cardPeriod[c.id] || period;
+let forceAll = false;  // Startseite: Karten immer auf Gesamt
+const periodOf = c => forceAll ? 'all' : (cardPeriod[c.id] || period);
 const SKILL_LABELS = {
   ACROBATICS: 'Akrobatik', ALCHEMY: 'Alchemie', ARCHERY: 'Bogenschiessen', AXES: 'Äxte', EXCAVATION: 'Graben',
   FISHING: 'Angeln', HERBALISM: 'Kräuterkunde', MINING: 'Bergbau', REPAIR: 'Reparieren', SWORDS: 'Schwerter',
@@ -297,10 +298,12 @@ function windowNote(c) {
   return `<p class="winnote">Aufzeichnung seit ${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}, kürzer als ${PERIOD_DAYS[p]} Tage</p>`;
 }
 function cardPeriodCtl(c) {
+  if (forceAll) return '';
   const have = Object.keys(PERIOD_SHORT).filter(k => k === 'all' || c.boards[k] || c.windowable);
-  if (have.length < 2) return '';
   const cur = periodOf(c);
-  return `<div class="cp" role="group" aria-label="Zeitraum">` + have.map(k => `<button type="button" data-cp="${esc(c.id)}" data-p="${k}" aria-pressed="${k === cur}">${PERIOD_SHORT[k]}</button>`).join('') + '</div>';
+  return `<div class="cp" role="group" aria-label="Zeitraum">` + Object.keys(PERIOD_SHORT).map(k => have.includes(k)
+    ? `<button type="button" data-cp="${esc(c.id)}" data-p="${k}" aria-pressed="${k === cur}">${PERIOD_SHORT[k]}</button>`
+    : `<button type="button" disabled title="Für diese Rangliste gibt es nur den Gesamtwert">${PERIOD_SHORT[k]}</button>`).join('') + '</div>';
 }
 
 /* ---------- Bausteine ---------- */
@@ -319,7 +322,7 @@ function headHTML(c, link) {
 function cardHTML(c) {
   const b = boardOf(c);
   const rows = b.length ? `<ol class="rows">${b.slice(0, 10).map(([u, v], i) => rowHTML(u, v, i, c)).join('')}</ol>` : (periodOf(c) !== 'all' && c.windowable ? noWindow(c) : '<p class="none">Noch keine Daten.</p>');
-  return `<article class="card${c.night ? ' night' : ''}" data-id="${esc(c.id)}" data-title="${esc(c.title.toLowerCase())}" style="${cardVars(c)}">${headHTML(c, true)}${cardPeriodCtl(c)}${rows}${windowNote(c)}` +
+  return `<article class="card rk${c.night ? ' night' : ''}" data-id="${esc(c.id)}" data-title="${esc(c.title.toLowerCase())}" style="${cardVars(c)}">${headHTML(c, true)}<div class="rk-mid">${rows}<div class="winslot">${windowNote(c)}</div></div><div class="rk-bottom">${cardPeriodCtl(c)}` +
     `<div class="card-f"><a href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}">${b.length ? `Alle ${b.length} anzeigen` : 'Alle anzeigen'} →</a><span class="src">Quelle: ${esc(c.source)}</span></div></article>`;
 }
 function periodParts(cats) {
@@ -359,7 +362,7 @@ function startView() {
   }
   const main = DATA.categories.filter(c => c.page === MAIN_PAGE);
   return `<div class="chips">${chips.map(([b, s]) => `<div class="chip-stat"><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join('')}</div>` +
-    `<section id="online-sec">${onlineInner()}</section>${periodCtl(main)}` +
+    `<section id="online-sec">${onlineInner()}</section>` +
     `<h2 class="sec">Ranglisten</h2>${gridOf(main)}`;
 }
 let catFilter = '';
@@ -736,6 +739,7 @@ function renderNav() {
 
 function render() {
   if (!DATA) return;
+  forceAll = cur === 'start' || !(cur.startsWith('kat-') || cur.startsWith('seite-') || cur.startsWith('profil-') || cur === 'spieler' || cur === 'museum');
   if (cur.startsWith('kat-') && IDX.cat[cur.slice(4)]) view.innerHTML = katView(IDX.cat[cur.slice(4)]);
   else if (cur.startsWith('profil-') && DATA.players[cur.slice(7)]) view.innerHTML = profilView(cur.slice(7));
   else if (cur === 'spieler') view.innerHTML = spielerView();

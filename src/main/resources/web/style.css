@@ -272,7 +272,7 @@ h2.sec small { color: var(--muted); font-size: 13px; font-weight: 400; margin-le
 .muse small { opacity: .8; font-size: 12px; }
 
 /* Zeitraum je Karte */
-.cp { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 10px; }
+.cp { display: flex; flex-wrap: wrap; gap: 4px; margin: 12px 0 0; }
 .cp button { font: inherit; font-size: 12px; font-weight: 700; padding: 3px 8px; background: transparent; color: var(--on, #0c0a12); border: 2px solid currentColor; border-radius: 0; cursor: pointer; opacity: .75; }
 .cp button:hover { opacity: 1; }
 .cp button[aria-pressed="true"] { background: var(--on, #0c0a12); color: var(--card, #fff); opacity: 1; border-color: var(--on, #0c0a12); }
@@ -285,3 +285,17 @@ h2.sec small { color: var(--muted); font-size: 13px; font-weight: 400; margin-le
 .toolrow .filter label { white-space: nowrap; }
 .toolrow .filter input { width: 300px; max-width: 100%; }
 @media (max-width: 760px) { .toolrow .filter { flex-wrap: wrap; width: 100%; } .toolrow .filter input { width: 100%; } }
+
+/* Ranglisten-Karten: gleiche Hoehe, Zeitraum und "Alle anzeigen" immer unten an derselben Stelle */
+.card.rk { display: flex; flex-direction: column; }
+.card.rk .rk-mid { flex: 1; }
+.card.rk .rows, .card.rk .none { min-height: 350px; margin-bottom: 0; }
+.card.rk .none { padding-top: 8px; }
+.card.rk .winslot { min-height: 20px; }
+.card.rk .winnote { margin: 6px 0 0; }
+.card.rk .cp { margin: 10px 0 0; min-height: 28px; }
+.cp button:disabled { opacity: .3; cursor: default; }
+.cp button:disabled:hover { opacity: .3; }
+.card.rk .card-f { flex-wrap: nowrap; gap: 10px; }
+.card.rk .card-f a { white-space: nowrap; }
+.card.rk .card-f .src { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
