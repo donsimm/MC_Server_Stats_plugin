@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 19
+config-version: 20
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -141,6 +141,10 @@ sources:
     # Der gespeicherte Streak bleibt stehen, bis der Spieler wieder abholt. Liegt die letzte Abholung laenger zurueck
     # als diese Stunden, zaehlt der aktuelle Streak als verfallen (2 x day-length + streak-grace-time = 60).
     streak-valid-hours: 60
+  luckperms:
+    # Rang-Abzeichen: die primaere LuckPerms-Gruppe jedes Spielers (auch offline). Erscheinen nur fuer Gruppen,
+    # in denen der Spieler ist. Aussehen je Gruppe unter "ranks:" weiter unten.
+    enabled: true
   ajlb:
     # AJLeaderboards ueber PlaceholderAPI. Nur fuer Zeitfenster (Monat, Woche, Heute) und Kategorien mit source: ajlb.
     # Die Platzhalter-Schreibweise kann je nach AJLB-Version abweichen: mit /serverstats ajlb <board> pruefen.
@@ -161,6 +165,26 @@ chips:
   - { category: friedhof, label: "Tode" }
   - { category: weltenbummler, label: "Strecke gesamt" }
   - { category: keksbaecker, label: "Kekse gebacken" }
+
+# Rang-Abzeichen (Schluessel = Name der LuckPerms-Gruppe, klein geschrieben). label = Text, bg = Hintergrund, fg = Schrift.
+# Gruppen ohne Eintrag bekommen ein graues Abzeichen mit ihrem Namen.
+ranks:
+  member: { label: "MEMBER", bg: "#6b6b6b", fg: "#ffffff" }
+  vip: { label: "VIP", bg: "#f5993a", fg: "#5a2d00" }
+  og: { label: "OG", bg: "#62e03a", fg: "#0f4a00" }
+  helper: { label: "HELPER", bg: "#f6c33a", fg: "#5a3d00" }
+  builder: { label: "BUILDER", bg: "#12b3ea", fg: "#00364d" }
+  mvp: { label: "MVP", bg: "#b02ab3", fg: "#ffffff" }
+  owner: { label: "OWNER", bg: "#e5192b", fg: "#ffffff" }
+  mod: { label: "MOD", bg: "#0a2fc0", fg: "#ffffff" }
+  admin: { label: "ADMIN", bg: "#f2145f", fg: "#ffffff" }
+  developer: { label: "DEVELOPER", bg: "#c9751d", fg: "#ffffff" }
+  partner: { label: "PARTNER", bg: "#4a2ed0", fg: "#ffffff" }
+  vipplus: { label: "VIP+", bg: "#f5993a", fg: "#5a2d00" }
+  pro: { label: "PRO", bg: "#14e3e3", fg: "#00484d" }
+  elite: { label: "ELITE", bg: "#1fd6b5", fg: "#00433a" }
+  eliteplus: { label: "ELITE+", bg: "#1fd6b5", fg: "#00433a" }
+  twitch: { label: "TWITCH", bg: "#a22fe0", fg: "#ffffff" }
 
 # Ranglisten. Die Reihenfolge hier ist die Reihenfolge auf der Seite.
 #   page:      "Tab" oder "Tab|Abschnitt" (mehrere Abschnitte auf einer Seite, z. B. "Jobs & mcMMO|Jobs"). "Übersicht" = Startseite, sonst Reiter in der Navigation (mcMMO, Cookie Clicker, Jobs). Neue Namen ergeben neue Reiter.

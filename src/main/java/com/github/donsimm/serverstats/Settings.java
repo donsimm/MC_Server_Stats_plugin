@@ -68,6 +68,10 @@ final class Settings {
     final String dailyTable;
     final double dailyStreakValidHours;
 
+    final boolean luckpermsEnabled;
+    /** Gruppe (klein) -&gt; {Anzeigename, Hintergrundfarbe, Schriftfarbe}. */
+    final Map<String, String[]> ranks = new java.util.LinkedHashMap<>();
+
     final boolean autoStats;
     final String autoPage;
     final int autoMinPlayers;
@@ -157,6 +161,18 @@ final class Settings {
         dailyFile = c.getString("sources.dailyrewards.sqlite-file", "DailyRewards2/dailyrewards.db");
         dailyTable = c.getString("sources.dailyrewards.table", "player_data");
         dailyStreakValidHours = Math.max(1, c.getDouble("sources.dailyrewards.streak-valid-hours", 60));
+
+        luckpermsEnabled = c.getBoolean("sources.luckperms.enabled", true);
+        ConfigurationSection rankSection = c.getConfigurationSection("ranks");
+        if (rankSection != null) {
+            for (String group : rankSection.getKeys(false)) {
+                ConfigurationSection r = rankSection.getConfigurationSection(group);
+                if (r != null) {
+                    ranks.put(group.toLowerCase(Locale.ROOT), new String[]{r.getString("label", group.toUpperCase(Locale.ROOT)),
+                            r.getString("bg", "#6b6b6b"), r.getString("fg", "#ffffff")});
+                }
+            }
+        }
 
         autoStats = c.getBoolean("auto-stats.enabled", true);
         autoPage = c.getString("auto-stats.page", "Alle Statistiken");

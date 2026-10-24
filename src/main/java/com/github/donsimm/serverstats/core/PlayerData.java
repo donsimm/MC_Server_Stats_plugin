@@ -16,6 +16,8 @@ public final class PlayerData {
     /** mcMMO-Skills (Enum-Name -&gt; Level), null wenn nicht verfuegbar. */
     public Map<String, Integer> mcmmoSkills;
     public int mcmmoPower;
+    /** Primaere LuckPerms-Gruppe (klein geschrieben), null wenn unbekannt. */
+    public String rank;
     /** Job-Name -&gt; {Level, XP}, null wenn keine Job-Daten vorliegen. */
     public Map<String, double[]> jobs;
 

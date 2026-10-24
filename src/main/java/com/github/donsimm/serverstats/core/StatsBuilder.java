@@ -127,6 +127,9 @@ public final class StatsBuilder {
             o.addProperty("name", p.name);
             o.addProperty("first", p.first);
             o.addProperty("last", p.last);
+            if (p.rank != null && !p.rank.isBlank()) {
+                o.addProperty("rank", p.rank);
+            }
             if (hasJobs) {
                 JsonObject jobs = new JsonObject();
                 for (Map.Entry<String, double[]> e : new java.util.TreeMap<>(p.jobs).entrySet()) {

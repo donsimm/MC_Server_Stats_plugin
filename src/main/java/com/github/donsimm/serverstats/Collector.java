@@ -802,6 +802,16 @@ final class Collector {
             }
         }
 
+        if (s.luckpermsEnabled) {
+            int withRank = 0;
+            for (PlayerData p : snap.players) {
+                p.rank = hooks.primaryGroup(p.uuid);
+                if (p.rank != null) {
+                    withRank++;
+                }
+            }
+            notes.add("LuckPerms: " + withRank + " von " + snap.players.size() + " Spielern mit Gruppe.");
+        }
         JsonObject json = StatsBuilder.build(s.title, s.subtitle, System.currentTimeMillis() / 1000, snap.categories,
                 snap.players, snap.ajlbPeriods, s.chips, snap.categoryMax, s.mcmmoRadarMax);
         // Ranglisten der Sammelseite fuer die Webseite kennzeichnen (erscheinen nicht als Kacheln im Profil)
@@ -817,6 +827,17 @@ final class Collector {
         links.addProperty("discordUrl", safeUrl(s.discordUrl));
         json.add("links", links);
         applyHistoryWindows(snap, json, notes);
+        if (s.luckpermsEnabled && !s.ranks.isEmpty()) {
+            JsonObject ranks = new JsonObject();
+            for (Map.Entry<String, String[]> e : s.ranks.entrySet()) {
+                JsonObject r = new JsonObject();
+                r.addProperty("label", e.getValue()[0]);
+                r.addProperty("bg", e.getValue()[1]);
+                r.addProperty("fg", e.getValue()[2]);
+                ranks.add(e.getKey(), r);
+            }
+            json.add("ranks", ranks);
+        }
         if (!snap.museum.isEmpty()) {
             Set<UUID> listed = new java.util.HashSet<>();
             for (PlayerData p : snap.players) {

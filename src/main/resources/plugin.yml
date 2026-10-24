@@ -4,7 +4,7 @@ main: com.github.donsimm.serverstats.ServerStatsPlugin
 api-version: '1.21'
 author: donsimm
 description: Erstellt aus Spielerstatistiken, Plugin-Daten und Ranglisten eine Webseite.
-softdepend: [Vault, mcMMO, PlaceholderAPI, AJLeaderboards, Essentials, CookieClicker]
+softdepend: [Vault, mcMMO, PlaceholderAPI, AJLeaderboards, Essentials, CookieClicker, LuckPerms]
 commands:
   serverstats:
     description: Link zur Stats-Seite, Opt-out und Verwaltung

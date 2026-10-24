@@ -35,6 +35,12 @@ final class Hooks {
     private Object essentials;
     private Method essGetUser;
 
+    private Object lpUsers;
+    private Method lpGetUser;
+    private Method lpLoadUser;
+    private Method lpPrimary;
+    private boolean lpTried;
+
     Hooks(Logger log) {
         this.log = log;
     }
@@ -257,5 +263,61 @@ final class Hooks {
             }
         }
         return essentialsFlag(player.getUniqueId(), "isVanished");
+    }
+
+    // ---------------------------------------------------------------- LuckPerms
+
+    private boolean luckperms() {
+        if (lpUsers != null) {
+            return true;
+        }
+        if (lpTried) {
+            return false;
+        }
+        lpTried = true;
+        try {
+            Plugin plugin = Bukkit.getPluginManager().getPlugin("LuckPerms");
+            if (plugin == null) {
+                return false;
+            }
+            ClassLoader loader = plugin.getClass().getClassLoader();
+            Object api = loader.loadClass("net.luckperms.api.LuckPermsProvider").getMethod("get").invoke(null);
+            lpUsers = api.getClass().getMethod("getUserManager").invoke(api);
+            Class<?> manager = loader.loadClass("net.luckperms.api.model.user.UserManager");
+            lpGetUser = manager.getMethod("getUser", UUID.class);
+            lpLoadUser = manager.getMethod("loadUser", UUID.class);
+            lpPrimary = loader.loadClass("net.luckperms.api.model.user.User").getMethod("getPrimaryGroup");
+            return true;
+        } catch (ReflectiveOperationException | LinkageError | RuntimeException e) {
+            lpUsers = null;
+            report("lp-error", "LuckPerms-Anbindung fehlgeschlagen", e);
+            return false;
+        }
+    }
+
+    /** Primaere LuckPerms-Gruppe (klein geschrieben) oder null. Nicht im Hauptthread aufrufen: Offline-Spieler werden geladen. */
+    String primaryGroup(UUID uuid) {
+        if (!luckperms()) {
+            return null;
+        }
+        try {
+            Object user = lpGetUser.invoke(lpUsers, uuid);
+            if (user == null) {
+                Object future = lpLoadUser.invoke(lpUsers, uuid);
+                user = ((java.util.concurrent.CompletableFuture<?>) future).get(5, java.util.concurrent.TimeUnit.SECONDS);
+            }
+            if (user == null) {
+                return null;
+            }
+            Object group = lpPrimary.invoke(user);
+            return group == null ? null : group.toString().toLowerCase(java.util.Locale.ROOT);
+        } catch (ReflectiveOperationException | RuntimeException | java.util.concurrent.TimeoutException e) {
+            return null;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        } catch (java.util.concurrent.ExecutionException e) {
+            return null;
+        }
     }
 }

@@ -281,6 +281,12 @@ function buildIndex() {
     (c.boards.all || []).forEach(([u, v], i) => { IDX.val[c.id][u] = v; IDX.rank[c.id][u] = i + 1; });
   }
 }
+/** Rang-Abzeichen: Darstellung je LuckPerms-Gruppe aus der config.yml (stats.json "ranks"); unbekannte Gruppen grau. */
+const rankBadge = k => {
+  if (!k) return '';
+  const r = (DATA.ranks && DATA.ranks[k]) || { label: String(k).toUpperCase(), bg: '#6b6b6b', fg: '#ffffff' };
+  return `<span class="rank-badge" style="--rb:${esc(r.bg)};--rt:${esc(r.fg)}">${esc(r.label)}</span>`;
+};
 const nameOf = u => (DATA.players[u] && DATA.players[u].name) || u.slice(0, 8);
 const isOnline = u => ONLINE.players.some(p => p.uuid === u);
 const boardOf = c => { const p = periodOf(c); if (p === 'all') return c.boards.all; return c.boards[p] || (c.windowable ? [] : c.boards.all); };
@@ -346,7 +352,7 @@ function onlineInner() {
   const head = `<h2 class="sec">Gerade online<small>${on.length} von ${total} · aktualisiert alle 30 Sekunden</small></h2>`;
   if (!on.length) return head + '<p class="empty">Gerade ist niemand online.</p>';
   return head + `<div class="online">${on.map(p => `<a class="pcard" href="#profil-${p.uuid}" data-go="profil-${p.uuid}">` +
-    `<img class="av" src="heads/${p.uuid}.png" alt="" loading="lazy" data-n="${esc(p.name)}"><b><i class="dot"></i>${esc(p.name)}</b>` +
+    `<img class="av" src="heads/${p.uuid}.png" alt="" loading="lazy" data-n="${esc(p.name)}"><b><i class="dot"></i>${esc(p.name)}${rankBadge((DATA.players[p.uuid] || {}).rank)}</b>` +
     `<span>${esc(p.dim)} · ${sessStr(p.sessionMin)}${p.afk ? ' · AFK' : ''}</span></a>`).join('')}</div>`;
 }
 
@@ -536,7 +542,7 @@ function spielerView() {
   const list = Object.entries(DATA.players).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));
   const cards = list.map(([u, p]) => {
     const on = ONLINE.players.find(x => x.uuid === u);
-    return `<a class="pcard" href="#profil-${u}" data-go="profil-${u}">${avatar(u)}<b>${on ? '<i class="dot"></i>' : ''}${esc(p.name)}</b>` +
+    return `<a class="pcard" href="#profil-${u}" data-go="profil-${u}">${avatar(u)}<b>${on ? '<i class="dot"></i>' : ''}${esc(p.name)}${rankBadge(p.rank)}</b>` +
       `<span>${on ? 'online · ' + esc(on.dim) : 'zuletzt online ' + agoStr(p.last)}${p.mcmmo ? ' · mcMMO ' + nf.format(p.mcmmo.power) : ''}</span></a>`;
   }).join('');
   return `<h2 class="sec" style="margin-top:0">Spieler<small>${list.length} erfasst, Suche oben rechts</small></h2><div class="online">${cards}</div>`;
@@ -550,10 +556,14 @@ function katView(c) {
     `<div class="card-f"><span>${b.length} Spieler</span><span class="src">Quelle: ${esc(c.source)}</span></div></article>`;
 }
 
+/** mcMMO-Skills nach Sinn gruppiert (Radar-Reihenfolge). Unbekannte Skills hängen hinten an. */
+const SKILL_GROUPS = [{"name": "Nahkampf", "color": "#d9342b", "keys": ["SWORDS", "AXES", "MACES", "SPEARS", "UNARMED"]}, {"name": "Fernkampf", "color": "#e8820c", "keys": ["ARCHERY", "CROSSBOWS", "TRIDENTS"]}, {"name": "Abbau", "color": "#7a5a1a", "keys": ["MINING", "EXCAVATION", "WOODCUTTING"]}, {"name": "Natur", "color": "#1f9a3c", "keys": ["HERBALISM", "FISHING", "TAMING"]}, {"name": "Handwerk", "color": "#1b6fb5", "keys": ["REPAIR", "ALCHEMY", "ACROBATICS"]}];
+const SKILL_ORDER = SKILL_GROUPS.flatMap(g => g.keys);
 function skillKeys() {
   const keys = new Set();
   Object.values(DATA.players).forEach(p => p.mcmmo && Object.keys(p.mcmmo.skills).forEach(k => keys.add(k)));
-  return [...keys].sort((a, b) => skillLabel(a).localeCompare(skillLabel(b), 'de'));
+  const rank = k => { const i = SKILL_ORDER.indexOf(k); return i < 0 ? 999 : i; };
+  return [...keys].sort((a, b) => rank(a) - rank(b) || skillLabel(a).localeCompare(skillLabel(b), 'de'));
 }
 const mcmmoValue = (pl, k) => (pl.mcmmo && pl.mcmmo.skills[k]) || 0;
 function skillMax(keys) {
@@ -564,12 +574,14 @@ function skillMax(keys) {
  * Radar als SVG. Die Beschriftungen werden gegeneinander verschoben, damit sie sich nicht überlagern.
  * valueOf(spieler, schluessel) liefert den Wert, maxes die Skala je Achse.
  */
-function radarSvg(aria, keys, labelOf, valueOf, maxes, me, other) {
+function radarSvg(aria, keys, labelOf, valueOf, maxes, me, other, groups) {
   const n = keys.length, R = 118, cx = 200, cy = 200;
+  // Kategorie-Schilder (nur wenn Gruppen uebergeben wurden): Position je Gruppe aus ihren Achsen
+  const GR = groups ? groups.map(g => ({ g, idx: g.keys.map(k => keys.indexOf(k)).filter(i => i >= 0) })).filter(x => x.idx.length) : null;
   const pt = (i, f, r = R) => { const a = i * 2 * Math.PI / n - Math.PI / 2; return [cx + Math.cos(a) * r * f, cy + Math.sin(a) * r * f]; };
   const fix = a => a.map(v => v.toFixed(1)).join(',');
   const poly = (pl, dx = 0, dy = 0) => keys.map((k, i) => { const [x, y] = pt(i, Math.min(1, valueOf(pl, k) / maxes[i])); return (x + dx).toFixed(1) + ',' + (y + dy).toFixed(1); }).join(' ');
-  let s = `<svg viewBox="-60 -4 520 420" role="img" aria-label="${esc(aria)}">`;
+  let s = `<svg viewBox="${GR ? '-150 -50 700 530' : '-60 -4 520 420'}" role="img" aria-label="${esc(aria)}">`;
   [.25, .5, .75, 1].forEach(f => { s += `<polygon class="ring${f === 1 ? ' out' : ''}" points="${keys.map((_, i) => fix(pt(i, f))).join(' ')}"/>`; });
   keys.forEach((_, i) => { const [x, y] = pt(i, 1); s += `<line class="axis" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`; });
   s += `<polygon points="${poly(me, 5, 5)}" fill="#0c0a12"/>`;
@@ -600,6 +612,12 @@ function radarSvg(aria, keys, labelOf, valueOf, maxes, me, other) {
     });
   }
   labels.forEach(l => { s += `<text class="rl" x="${l.x.toFixed(1)}" y="${l.by.toFixed(1)}" text-anchor="${l.anchor}">${esc(l.text)}</text>`; });
+  if (GR) GR.forEach(x => {
+    const ang = i => i * 2 * Math.PI / n - Math.PI / 2, am = (ang(Math.min(...x.idx)) + ang(Math.max(...x.idx))) / 2;
+    const bx = cx + Math.cos(am) * (R + 120), by = cy + Math.sin(am) * (R + 92), w = x.g.name.length * 8 + 16;
+    s += `<rect x="${(bx - w / 2).toFixed(1)}" y="${(by - 11).toFixed(1)}" width="${w}" height="22" fill="${x.g.color}" stroke="#0c0a12" stroke-width="2"/>` +
+      `<text x="${bx.toFixed(1)}" y="${(by + 5).toFixed(1)}" text-anchor="middle" style="font:700 13px var(--font);fill:#fff">${esc(x.g.name)}</text>`;
+  });
   return s + '</svg>';
 }
 
@@ -621,7 +639,7 @@ function mcmmoCard(u) {
   const candidates = Object.entries(DATA.players).filter(([id, p]) => id !== u && p.mcmmo).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));
   const opts = '<option value="">– keiner –</option>' + candidates.map(([id, p]) => `<option value="${id}"${id === cmp ? ' selected' : ''}>${esc(p.name)}</option>`).join('');
   return `<h2 class="sec">Skills</h2><article class="card" style="--card:#b9a4ff"><div class="card-h"><div><h3>mcMMO-Skills</h3><p>Skillradar und Level je Fertigkeit</p></div></div>` +
-    `<div class="mm"><div>${radarSvg('mcMMO-Skillradar von ' + P.name, keys, skillLabel, mcmmoValue, maxes, P, otherP)}${legendHTML(P, otherP)}</div>` +
+    `<div class="mm"><div>${radarSvg('mcMMO-Skillradar von ' + P.name, keys, skillLabel, mcmmoValue, maxes, P, otherP, SKILL_GROUPS)}${legendHTML(P, otherP)}</div>` +
     `<div><div class="power"><b>${nf.format(P.mcmmo.power)}</b><span>Power-Level</span></div>` +
     `<div class="ctrl">${scaleCtl('data-mode', mode)}<label for="cmp">Vergleichen mit</label><select id="cmp">${opts}</select></div>` +
     `<ul class="skills">${list}</ul>` +
@@ -677,7 +695,7 @@ function profilView(u) {
   const P = DATA.players[u], on = ONLINE.players.find(p => p.uuid === u);
   const state = on ? `online seit ${sessStr(on.sessionMin)} · ${esc(on.dim)} · Ping ${on.ping} ms${on.afk ? ' · AFK' : ''}` : `Zuletzt online ${agoStr(P.last)}`;
   const hero = `<div class="hero"><article class="card" style="--card:#8fd0ff"><img class="av" src="heads/${u}.png" alt="" data-n="${esc(P.name)}">` +
-    `<div><h1>${esc(P.name)}${on ? '<span class="pill">online</span>' : ''}</h1><p>Erstbeitritt ${dateStr(P.first)} · ${state}</p></div></article></div>`;
+    `<div><h1>${esc(P.name)}${rankBadge(P.rank)}${on ? '<span class="pill">online</span>' : ''}</h1><p>Erstbeitritt ${dateStr(P.first)} · ${state}</p></div></article></div>`;
   const tiles = DATA.categories.filter(c => !c.synthetic && !c.auto && IDX.val[c.id][u] !== undefined).map(c => {
     const rk = IDX.rank[c.id][u], total = (c.boards.all || []).length;
     return `<a class="card tile${c.night ? ' night' : ''}" href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}" style="${cardVars(c)}">` +
