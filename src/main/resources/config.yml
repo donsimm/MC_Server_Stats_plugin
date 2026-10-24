@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 15
+config-version: 16
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -132,6 +132,15 @@ sources:
     enabled: true
     # relativ zum plugins-Ordner
     folder: "IP"
+  dailyrewards:
+    # Plugin DailyRewards2: Streaks aus der SQLite-Datei (nur lesend, die IP-Spalte wird nicht gelesen).
+    enabled: true
+    # relativ zum plugins-Ordner
+    sqlite-file: "DailyRewards2/dailyrewards.db"
+    table: "player_data"
+    # Der gespeicherte Streak bleibt stehen, bis der Spieler wieder abholt. Liegt die letzte Abholung laenger zurueck
+    # als diese Stunden, zaehlt der aktuelle Streak als verfallen (2 x day-length + streak-grace-time = 60).
+    streak-valid-hours: 60
   ajlb:
     # AJLeaderboards ueber PlaceholderAPI. Nur fuer Zeitfenster (Monat, Woche, Heute) und Kategorien mit source: ajlb.
     # Die Platzhalter-Schreibweise kann je nach AJLB-Version abweichen: mit /serverstats ajlb <board> pruefen.
@@ -157,7 +166,7 @@ chips:
 #   page:      "Tab" oder "Tab|Abschnitt" (mehrere Abschnitte auf einer Seite, z. B. "Jobs & mcMMO|Jobs"). "Übersicht" = Startseite, sonst Reiter in der Navigation (mcMMO, Cookie Clicker, Jobs). Neue Namen ergeben neue Reiter.
 #   format:  int | dur (Wert in Stunden) | km | big (Mio./Mrd./Bio. ...) | adv (x / Gesamtzahl) | dec (eine Nachkommastelle) | level ("Level 16")
 #   icon:    clock gem skull pick sword swords boot scroll bolt star heart shield cookie cursor gear
-#   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker (column: COOKIES, CLICKS, PER_CLICK, PRESTIGE) | jobs (column: Job-Name oder *) | skyblock (column: LEVEL, CHALLENGES, COMPLETIONS, PARTY) | oneblock (column: LEVEL, INVITED) | parkour (stat: block:<modus> oder elytra:<modus>, column: SCORE oder TIME) | ajlb
+#   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker (column: COOKIES, CLICKS, PER_CLICK, PRESTIGE) | jobs (column: Job-Name oder *) | skyblock (column: LEVEL, CHALLENGES, COMPLETIONS, PARTY) | oneblock (column: LEVEL, INVITED) | parkour (stat: block:<modus> oder elytra:<modus>, column: SCORE oder TIME) | dailyrewards (column: CURRENT, LONGEST, CLAIMS) | ajlb
 #   vanilla: stat (Liste, erster Treffer zaehlt) oder sum (Liste, addiert) oder group-sum (ganze Gruppe), plus scale
 #   ajlb-board: AJLeaderboards-Board fuer Zeitfenster (optional)
 #   include-zero: true = auch Spieler mit dem Wert 0 listen (z. B. "hat eine Insel")
@@ -809,3 +818,48 @@ categories:
     source: parkour
     stat: ["elytra:time trial"]
     column: "SCORE"
+  dreizack:
+    page: "Übersicht"
+    title: "Dreizack-Werfer"
+    subtitle: "Meiste Dreizack-Einsätze"
+    icon: bolt
+    color: "#7fd4ff"
+    format: int
+    source: vanilla
+    stat: ["used:trident"]
+  streak:
+    page: "Übersicht"
+    title: "Streak-König"
+    subtitle: "Längste aktuelle Serie, Tage in Folge abgeholt"
+    icon: star
+    color: "#ffd23f"
+    format: int
+    source: dailyrewards
+    column: "CURRENT"
+  streak-cookie:
+    page: "Cookie Clicker"
+    title: "Streak"
+    subtitle: "Aktuelle Serie, Tage in Folge abgeholt"
+    icon: star
+    color: "#ffd23f"
+    format: int
+    source: dailyrewards
+    column: "CURRENT"
+  streak-bester:
+    page: "Cookie Clicker"
+    title: "Bester Streak"
+    subtitle: "Längste Serie aller Zeiten"
+    icon: star
+    color: "#f7c8a0"
+    format: int
+    source: dailyrewards
+    column: "LONGEST"
+  streak-abholungen:
+    page: "Cookie Clicker"
+    title: "Belohnungen abgeholt"
+    subtitle: "Tägliche Belohnungen insgesamt"
+    icon: gem
+    color: "#c6f26b"
+    format: int
+    source: dailyrewards
+    column: "CLAIMS"

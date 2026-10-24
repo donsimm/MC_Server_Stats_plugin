@@ -40,7 +40,8 @@ final class OnlineTracker implements Listener {
         JsonArray players = new JsonArray();
         for (Player player : Bukkit.getOnlinePlayers()) {
             UUID id = player.getUniqueId();
-            if (optOut.contains(id) || settings.excludeUuids.contains(id)) {
+            if (optOut.contains(id) || settings.excludeUuids.contains(id)
+                    || settings.excludeNames.contains(player.getName().toLowerCase(java.util.Locale.ROOT))) {
                 continue;
             }
             if (settings.hideVanished && hooks.vanished(player)) {

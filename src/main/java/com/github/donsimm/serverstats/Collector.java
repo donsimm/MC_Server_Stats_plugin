@@ -380,13 +380,14 @@ final class Collector {
                 case "jobs" -> snap.jobsDir != null;
                 case "skyblock" -> snap.skyDir != null;
                 case "oneblock" -> snap.oneFile != null;
+                case "dailyrewards" -> s.dailyEnabled && new DailyRewardsReader(s, pluginsDir, plugin.getLogger()).file() != null;
                 case "parkour" -> parkourFile(snap.parkourDir, c) != null;
                 case "ajlb" -> ajlb && !c.ajlbBoard().isBlank();
                 default -> false;
             };
             if (ok) {
                 snap.categories.add(c);
-            } else if ((!c.source().equals("cookieclicker") || s.cookieEnabled) && !c.source().equals("parkour")) {
+            } else if ((!c.source().equals("cookieclicker") || s.cookieEnabled) && !c.source().equals("parkour") && !c.source().equals("dailyrewards")) {
                 snap.notes.add("Kategorie '" + c.id() + "' uebersprungen: Quelle '" + c.source() + "' nicht verfuegbar.");
             }
         }
@@ -549,6 +550,17 @@ final class Collector {
         List<String> notes = new ArrayList<>(snap.notes);
         int readErrors = 0;
 
+        // DailyRewards2 (Streaks)
+        Map<UUID, DailyRewardsReader.Row> daily = null;
+        if (snap.categories.stream().anyMatch(c -> c.source().equals("dailyrewards"))) {
+            daily = new DailyRewardsReader(s, plugin.getDataFolder().toPath().getParent(), plugin.getLogger()).read();
+            if (daily == null) {
+                notes.add("DailyRewards-Datenbank nicht lesbar, Streak-Ranglisten fehlen (Details im Log).");
+                snap.categories.removeIf(c -> c.source().equals("dailyrewards"));
+            } else {
+                notes.add("DailyRewards: " + daily.size() + " Spieler gelesen.");
+            }
+        }
         // CookieClicker-Datenbank
         Map<UUID, CookieClickerReader.Row> cookies = null;
         boolean cookieNeeded = snap.categories.stream().anyMatch(c -> c.source().equals("cookieclicker"));
@@ -690,6 +702,21 @@ final class Collector {
                         ParkourData.Entry entry = parkourData.getOrDefault(c.id(), Map.of()).get(p.uuid);
                         if (entry != null) {
                             double value = c.column().equalsIgnoreCase("TIME") ? (entry.timeMs() > 0 ? ParkourData.TIME_BASE - entry.timeMs() : 0) : entry.score();
+                            if (value > 0) {
+                                p.values.put(c.id(), value);
+                            }
+                        }
+                    }
+                    case "dailyrewards" -> {
+                        DailyRewardsReader.Row row = daily == null ? null : daily.get(p.uuid);
+                        if (row != null) {
+                            double value = switch (c.column().toUpperCase(Locale.ROOT)) {
+                                // Der Streak bleibt in der Datenbank stehen, bis der Spieler wieder abholt: zu alt = verfallen
+                                case "CURRENT" -> System.currentTimeMillis() - row.lastClaimMs() > s.dailyStreakValidHours * 3_600_000d ? 0 : row.currentStreak();
+                                case "LONGEST" -> row.longestStreak();
+                                case "CLAIMS" -> row.totalClaims();
+                                default -> 0;
+                            };
                             if (value > 0) {
                                 p.values.put(c.id(), value);
                             }
@@ -939,7 +966,8 @@ final class Collector {
         Map<String, Map<String, Double>> current = new LinkedHashMap<>();
         Map<String, CategoryDef> eligible = new HashMap<>();
         for (CategoryDef c : snap.categories) {
-            if (skip.contains(c.source()) || c.format().equals("timerev") || c.includeZero()) {
+            if (skip.contains(c.source()) || c.format().equals("timerev") || c.includeZero()
+                    || (c.source().equals("dailyrewards") && !c.column().equalsIgnoreCase("CLAIMS"))) {
                 continue;
             }
             Map<String, Double> values = new LinkedHashMap<>();

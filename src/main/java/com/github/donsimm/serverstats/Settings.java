@@ -63,6 +63,11 @@ final class Settings {
     final boolean parkourEnabled;
     final String parkourFolder;
 
+    final boolean dailyEnabled;
+    final String dailyFile;
+    final String dailyTable;
+    final double dailyStreakValidHours;
+
     final boolean autoStats;
     final String autoPage;
     final int autoMinPlayers;
@@ -147,6 +152,11 @@ final class Settings {
 
         parkourEnabled = c.getBoolean("sources.parkour.enabled", true);
         parkourFolder = c.getString("sources.parkour.folder", "IP");
+
+        dailyEnabled = c.getBoolean("sources.dailyrewards.enabled", true);
+        dailyFile = c.getString("sources.dailyrewards.sqlite-file", "DailyRewards2/dailyrewards.db");
+        dailyTable = c.getString("sources.dailyrewards.table", "player_data");
+        dailyStreakValidHours = Math.max(1, c.getDouble("sources.dailyrewards.streak-valid-hours", 60));
 
         autoStats = c.getBoolean("auto-stats.enabled", true);
         autoPage = c.getString("auto-stats.page", "Alle Statistiken");

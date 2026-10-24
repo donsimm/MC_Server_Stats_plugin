@@ -177,6 +177,7 @@ public final class StatsBuilder {
             case "jobs" -> "AethelJobs";
             case "skyblock" -> "uSkyBlock";
             case "oneblock" -> "OneBlock";
+            case "dailyrewards" -> "DailyRewards";
             case "ajlb" -> "AJLeaderboards";
             default -> c.source();
         };
