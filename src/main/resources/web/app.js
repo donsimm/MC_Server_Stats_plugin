@@ -322,14 +322,19 @@ function cardHTML(c) {
   return `<article class="card${c.night ? ' night' : ''}" data-id="${esc(c.id)}" data-title="${esc(c.title.toLowerCase())}" style="${cardVars(c)}">${headHTML(c, true)}${cardPeriodCtl(c)}${rows}${windowNote(c)}` +
     `<div class="card-f"><a href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}">${b.length ? `Alle ${b.length} anzeigen` : 'Alle anzeigen'} →</a><span class="src">Quelle: ${esc(c.source)}</span></div></article>`;
 }
-function periodCtl(cats) {
+function periodParts(cats) {
   const periods = new Set(['all']);
   (cats || DATA.categories).forEach(c => { c.periods.forEach(p => periods.add(p)); if (c.windowable) ['week', 'month', 'year'].forEach(p => periods.add(p)); });
-  if (periods.size < 2) return '';
+  if (periods.size < 2) return null;
   if (!periods.has(period)) period = 'all';
-  return `<div class="bar-tools"><span class="label">Zeitraum</span><div class="seg" role="group" aria-label="Zeitraum">` +
+  return { tools: `<div class="bar-tools"><span class="label">Zeitraum</span><div class="seg" role="group" aria-label="Zeitraum">` +
     Object.entries(PERIOD_NAMES).filter(([k]) => periods.has(k)).map(([k, n]) => `<button type="button" data-period="${k}" aria-pressed="${k === period}">${n}</button>`).join('') +
-    `</div></div><p class="hint">Der Zeitraum gilt für alle Karten; jede Karte hat zusätzlich eigene Knöpfe. Gezählt wird der Zuwachs im gewählten Zeitraum. Ranglisten ohne Zuwachs (Level, Rekorde, Inseln) zeigen weiter den Gesamtwert («nur Gesamt»).</p>`;
+    `</div></div>`,
+    hint: `<p class="hint">Der Zeitraum gilt für alle Karten; jede Karte hat zusätzlich eigene Knöpfe. Gezählt wird der Zuwachs im gewählten Zeitraum. Ranglisten ohne Zuwachs (Level, Rekorde, Inseln) zeigen weiter den Gesamtwert («nur Gesamt»).</p>` };
+}
+function periodCtl(cats) {
+  const p = periodParts(cats);
+  return p ? p.tools + p.hint : '';
 }
 function onlineInner() {
   const on = ONLINE.players.slice().sort((a, b) => b.sessionMin - a.sessionMin);
@@ -363,7 +368,7 @@ function pageView(title) {
   if (cats.some(c => c.sub)) return sectionPageView(title, cats);
   // Seiten mit vielen Ranglisten bekommen ein Suchfeld
   const isAuto = cats.some(c => c.auto);
-  const filter = cats.length > 20 || isAuto ? `<div class="filter"><label for="catfilter">Rangliste suchen</label><input id="catfilter" type="search" value="${esc(catFilter)}" placeholder="${isAuto ? 'Alle Quellen durchsuchen, z. B. angeln, Bergbau, Tode …' : 'z. B. Truhen, Fische, Schaden …'}" autocomplete="off"></div>` : '';
+  const filter = cats.length > 20 || isAuto ? `<div class="filter"><label for="catfilter">Rangliste suchen</label><input id="catfilter" type="search" value="${esc(catFilter)}" placeholder="${isAuto ? 'z. B. angeln, Bergbau, Tode …' : 'z. B. Truhen, Fische, Schaden …'}" autocomplete="off"></div>` : '';
   if (isAuto) return allStatsView(title, filter);
   return `<h2 class="sec" style="margin-top:0">${esc(title)}<small>${cats.length} Ranglisten</small></h2>${filter}${periodCtl(cats)}${gridOf(cats)}`;
 }
@@ -381,8 +386,9 @@ function allStatsView(title, filter) {
   const rank = l => { const i = ALL_ORDER.indexOf(l); return i < 0 ? 99 : i; };
   groups.sort((a, b) => rank(a.label) - rank(b.label));
   const total = groups.reduce((n, g) => n + g.cats.length, 0);
+  const pc = periodParts(DATA.categories);
   const body = groups.map(g => `<h2 class="sec">${esc(g.label)}<small>${g.cats.length} Ranglisten</small></h2><div class="grid">${g.cats.map(cardHTML).join('')}</div>`).join('');
-  return `<h2 class="sec" style="margin-top:0">${esc(title)}<small>${total} Ranglisten aus allen Quellen</small></h2>${filter}<div id="allres"></div>${periodCtl(DATA.categories)}<div id="allsec">${body}</div>`;
+  return `<h2 class="sec" style="margin-top:0">${esc(title)}<small>${total} Ranglisten aus allen Quellen</small></h2><div class="toolrow">${filter}${pc ? pc.tools : ''}</div>${pc ? pc.hint : ''}<div id="allres"></div><div id="allsec">${body}</div>`;
 }
 const SECTION_ORDER = ['Parkour', 'Elytra', 'Jobs', 'mcMMO', 'SkyBlock', 'OneBlock'];
 /** Seite mit mehreren Abschnitten ("Tab|Abschnitt" in der config.yml), z. B. Jobs vor mcMMO. */

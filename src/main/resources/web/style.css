@@ -277,3 +277,11 @@ h2.sec small { color: var(--muted); font-size: 13px; font-weight: 400; margin-le
 .cp button:hover { opacity: 1; }
 .cp button[aria-pressed="true"] { background: var(--on, #0c0a12); color: var(--card, #fff); opacity: 1; border-color: var(--on, #0c0a12); }
 .winnote { margin: 8px 0 0; font-size: 12px; opacity: .75; }
+
+/* Suche und Zeitraum nebeneinander */
+.toolrow { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 32px; margin: 0 0 8px; }
+.toolrow .filter, .toolrow .bar-tools { margin: 0; }
+.toolrow .filter { flex-wrap: nowrap; }
+.toolrow .filter label { white-space: nowrap; }
+.toolrow .filter input { width: 300px; max-width: 100%; }
+@media (max-width: 760px) { .toolrow .filter { flex-wrap: wrap; width: 100%; } .toolrow .filter input { width: 100%; } }
