@@ -375,7 +375,7 @@ function pageView(title) {
   if (isAuto) return allStatsView(title, filter);
   return `<h2 class="sec" style="margin-top:0">${esc(title)}<small>${cats.length} Ranglisten</small></h2>${filter}${periodCtl(cats)}${gridOf(cats)}`;
 }
-const ALL_ORDER = ['Allgemein', 'Vanilla-Statistiken', 'Jobs', 'mcMMO', 'SkyBlock', 'OneBlock', 'Cookie Clicker', 'Parkour', 'Elytra'];
+const ALL_ORDER = ['Allgemein', 'Vanilla-Statistiken', 'Jobs', 'mcMMO', 'SkyBlock', 'OneBlock', 'Cookie Clicker', 'Daily Reward', 'Parkour', 'Elytra'];
 /** "Alle Statistiken": jede Rangliste aus jeder Quelle, getrennt durch Zwischentitel. */
 function allStatsView(title, filter) {
   const label = c => c.page === MAIN_PAGE ? 'Allgemein' : c.auto ? 'Vanilla-Statistiken' : (c.sub || c.page);
@@ -393,7 +393,7 @@ function allStatsView(title, filter) {
   const body = groups.map(g => `<h2 class="sec">${esc(g.label)}<small>${g.cats.length} Ranglisten</small></h2><div class="grid">${g.cats.map(cardHTML).join('')}</div>`).join('');
   return `<h2 class="sec" style="margin-top:0">${esc(title)}<small>${total} Ranglisten aus allen Quellen</small></h2><div class="toolrow">${filter}${pc ? pc.tools : ''}</div>${pc ? pc.hint : ''}<div id="allres"></div><div id="allsec">${body}</div>`;
 }
-const SECTION_ORDER = ['Parkour', 'Elytra', 'Jobs', 'mcMMO', 'SkyBlock', 'OneBlock'];
+const SECTION_ORDER = ['Parkour', 'Elytra', 'Jobs', 'mcMMO', 'SkyBlock', 'OneBlock', 'Cookie Clicker', 'Daily Reward'];
 /** Seite mit mehreren Abschnitten ("Tab|Abschnitt" in der config.yml), z. B. Jobs vor mcMMO. */
 function sectionPageView(title, cats) {
   const subs = [];
@@ -722,7 +722,7 @@ function currentTab() {
 function renderNav() {
   const tab = currentTab();
   // Reihenfolge: Übersicht, Jobs, SkyBlock, Cookie Clicker, Parkour, weitere Seiten, Museum, Alle Statistiken, Spieler
-  const order = ['start', 'seite-' + slug('Jobs & mcMMO'), 'seite-' + slug('SkyBlock & OneBlock'), 'seite-' + slug('Cookie Clicker'), 'seite-' + slug('Parkour'),
+  const order = ['start', 'seite-' + slug('Jobs & mcMMO'), 'seite-' + slug('SkyBlock & OneBlock'), 'seite-' + slug('Cookie Clicker & Daily Reward'), 'seite-' + slug('Parkour'),
     '*', 'museum', 'seite-' + slug('Alle Statistiken'), 'spieler'];
   const rank = id => { const i = order.indexOf(id); return i < 0 ? order.indexOf('*') : i; };
   const items = [['start', MAIN_PAGE], ...PAGES.filter(p => p !== MAIN_PAGE).map(p => [pageRoute(p), p]),

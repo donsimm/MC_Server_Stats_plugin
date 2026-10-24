@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 16
+config-version: 17
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -515,7 +515,7 @@ categories:
     source: mcmmo-power
 
   prestige:
-    page: "Cookie Clicker"
+    page: "Cookie Clicker & Daily Reward|Cookie Clicker"
     title: "Prestige-König"
     subtitle: "Höchste Prestige-Stufe"
     icon: star
@@ -524,7 +524,7 @@ categories:
     source: cookieclicker
     column: PRESTIGE
   keksbaecker:
-    page: "Cookie Clicker"
+    page: "Cookie Clicker & Daily Reward|Cookie Clicker"
     title: "Keksbäcker"
     subtitle: "Meiste Kekse gebacken"
     icon: cookie
@@ -534,7 +534,7 @@ categories:
     column: COOKIES
 
   klickfinger:
-    page: "Cookie Clicker"
+    page: "Cookie Clicker & Daily Reward|Cookie Clicker"
     title: "Klickfinger"
     subtitle: "Meiste Klicks"
     icon: cursor
@@ -837,7 +837,7 @@ categories:
     source: dailyrewards
     column: "CURRENT"
   streak-cookie:
-    page: "Cookie Clicker"
+    page: "Cookie Clicker & Daily Reward|Daily Reward"
     title: "Streak"
     subtitle: "Aktuelle Serie, Tage in Folge abgeholt"
     icon: star
@@ -846,7 +846,7 @@ categories:
     source: dailyrewards
     column: "CURRENT"
   streak-bester:
-    page: "Cookie Clicker"
+    page: "Cookie Clicker & Daily Reward|Daily Reward"
     title: "Bester Streak"
     subtitle: "Längste Serie aller Zeiten"
     icon: star
@@ -855,7 +855,7 @@ categories:
     source: dailyrewards
     column: "LONGEST"
   streak-abholungen:
-    page: "Cookie Clicker"
+    page: "Cookie Clicker & Daily Reward|Daily Reward"
     title: "Belohnungen abgeholt"
     subtitle: "Tägliche Belohnungen insgesamt"
     icon: gem
