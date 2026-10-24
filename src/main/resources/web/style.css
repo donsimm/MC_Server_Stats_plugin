@@ -299,3 +299,7 @@ h2.sec small { color: var(--muted); font-size: 13px; font-weight: 400; margin-le
 .card.rk .card-f { flex-wrap: nowrap; gap: 10px; }
 .card.rk .card-f a { white-space: nowrap; }
 .card.rk .card-f .src { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+/* Coins (Diamantenbank): Wert mit rundem Coin-Symbol */
+.coin-b { display: inline-flex; align-items: center; gap: 6px; }
+.coin-b b { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #ffd23f; color: #5a3d00; border: 2px solid #9a6a00; font-size: 13px; line-height: 1; box-shadow: inset -2px -2px 0 #e0a000; }

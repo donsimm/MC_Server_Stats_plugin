@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 18
+config-version: 19
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -189,20 +189,18 @@ categories:
     subtitle: "Wer hat, der hat"
     icon: gem
     color: "#4de3d5"
-    format: int
+    format: coins
     source: vault
 
-  friedhof:
+  streak:
     page: "Übersicht"
-    title: "Friedhof"
-    subtitle: "Hier liegen sie. Immer wieder."
-    icon: skull
-    color: "#2b2040"
-    night: true
+    title: "Streak-König"
+    subtitle: "Längste aktuelle Serie, Tage in Folge abgeholt"
+    icon: star
+    color: "#ffd23f"
     format: int
-    source: vanilla
-    stat: ["custom:deaths"]
-    ajlb-board: "statistic_deaths"
+    source: dailyrewards
+    column: "CURRENT"
 
   abrissbirne:
     page: "Übersicht"
@@ -827,15 +825,17 @@ categories:
     format: int
     source: vanilla
     stat: ["used:trident"]
-  streak:
+  friedhof:
     page: "Übersicht"
-    title: "Streak-König"
-    subtitle: "Längste aktuelle Serie, Tage in Folge abgeholt"
-    icon: star
-    color: "#ffd23f"
+    title: "Friedhof"
+    subtitle: "Hier liegen sie. Immer wieder."
+    icon: skull
+    color: "#2b2040"
+    night: true
     format: int
-    source: dailyrewards
-    column: "CURRENT"
+    source: vanilla
+    stat: ["custom:deaths"]
+    ajlb-board: "statistic_deaths"
   streak-cookie:
     page: "Cookie Clicker & Daily Reward|Daily Reward"
     title: "Streak"
