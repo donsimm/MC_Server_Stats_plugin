@@ -84,7 +84,7 @@ Die Logik ohne Bukkit-Abhängigkeit steckt im Paket `core` und ist mit JUnit get
 
 ## Quellen und Lizenzen
 
-- Pixelify Sans (Schrift, lokal eingebunden): SIL Open Font License 1.1, https://fonts.google.com/specimen/Pixelify+Sans
+- Bungee (Schrift für Titel, lokal eingebunden): SIL Open Font License 1.1, https://fonts.google.com/specimen/Bungee
 - Atkinson Hyperlegible Next (Schrift für Text und Zahlen, lokal eingebunden): SIL Open Font License 1.1, https://fonts.google.com/specimen/Atkinson+Hyperlegible+Next
 - CookieClickerZ von KartoffelChipss (nur Datenbank lesen, kein Code übernommen): https://github.com/KartoffelChipss/CookieClickerZ (GPL-3.0)
 - Paper-API: https://docs.papermc.io
