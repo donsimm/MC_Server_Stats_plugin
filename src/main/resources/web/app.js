@@ -575,13 +575,14 @@ function skillMax(keys) {
  * valueOf(spieler, schluessel) liefert den Wert, maxes die Skala je Achse.
  */
 function radarSvg(aria, keys, labelOf, valueOf, maxes, me, other, groups) {
-  const n = keys.length, R = 118, cx = 200, cy = 200;
+  const n = keys.length, cx = 200, cy = 200;
   // Kategorie-Schilder (nur wenn Gruppen uebergeben wurden): Position je Gruppe aus ihren Achsen
+  const R = groups ? 142 : 118;
   const GR = groups ? groups.map(g => ({ g, idx: g.keys.map(k => keys.indexOf(k)).filter(i => i >= 0) })).filter(x => x.idx.length) : null;
   const pt = (i, f, r = R) => { const a = i * 2 * Math.PI / n - Math.PI / 2; return [cx + Math.cos(a) * r * f, cy + Math.sin(a) * r * f]; };
   const fix = a => a.map(v => v.toFixed(1)).join(',');
   const poly = (pl, dx = 0, dy = 0) => keys.map((k, i) => { const [x, y] = pt(i, Math.min(1, valueOf(pl, k) / maxes[i])); return (x + dx).toFixed(1) + ',' + (y + dy).toFixed(1); }).join(' ');
-  let s = `<svg viewBox="${GR ? '-150 -50 700 530' : '-60 -4 520 420'}" role="img" aria-label="${esc(aria)}">`;
+  let s = `<svg viewBox="${GR ? '-112 -52 624 504' : '-60 -4 520 420'}" role="img" aria-label="${esc(aria)}">`;
   [.25, .5, .75, 1].forEach(f => { s += `<polygon class="ring${f === 1 ? ' out' : ''}" points="${keys.map((_, i) => fix(pt(i, f))).join(' ')}"/>`; });
   keys.forEach((_, i) => { const [x, y] = pt(i, 1); s += `<line class="axis" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`; });
   s += `<polygon points="${poly(me, 5, 5)}" fill="#0c0a12"/>`;
@@ -614,7 +615,7 @@ function radarSvg(aria, keys, labelOf, valueOf, maxes, me, other, groups) {
   labels.forEach(l => { s += `<text class="rl" x="${l.x.toFixed(1)}" y="${l.by.toFixed(1)}" text-anchor="${l.anchor}">${esc(l.text)}</text>`; });
   if (GR) GR.forEach(x => {
     const ang = i => i * 2 * Math.PI / n - Math.PI / 2, am = (ang(Math.min(...x.idx)) + ang(Math.max(...x.idx))) / 2;
-    const bx = cx + Math.cos(am) * (R + 120), by = cy + Math.sin(am) * (R + 92), w = x.g.name.length * 8 + 16;
+    const bx = cx + Math.cos(am) * (R + 112), by = cy + Math.sin(am) * (R + 86), w = x.g.name.length * 8 + 16;
     s += `<rect x="${(bx - w / 2).toFixed(1)}" y="${(by - 11).toFixed(1)}" width="${w}" height="22" fill="${x.g.color}" stroke="#0c0a12" stroke-width="2"/>` +
       `<text x="${bx.toFixed(1)}" y="${(by + 5).toFixed(1)}" text-anchor="middle" style="font:700 13px var(--font);fill:#fff">${esc(x.g.name)}</text>`;
   });
