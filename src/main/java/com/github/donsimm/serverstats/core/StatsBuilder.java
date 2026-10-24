@@ -16,7 +16,7 @@ import java.util.UUID;
 
 /** Baut aus Kategorien und Spielerdaten die stats.json fuer die Webseite. */
 public final class StatsBuilder {
-    public static final List<String> PERIODS = List.of("month", "week", "day");
+    public static final List<String> PERIODS = List.of("year", "month", "week", "day");
 
     /** Eine Kennzahl oben auf der Startseite: Summe aller Werte einer Kategorie. */
     public record Chip(String category, String label) {
@@ -206,7 +206,7 @@ public final class StatsBuilder {
     }
 
     /** Ganze Zahlen ohne Nachkommastellen, sonst auf drei Stellen gerundet. */
-    static JsonPrimitive number(double value) {
+    public static JsonPrimitive number(double value) {
         if (value == Math.rint(value) && Math.abs(value) < 9.0e15) {
             return new JsonPrimitive((long) value);
         }

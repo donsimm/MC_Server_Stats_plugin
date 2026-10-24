@@ -270,3 +270,10 @@ h2.sec small { color: var(--muted); font-size: 13px; font-weight: 400; margin-le
 .muse-by .av { width: 22px; height: 22px; border-width: 2px; }
 .muse-by .more { font-size: 12px; opacity: .85; margin-left: 2px; }
 .muse small { opacity: .8; font-size: 12px; }
+
+/* Zeitraum je Karte */
+.cp { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 10px; }
+.cp button { font: inherit; font-size: 12px; font-weight: 700; padding: 3px 8px; background: transparent; color: var(--on, #0c0a12); border: 2px solid currentColor; border-radius: 0; cursor: pointer; opacity: .75; }
+.cp button:hover { opacity: 1; }
+.cp button[aria-pressed="true"] { background: var(--on, #0c0a12); color: var(--card, #fff); opacity: 1; border-color: var(--on, #0c0a12); }
+.winnote { margin: 8px 0 0; font-size: 12px; opacity: .75; }

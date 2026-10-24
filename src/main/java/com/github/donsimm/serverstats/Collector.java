@@ -3,6 +3,7 @@ package com.github.donsimm.serverstats;
 import com.github.donsimm.serverstats.core.AdvancementsFile;
 import com.github.donsimm.serverstats.core.AjlbEntry;
 import com.github.donsimm.serverstats.core.AutoStats;
+import com.github.donsimm.serverstats.core.HistoryStore;
 import com.github.donsimm.serverstats.core.CategoryDef;
 import com.github.donsimm.serverstats.core.NumberParse;
 import com.github.donsimm.serverstats.core.OneblockData;
@@ -788,6 +789,7 @@ final class Collector {
         links.addProperty("homepageUrl", safeUrl(s.homepageUrl));
         links.addProperty("discordUrl", safeUrl(s.discordUrl));
         json.add("links", links);
+        applyHistoryWindows(snap, json, notes);
         if (!snap.museum.isEmpty()) {
             Set<UUID> listed = new java.util.HashSet<>();
             for (PlayerData p : snap.players) {
@@ -907,6 +909,96 @@ final class Collector {
             Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         } catch (java.nio.file.AtomicMoveNotSupportedException e) {
             Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    private static final Map<String, Long> WINDOW_DAYS = new LinkedHashMap<>();
+
+    static {
+        WINDOW_DAYS.put("week", 7L);
+        WINDOW_DAYS.put("month", 30L);
+        WINDOW_DAYS.put("year", 365L);
+    }
+
+    /**
+     * Zeitfenster aus dem eigenen Verlauf (history.json): Zuwachs seit vor 7 Tagen, einem Monat (30 Tage) und einem Jahr (365 Tage).
+     * Gilt fuer Werte, die mit der Zeit wachsen. AJLeaderboards-Fenster (falls vorhanden) bleiben unveraendert.
+     * Laeuft die Aufzeichnung noch nicht so lange, zaehlt der Zuwachs seit Beginn (windows.<zeitraum> = Startzeit).
+     */
+    private void applyHistoryWindows(Snapshot snap, JsonObject json, List<String> notes) {
+        Path file = plugin.getDataFolder().toPath().resolve("history.json");
+        HistoryStore store = new HistoryStore();
+        try {
+            if (Files.isRegularFile(file)) {
+                store = HistoryStore.parse(Files.readString(file, StandardCharsets.UTF_8));
+            }
+        } catch (IOException | RuntimeException e) {
+            notes.add("Verlauf (history.json) nicht lesbar, wird neu begonnen: " + e.getMessage());
+        }
+        Set<String> skip = Set.of("skyblock", "oneblock", "parkour", "ajlb");
+        Map<String, Map<String, Double>> current = new LinkedHashMap<>();
+        Map<String, CategoryDef> eligible = new HashMap<>();
+        for (CategoryDef c : snap.categories) {
+            if (skip.contains(c.source()) || c.format().equals("timerev") || c.includeZero()) {
+                continue;
+            }
+            Map<String, Double> values = new LinkedHashMap<>();
+            for (PlayerData p : snap.players) {
+                Double v = p.values.get(c.id());
+                if (v != null && v > 0 && !v.isNaN()) {
+                    values.put(p.uuid.toString(), v);
+                }
+            }
+            current.put(c.id(), values);
+            eligible.put(c.id(), c);
+        }
+        long now = System.currentTimeMillis() / 1000;
+        if (store.addIfDue(now, current, 6 * 3600L)) {
+            store.prune(now);
+            try {
+                Files.writeString(file, store.toJson(), StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                notes.add("Verlauf (history.json) nicht schreibbar: " + e.getMessage());
+            }
+        }
+        for (JsonElement element : json.getAsJsonArray("categories")) {
+            JsonObject category = element.getAsJsonObject();
+            String id = category.get("id").getAsString();
+            Map<String, Double> values = current.get(id);
+            if (values == null) {
+                continue;
+            }
+            JsonObject boards = category.getAsJsonObject("boards");
+            JsonArray periods = category.getAsJsonArray("periods");
+            JsonObject windows = new JsonObject();
+            for (Map.Entry<String, Long> w : WINDOW_DAYS.entrySet()) {
+                if (boards.has(w.getKey())) {
+                    continue; // AJLB hat dieses Fenster
+                }
+                HistoryStore.Snapshot base = store.baseline(now, w.getValue() * 86_400L);
+                if (base == null || base.t() >= now - 3600) {
+                    continue; // noch keine Vergleichsaufnahme
+                }
+                List<Map.Entry<String, Double>> gain = HistoryStore.delta(values, base, id);
+                if (gain.isEmpty()) {
+                    continue;
+                }
+                JsonArray rows = new JsonArray();
+                for (Map.Entry<String, Double> e : gain) {
+                    JsonArray row = new JsonArray();
+                    row.add(e.getKey());
+                    row.add(StatsBuilder.number(e.getValue()));
+                    rows.add(row);
+                }
+                boards.add(w.getKey(), rows);
+                periods.add(w.getKey());
+                if (base.t() > now - w.getValue() * 86_400L + 86_400L) {
+                    windows.addProperty(w.getKey(), base.t()); // Aufzeichnung kuerzer als das Fenster
+                }
+            }
+            if (windows.size() > 0) {
+                category.add("windows", windows);
+            }
         }
     }
 

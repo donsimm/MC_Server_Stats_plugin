@@ -174,4 +174,27 @@ class CoreTest {
         assertEquals(523.7, e.get(UUID.fromString("00000000-0000-0000-0000-00000000000a")).score(), 1e-9);
         assertEquals(12.0, e.get(UUID.fromString("00000000-0000-0000-0000-00000000000b")).score(), 1e-9);
     }
+
+    @Test
+    void historyWindowsUseBaselineAndPruneOldSnapshots() {
+        HistoryStore store = new HistoryStore();
+        long day = 86_400L, now = 400 * day;
+        store.addIfDue(now - 8 * day, Map.of("c", Map.of("a", 10.0, "b", 5.0)), 0);
+        store.addIfDue(now - 1 * day, Map.of("c", Map.of("a", 18.0, "b", 5.0)), 0);
+        store.addIfDue(now, Map.of("c", Map.of("a", 20.0, "b", 5.0, "n", 3.0)), 0);
+        assertTrue(!store.addIfDue(now + 60, Map.of(), 6 * 3600), "zu frueh fuer eine neue Aufnahme");
+        HistoryStore.Snapshot base = store.baseline(now, 7 * day);
+        assertEquals(now - 8 * day, base.t());
+        List<Map.Entry<String, Double>> gain = HistoryStore.delta(Map.of("a", 20.0, "b", 5.0, "n", 3.0), base, "c");
+        assertEquals(2, gain.size(), "b hat nichts dazubekommen");
+        assertEquals("a", gain.get(0).getKey());
+        assertEquals(10.0, gain.get(0).getValue(), 1e-9);
+        // ohne aeltere Aufnahme zaehlt die aelteste (Fenster nur teilweise aufgezeichnet)
+        assertEquals(now - 8 * day, store.baseline(now, 365 * day).t());
+        HistoryStore reread = HistoryStore.parse(store.toJson());
+        assertEquals(3, reread.snapshots().size());
+        reread.addIfDue(now + 500 * day, Map.of("c", Map.of("a", 1.0)), 0);
+        reread.prune(now + 500 * day);
+        assertEquals(1, reread.snapshots().size(), "aelter als 400 Tage wird verworfen");
+    }
 }

@@ -179,7 +179,8 @@ final class Settings {
         ajlbPeriodNames = Map.of(
                 "day", c.getString("sources.ajlb.period-names.day", "daily"),
                 "week", c.getString("sources.ajlb.period-names.week", "weekly"),
-                "month", c.getString("sources.ajlb.period-names.month", "monthly"));
+                "month", c.getString("sources.ajlb.period-names.month", "monthly"),
+                "year", c.getString("sources.ajlb.period-names.year", "yearly"));
 
         ConfigurationSection cats = c.getConfigurationSection("categories");
         if (cats != null) {

@@ -212,7 +212,11 @@ let DATA = null, ONLINE = { players: [] }, IDX = null;
 let period = 'all', mode = 'abs', cmp = '', jmode = 'rel', cmpj = '', cur = (location.hash || '').slice(1) || 'start';
 let onlineSig = '';
 
-const PERIOD_NAMES = { all: 'Gesamt', month: 'Monat', week: 'Woche', day: 'Heute' };
+const PERIOD_NAMES = { week: 'Letzte 7 Tage', month: 'Letzter Monat', year: 'Letztes Jahr', all: 'Gesamt' };
+const PERIOD_SHORT = { week: '7 Tage', month: 'Monat', year: 'Jahr', all: 'Gesamt' };
+const PERIOD_DAYS = { week: 7, month: 30, year: 365 };
+let cardPeriod = {};   // Zeitraum je Karte (ueberschreibt die Auswahl oben)
+const periodOf = c => cardPeriod[c.id] || period;
 const SKILL_LABELS = {
   ACROBATICS: 'Akrobatik', ALCHEMY: 'Alchemie', ARCHERY: 'Bogenschiessen', AXES: 'Äxte', EXCAVATION: 'Graben',
   FISHING: 'Angeln', HERBALISM: 'Kräuterkunde', MINING: 'Bergbau', REPAIR: 'Reparieren', SWORDS: 'Schwerter',
@@ -277,8 +281,21 @@ function buildIndex() {
 }
 const nameOf = u => (DATA.players[u] && DATA.players[u].name) || u.slice(0, 8);
 const isOnline = u => ONLINE.players.some(p => p.uuid === u);
-const boardOf = c => (period !== 'all' && c.boards[period]) ? c.boards[period] : c.boards.all;
-const onlyTotal = c => period !== 'all' && !c.boards[period];
+const boardOf = c => { const p = periodOf(c); return (p !== 'all' && c.boards[p]) ? c.boards[p] : c.boards.all; };
+const onlyTotal = c => { const p = periodOf(c); return p !== 'all' && !c.boards[p]; };
+/** Hinweis, wenn die Aufzeichnung kuerzer ist als der gewaehlte Zeitraum. */
+function windowNote(c) {
+  const p = periodOf(c), since = c.windows && c.windows[p];
+  if (!since || !c.boards[p]) return '';
+  const d = new Date(since * 1000);
+  return `<p class="winnote">Aufzeichnung seit ${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}, kürzer als ${PERIOD_DAYS[p]} Tage</p>`;
+}
+function cardPeriodCtl(c) {
+  const have = Object.keys(PERIOD_SHORT).filter(k => k === 'all' || c.boards[k]);
+  if (have.length < 2) return '';
+  const cur = periodOf(c);
+  return `<div class="cp" role="group" aria-label="Zeitraum">` + have.map(k => `<button type="button" data-cp="${esc(c.id)}" data-p="${k}" aria-pressed="${k === cur}">${PERIOD_SHORT[k]}</button>`).join('') + '</div>';
+}
 
 /* ---------- Bausteine ---------- */
 function avatar(u) { return `<img class="av" src="heads/${u}.png" alt="" loading="lazy" data-n="${esc(nameOf(u))}">`; }
@@ -296,7 +313,7 @@ function headHTML(c, link) {
 function cardHTML(c) {
   const b = boardOf(c);
   const rows = b.length ? `<ol class="rows">${b.slice(0, 10).map(([u, v], i) => rowHTML(u, v, i, c)).join('')}</ol>` : '<p class="none">Noch keine Daten.</p>';
-  return `<article class="card${c.night ? ' night' : ''}" data-title="${esc(c.title.toLowerCase())}" style="${cardVars(c)}">${headHTML(c, true)}${rows}` +
+  return `<article class="card${c.night ? ' night' : ''}" data-id="${esc(c.id)}" data-title="${esc(c.title.toLowerCase())}" style="${cardVars(c)}">${headHTML(c, true)}${cardPeriodCtl(c)}${rows}${windowNote(c)}` +
     `<div class="card-f"><a href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}">Alle ${b.length} anzeigen →</a><span class="src">Quelle: ${esc(c.source)}</span></div></article>`;
 }
 function periodCtl(cats) {
@@ -306,7 +323,7 @@ function periodCtl(cats) {
   if (!periods.has(period)) period = 'all';
   return `<div class="bar-tools"><span class="label">Zeitraum</span><div class="seg" role="group" aria-label="Zeitraum">` +
     Object.entries(PERIOD_NAMES).filter(([k]) => periods.has(k)).map(([k, n]) => `<button type="button" data-period="${k}" aria-pressed="${k === period}">${n}</button>`).join('') +
-    `</div></div><p class="hint">Zeitfenster gibt es nur für Ranglisten, die AJLeaderboards mitzählt. Alle anderen zeigen weiter den Gesamtwert («nur Gesamt»).</p>`;
+    `</div></div><p class="hint">Der Zeitraum gilt für alle Karten; jede Karte hat zusätzlich eigene Knöpfe. Gezählt wird der Zuwachs im gewählten Zeitraum. Ranglisten ohne Zuwachs (Level, Rekorde, Inseln) zeigen weiter den Gesamtwert («nur Gesamt»).</p>`;
 }
 function onlineInner() {
   const on = ONLINE.players.slice().sort((a, b) => b.sessionMin - a.sessionMin);
@@ -762,7 +779,14 @@ document.addEventListener('click', e => {
   const g = e.target.closest('[data-go]');
   if (g) { e.preventDefault(); go(g.dataset.go); hideSug(); return; }
   const pb = e.target.closest('[data-period]');
-  if (pb) { period = pb.dataset.period; render(); return; }
+  if (pb) { period = pb.dataset.period; cardPeriod = {}; render(); return; }
+  const cb = e.target.closest('[data-cp]');
+  if (cb) {
+    cardPeriod[cb.dataset.cp] = cb.dataset.p;
+    const c = IDX.cat[cb.dataset.cp], card = cb.closest('article.card');
+    if (c && card) card.outerHTML = cardHTML(c);
+    return;
+  }
   const mb = e.target.closest('[data-mode]');
   if (mb) { mode = mb.dataset.mode; render(); return; }
   const jb = e.target.closest('[data-jmode]');
