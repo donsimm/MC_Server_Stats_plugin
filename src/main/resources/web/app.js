@@ -341,7 +341,25 @@ function pageView(title) {
   // Seiten mit vielen Ranglisten bekommen ein Suchfeld
   const isAuto = cats.some(c => c.auto);
   const filter = cats.length > 20 || isAuto ? `<div class="filter"><label for="catfilter">Rangliste suchen</label><input id="catfilter" type="search" value="${esc(catFilter)}" placeholder="${isAuto ? 'Alle Quellen durchsuchen, z. B. angeln, Bergbau, Tode …' : 'z. B. Truhen, Fische, Schaden …'}" autocomplete="off"></div>` : '';
-  return `<h2 class="sec" style="margin-top:0">${esc(title)}<small>${cats.length} Ranglisten</small></h2>${filter}${isAuto ? '<div id="allres"></div>' : ''}${periodCtl(cats)}${gridOf(cats)}`;
+  if (isAuto) return allStatsView(title, filter);
+  return `<h2 class="sec" style="margin-top:0">${esc(title)}<small>${cats.length} Ranglisten</small></h2>${filter}${periodCtl(cats)}${gridOf(cats)}`;
+}
+const ALL_ORDER = ['Allgemein', 'Vanilla-Statistiken', 'Jobs', 'mcMMO', 'SkyBlock', 'OneBlock', 'Cookie Clicker', 'Parkour', 'Elytra'];
+/** "Alle Statistiken": jede Rangliste aus jeder Quelle, getrennt durch Zwischentitel. */
+function allStatsView(title, filter) {
+  const label = c => c.page === MAIN_PAGE ? 'Allgemein' : c.auto ? 'Vanilla-Statistiken' : (c.sub || c.page);
+  const groups = [];
+  DATA.categories.filter(c => (c.boards.all || []).length).forEach(c => {
+    const l = label(c);
+    let g = groups.find(x => x.label === l);
+    if (!g) groups.push(g = { label: l, cats: [] });
+    g.cats.push(c);
+  });
+  const rank = l => { const i = ALL_ORDER.indexOf(l); return i < 0 ? 99 : i; };
+  groups.sort((a, b) => rank(a.label) - rank(b.label));
+  const total = groups.reduce((n, g) => n + g.cats.length, 0);
+  const body = groups.map(g => `<h2 class="sec">${esc(g.label)}<small>${g.cats.length} Ranglisten</small></h2><div class="grid">${g.cats.map(cardHTML).join('')}</div>`).join('');
+  return `<h2 class="sec" style="margin-top:0">${esc(title)}<small>${total} Ranglisten aus allen Quellen</small></h2>${filter}<div id="allres"></div>${periodCtl(DATA.categories)}<div id="allsec">${body}</div>`;
 }
 const SECTION_ORDER = ['Parkour', 'Elytra', 'Jobs', 'mcMMO', 'SkyBlock', 'OneBlock'];
 /** Seite mit mehreren Abschnitten ("Tab|Abschnitt" in der config.yml), z. B. Jobs vor mcMMO. */
@@ -385,7 +403,7 @@ function applyCatFilter() {
   const all = $('allres');
   if (all) {
     // Seite "Alle Statistiken": Suche ueber alle Ranglisten aller Quellen (Vanilla, mcMMO, Jobs, Parkour ...)
-    const grid = $('view').querySelector(':scope > .grid');
+    const grid = $('allsec');
     if (!q) { all.innerHTML = ''; if (grid) grid.hidden = false; return; }
     const terms = searchTerms(q);
     const hits = DATA.categories.filter(c => (c.boards.all || []).length && terms.some(w => catText(c).includes(w)));

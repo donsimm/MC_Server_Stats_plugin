@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 14
+config-version: 15
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -250,6 +250,7 @@ categories:
     color: "#e9dcb8"
     format: adv
     source: advancements
+    ajlb-board: "advancements_completedAmount"
 
   zuchtmeister:
     page: "Übersicht"
@@ -293,6 +294,7 @@ categories:
     format: int
     source: vanilla
     stat: ["custom:player_kills"]
+    ajlb-board: "statistic_kill_entity:player"
 
   pruegelknabe:
     page: "Übersicht"
@@ -303,6 +305,7 @@ categories:
     format: int
     source: vanilla
     stat: ["killed_by:player"]
+    ajlb-board: "statistic_entity_killed_by:player"
 
   unsterblich:
     page: "Übersicht"
@@ -313,6 +316,7 @@ categories:
     format: int
     source: vanilla
     stat: ["used:totem_of_undying"]
+    ajlb-board: "statistic_use_item:totem_of_undying"
 
   feuerwerker:
     page: "Übersicht"
@@ -335,6 +339,8 @@ categories:
     source: vanilla
     stat: ["custom:sneak_time"]
     scale: 0.0000138889        # Ticks -> Stunden
+    ajlb-board: "statistic_sneak_time"
+    ajlb-scale: 0.0000138889
 
   huepfer:
     page: "Übersicht"
