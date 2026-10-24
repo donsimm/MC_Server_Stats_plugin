@@ -953,13 +953,17 @@ final class Collector {
             eligible.put(c.id(), c);
         }
         long now = System.currentTimeMillis() / 1000;
-        if (store.addIfDue(now, current, 6 * 3600L)) {
+        // anfangs oefter aufnehmen, damit die Zeitfenster schnell erscheinen, spaeter alle 2 Stunden
+        if (store.addIfDue(now, current, store.snapshots().size() < 4 ? 1800L : 2 * 3600L)) {
             store.prune(now);
             try {
                 Files.writeString(file, store.toJson(), StandardCharsets.UTF_8);
             } catch (IOException e) {
                 notes.add("Verlauf (history.json) nicht schreibbar: " + e.getMessage());
             }
+        }
+        if (!store.snapshots().isEmpty()) {
+            json.addProperty("historySince", store.snapshots().get(0).t());
         }
         for (JsonElement element : json.getAsJsonArray("categories")) {
             JsonObject category = element.getAsJsonObject();
@@ -971,12 +975,13 @@ final class Collector {
             JsonObject boards = category.getAsJsonObject("boards");
             JsonArray periods = category.getAsJsonArray("periods");
             JsonObject windows = new JsonObject();
+            category.addProperty("windowable", true);
             for (Map.Entry<String, Long> w : WINDOW_DAYS.entrySet()) {
                 if (boards.has(w.getKey())) {
                     continue; // AJLB hat dieses Fenster
                 }
                 HistoryStore.Snapshot base = store.baseline(now, w.getValue() * 86_400L);
-                if (base == null || base.t() >= now - 3600) {
+                if (base == null || base.t() >= now - 600) {
                     continue; // noch keine Vergleichsaufnahme
                 }
                 List<Map.Entry<String, Double>> gain = HistoryStore.delta(values, base, id);

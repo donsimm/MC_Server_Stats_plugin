@@ -281,8 +281,14 @@ function buildIndex() {
 }
 const nameOf = u => (DATA.players[u] && DATA.players[u].name) || u.slice(0, 8);
 const isOnline = u => ONLINE.players.some(p => p.uuid === u);
-const boardOf = c => { const p = periodOf(c); return (p !== 'all' && c.boards[p]) ? c.boards[p] : c.boards.all; };
-const onlyTotal = c => { const p = periodOf(c); return p !== 'all' && !c.boards[p]; };
+const boardOf = c => { const p = periodOf(c); if (p === 'all') return c.boards.all; return c.boards[p] || (c.windowable ? [] : c.boards.all); };
+const onlyTotal = c => { const p = periodOf(c); return p !== 'all' && !c.boards[p] && !c.windowable; };
+/** Text, wenn fuer den gewaehlten Zeitraum noch nichts aufgezeichnet ist. */
+function noWindow(c) {
+  const since = DATA.historySince ? new Date(DATA.historySince * 1000) : null;
+  const when = since ? ` Aufzeichnung seit ${since.getDate()}.${since.getMonth() + 1}.${since.getFullYear()}.` : '';
+  return `<p class="none">Für diesen Zeitraum gibt es noch keinen Zuwachs.${when}</p>`;
+}
 /** Hinweis, wenn die Aufzeichnung kuerzer ist als der gewaehlte Zeitraum. */
 function windowNote(c) {
   const p = periodOf(c), since = c.windows && c.windows[p];
@@ -291,7 +297,7 @@ function windowNote(c) {
   return `<p class="winnote">Aufzeichnung seit ${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}, kürzer als ${PERIOD_DAYS[p]} Tage</p>`;
 }
 function cardPeriodCtl(c) {
-  const have = Object.keys(PERIOD_SHORT).filter(k => k === 'all' || c.boards[k]);
+  const have = Object.keys(PERIOD_SHORT).filter(k => k === 'all' || c.boards[k] || c.windowable);
   if (have.length < 2) return '';
   const cur = periodOf(c);
   return `<div class="cp" role="group" aria-label="Zeitraum">` + have.map(k => `<button type="button" data-cp="${esc(c.id)}" data-p="${k}" aria-pressed="${k === cur}">${PERIOD_SHORT[k]}</button>`).join('') + '</div>';
@@ -312,13 +318,13 @@ function headHTML(c, link) {
 }
 function cardHTML(c) {
   const b = boardOf(c);
-  const rows = b.length ? `<ol class="rows">${b.slice(0, 10).map(([u, v], i) => rowHTML(u, v, i, c)).join('')}</ol>` : '<p class="none">Noch keine Daten.</p>';
+  const rows = b.length ? `<ol class="rows">${b.slice(0, 10).map(([u, v], i) => rowHTML(u, v, i, c)).join('')}</ol>` : (periodOf(c) !== 'all' && c.windowable ? noWindow(c) : '<p class="none">Noch keine Daten.</p>');
   return `<article class="card${c.night ? ' night' : ''}" data-id="${esc(c.id)}" data-title="${esc(c.title.toLowerCase())}" style="${cardVars(c)}">${headHTML(c, true)}${cardPeriodCtl(c)}${rows}${windowNote(c)}` +
-    `<div class="card-f"><a href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}">Alle ${b.length} anzeigen →</a><span class="src">Quelle: ${esc(c.source)}</span></div></article>`;
+    `<div class="card-f"><a href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}">${b.length ? `Alle ${b.length} anzeigen` : 'Alle anzeigen'} →</a><span class="src">Quelle: ${esc(c.source)}</span></div></article>`;
 }
 function periodCtl(cats) {
   const periods = new Set(['all']);
-  (cats || DATA.categories).forEach(c => c.periods.forEach(p => periods.add(p)));
+  (cats || DATA.categories).forEach(c => { c.periods.forEach(p => periods.add(p)); if (c.windowable) ['week', 'month', 'year'].forEach(p => periods.add(p)); });
   if (periods.size < 2) return '';
   if (!periods.has(period)) period = 'all';
   return `<div class="bar-tools"><span class="label">Zeitraum</span><div class="seg" role="group" aria-label="Zeitraum">` +
