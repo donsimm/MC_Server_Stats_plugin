@@ -50,7 +50,7 @@ final class Collector {
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
     /** Ein Museumsstueck: Advancement mit Anzeigename, Kategorie (Reiter im Advancement-Menue) und Kopf-Textur. */
-    private record MuseumItem(String name, String category, String skinUrl) {
+    private record MuseumItem(String name, String category, String sub, int depth, String skinUrl) {
     }
 
     private static final class Snapshot {
@@ -229,25 +229,20 @@ final class Collector {
                 }
             }
         }
-        Map<String, String> rootTitles = new HashMap<>();
         Map<String, Advancement> byId = new HashMap<>();
         for (Iterator<Advancement> it = Bukkit.advancementIterator(); it.hasNext(); ) {
             Advancement adv = it.next();
             byId.put(adv.getKey().getNamespace() + ":" + adv.getKey().getKey(), adv);
         }
+        // Koepfe = angezeigte Advancements, die keine Kategorie sind (keine anderen Advancements darunter im Pfad).
+        // Kategorie und Unterkategorie ergeben sich aus den Ordnern im Pfad, ihr Name aus dem Titel der Kategorie-Advancements.
         for (String ns : chosen) {
-            for (String id : idsByNamespace.getOrDefault(ns, List.of())) {
-                String path = id.substring(id.indexOf(':') + 1);
-                if (path.equals("root") || path.endsWith("/root")) {
-                    String title = displayTitle(byId.get(id));
-                    if (title != null) {
-                        rootTitles.put(id.substring(0, id.length() - "root".length()), title);
-                    }
-                }
+            List<String> ids = idsByNamespace.getOrDefault(ns, List.of());
+            java.util.Set<String> paths = new java.util.HashSet<>();
+            for (String id : ids) {
+                paths.add(id.substring(id.indexOf(':') + 1));
             }
-        }
-        for (String ns : chosen) {
-            for (String id : idsByNamespace.getOrDefault(ns, List.of())) {
+            for (String id : ids) {
                 String path = id.substring(id.indexOf(':') + 1);
                 String lowerPath = path.toLowerCase(Locale.ROOT);
                 if (lowerPath.equals("root") || lowerPath.endsWith("/root") || lowerPath.startsWith("recipes/")) {
@@ -256,14 +251,20 @@ final class Collector {
                 if (!s.museumContains.isEmpty() && s.museumContains.stream().noneMatch(lowerPath::contains)) {
                     continue;
                 }
-                int slash = path.lastIndexOf('/');
-                String dirKey = id.substring(0, id.length() - (path.length() - (slash + 1)));
-                String category = rootTitles.get(dirKey);
-                if (category == null) {
-                    category = slash < 0 ? "Weitere" : prettyName(path.substring(0, slash));
+                Advancement adv = byId.get(id);
+                if (adv == null || adv.getDisplay() == null) {
+                    continue; // versteckte Hilfs-Advancements (z. B. "End line", "Kill baby")
                 }
-                String title = displayTitle(byId.get(id));
-                snap.museum.put(id, new MuseumItem(title != null ? title : prettyName(path), category, skinUrl(byId.get(id))));
+                String prefix = path.startsWith("collection/") ? "collection/" : "";
+                String rest = path.substring(prefix.length());
+                if (paths.stream().anyMatch(q -> q.startsWith(path + "/"))) {
+                    continue; // Kategorie, kein Kopf
+                }
+                String[] dirs = rest.contains("/") ? rest.substring(0, rest.lastIndexOf('/')).split("/") : new String[0];
+                String category = dirs.length > 0 ? dirTitle(byId, ns, prefix + dirs[0], dirs[0]) : "Sonstige";
+                String sub = dirs.length > 1 ? dirTitle(byId, ns, prefix + dirs[0] + "/" + dirs[1], dirs[1]) : "";
+                String title = displayTitle(adv);
+                snap.museum.put(id, new MuseumItem(title != null ? title : prettyName(path), category, sub, depth(adv), skinUrl(adv)));
             }
         }
         long noSkin = snap.museum.values().stream().filter(m -> m.skinUrl().isEmpty()).count();
@@ -275,6 +276,30 @@ final class Collector {
                     + (perNamespace.isEmpty() ? "keine" : perNamespace)
                     + ". Passenden Namensraum unter museum.namespaces in der config.yml eintragen.");
         }
+    }
+
+    private static String dirTitle(Map<String, Advancement> byId, String ns, String path, String fallback) {
+        String title = displayTitle(byId.get(ns + ":" + path));
+        return title != null ? title : prettyName(fallback);
+    }
+
+    /** Tiefe im Advancement-Baum (Reihenfolge wie im Spiel: jeder Kopf haengt am vorherigen). */
+    private static int depth(Advancement adv) {
+        int depth = 0;
+        try {
+            java.lang.reflect.Method parent = Advancement.class.getMethod("getParent");
+            Object current = adv;
+            while (depth < 200) {
+                current = parent.invoke(current);
+                if (current == null) {
+                    break;
+                }
+                depth++;
+            }
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return 0;
+        }
+        return depth;
     }
 
     /** Titel aus der Advancement-Anzeige, oder null (kein Titel oder nur ein Uebersetzungsschluessel). */
@@ -852,6 +877,8 @@ final class Collector {
                 item.addProperty("id", e.getKey());
                 item.addProperty("name", e.getValue().name());
                 item.addProperty("cat", e.getValue().category());
+                item.addProperty("sub", e.getValue().sub());
+                item.addProperty("ord", e.getValue().depth());
                 if (!e.getValue().skinUrl().isEmpty() && museumHeads != null) {
                     item.addProperty("img", imageName(e.getKey()));
                     museumHeads.enqueueSkin(imageName(e.getKey()), e.getValue().skinUrl());

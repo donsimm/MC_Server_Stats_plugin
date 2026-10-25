@@ -453,64 +453,32 @@ function applyCatFilter() {
   }
   document.querySelectorAll('#view .grid .card[data-title]').forEach(el => { el.hidden = !!q && !el.dataset.title.includes(q); });
 }
-/* Museum: Baby und ausgewachsen werden zu einem Eintrag, Sammel-Erfolge entfallen, Kategorien werden vereinheitlicht. */
+/* Museum: alle Koepfe des Datapacks einzeln, in den Kategorien und Unterkategorien wie im Spiel (Namen englisch). */
 const MUSE = { q: '', cat: '', player: '', st: '' };
 let MUSE_ITEMS = null;
-const MUSE_GENERIC = ['Vanilla-Mobs'];
-/** Kategoriename des Datapacks -> Anzeigename; null = Eintrag weglassen. */
-function museumCat(raw) {
-  const c = (raw || '').toLowerCase().replace(/[_-]+/g, ' ').trim();
-  if (/^end line|heads? collection|^baby\b|^babies$/.test(c)) return null;
-  if (/^(canidae|end|sea|passives?|hostiles?|weitere|sonstige)$/.test(c) || c === '') return null; // ausgeblendete Kategorien
-  if (/shulker/.test(c)) return 'Shulker';
-  if (/^(felines?|cats?|kittens?)$/.test(c)) return 'Katzen';
-  if (/^(dogs?|wolf|wolves|baby dogs?)$/.test(c)) return 'Hunde';
-  if (/^passives?$/.test(c)) return 'Friedliche Mobs';
-  if (c === 'vanilla') return 'Vanilla-Mobs';
-  return raw.replace(/\b\w/g, ch => ch.toUpperCase());
-}
+const subRank = s => /^baby\b/i.test(s) ? 1 : 0;   // Baby-Unterkategorien nach den ausgewachsenen Tieren
 function museumItems() {
   if (MUSE_ITEMS && MUSE_ITEMS.src === DATA.museum) return MUSE_ITEMS.list;
-  const map = new Map();
-  for (const i of DATA.museum.items) {
-    if (/^end line/i.test(i.name)) continue;
-    const baby = /\bbaby\b/i.test(i.name);
-    const cat = museumCat(i.cat);
-    const key = i.name.toLowerCase().replace(/^kill\s+/, '').replace(/\bbaby\s+/, '').replace(/\s+/g, ' ').trim();
-    let e = map.get(key);
-    if (!e) map.set(key, e = { name: '', cat: null, img: '', by: new Set(), adult: false });
-    i.by.forEach(u => e.by.add(u));
-    if (cat && (!e.cat || MUSE_GENERIC.includes(e.cat) && !MUSE_GENERIC.includes(cat))) e.cat = cat;
-    if (!baby && !e.adult) { e.adult = true; e.name = i.name; e.img = i.img || e.img; }
-    else if (!e.name) e.name = i.name.replace(/^kill\s+/i, '').replace(/\bbaby\s+/i, '').replace(/^./, c => c.toUpperCase());
-    if (!e.img && i.img) e.img = i.img;
-  }
-  // Dorfbewohner und Zombie-Dorfbewohner in die Kategorie ihres Bioms verschieben (sofern es eine solche Kategorie gibt)
-  const cats = [...new Set([...map.values()].map(e => e.cat).filter(Boolean))];
-  for (const e of map.values()) {
-    if (!e.cat || !/villager/i.test(e.cat)) continue;
-    const biome = ['desert', 'plain', 'savanna', 'snow', 'swamp', 'taiga', 'jungle'].find(b => e.name.toLowerCase().includes(b));
-    const target = biome && cats.find(c => !/villager/i.test(c) && (c.toLowerCase().includes(biome) || biome.includes(c.toLowerCase())));
-    if (target) e.cat = target;
-  }
-  const list = [...map.values()].filter(e => e.cat).map(e => ({ name: e.name, cat: e.cat, img: e.img, by: [...e.by] }));
-  list.sort((a, b) => a.name.localeCompare(b.name, 'de'));
+  const list = DATA.museum.items.map(i => ({ name: i.name, cat: i.cat || 'Sonstige', sub: i.sub || '', ord: i.ord || 0, img: i.img || '', by: i.by }));
+  list.sort((a, b) => a.cat.localeCompare(b.cat, 'en') || subRank(a.sub) - subRank(b.sub) || a.sub.localeCompare(b.sub, 'en') || a.ord - b.ord || a.name.localeCompare(b.name, 'en'));
   MUSE_ITEMS = { src: DATA.museum, list };
   return list;
 }
 function museumList() {
   const all = museumItems(), q = MUSE.q.trim().toLowerCase(), pl = MUSE.player;
   const has = i => pl ? i.by.includes(pl) : i.by.length > 0;
-  const shown = all.filter(i => (!MUSE.cat || i.cat === MUSE.cat) && (!q || i.name.toLowerCase().includes(q) || i.cat.toLowerCase().includes(q)) &&
+  const [fc, fs] = MUSE.cat.split('|');
+  const shown = all.filter(i => (!fc || i.cat === fc) && (fs === undefined || i.sub === fs) && (!q || i.name.toLowerCase().includes(q) || i.cat.toLowerCase().includes(q) || i.sub.toLowerCase().includes(q)) &&
     (!MUSE.st || (MUSE.st === 'have') === has(i)));
   const got = all.filter(has).length;
   const cats = [];
   shown.forEach(i => {
     let c = cats.find(x => x.title === i.cat);
-    if (!c) cats.push(c = { title: i.cat, items: [] });
-    c.items.push(i);
+    if (!c) cats.push(c = { title: i.cat, subs: [] });
+    let s = c.subs.find(x => x.title === i.sub);
+    if (!s) c.subs.push(s = { title: i.sub, items: [] });
+    s.items.push(i);
   });
-  cats.sort((a, b) => a.title.localeCompare(b.title, 'de'));
   const card = i => {
     const on = has(i), by = i.by.slice(0, 4), more = i.by.length - by.length;
     const who = by.map(u => `<a href="#profil-${u}" title="${esc(nameOf(u))}">${avatar(u)}</a>`).join('') + (more > 0 ? `<span class="more">+${more}</span>` : '');
@@ -518,9 +486,11 @@ function museumList() {
     return `<div class="muse ${on ? 'have' : 'miss'}">${img}<div class="muse-t"><b>${esc(i.name)}</b>` +
       (i.by.length ? `<span class="muse-by">${who}</span><small>${pl ? (on ? 'gesammelt' : nf.format(i.by.length) + ' Spieler') : nf.format(i.by.length) + ' Spieler'}</small>` : '<small>noch nicht gesammelt</small>') + '</div></div>';
   };
+  const count = items => `<small>${nf.format(items.filter(has).length)} / ${nf.format(items.length)}</small>`;
   const sections = cats.map(c => {
-    const have = c.items.filter(has).length;
-    return `<h2 class="sec">${esc(c.title)}<small>${nf.format(have)} / ${nf.format(c.items.length)}</small></h2><div class="muse-grid">${c.items.map(card).join('')}</div>`;
+    const items = c.subs.flatMap(s => s.items);
+    const body = c.subs.map(s => (s.title ? `<h3 class="muse-sub">${esc(s.title)}${count(s.items)}</h3>` : '') + `<div class="muse-grid">${s.items.map(card).join('')}</div>`).join('');
+    return `<h2 class="sec">${esc(c.title)}${count(items)}</h2>${body}`;
   }).join('') || '<p class="empty">Keine Treffer.</p>';
   const who = pl ? nameOf(pl) + ' hat ' : '';
   return `<p class="muted">${esc(who)}${nf.format(got)} von ${nf.format(all.length)} Köpfen gesammelt${pl ? '' : ' (alle Spieler zusammen)'}</p>` +
@@ -528,12 +498,14 @@ function museumList() {
 }
 function museumView() {
   const all = museumItems();
-  const cats = [...new Set(all.map(i => i.cat))].sort((a, b) => a.localeCompare(b, 'de'));
+  const tops = [...new Set(all.map(i => i.cat))];
+  const subsOf = c => [...new Set(all.filter(i => i.cat === c && i.sub).map(i => i.sub))];
   const users = [...new Set(DATA.museum.items.flatMap(i => i.by))].sort((a, b) => nameOf(a).localeCompare(nameOf(b), 'de'));
   const opt = (v, l, cur) => `<option value="${esc(v)}"${v === cur ? ' selected' : ''}>${esc(l)}</option>`;
+  const catOpts = tops.map(c => opt(c, c, MUSE.cat) + subsOf(c).map(s => opt(c + '|' + s, '\u00a0\u00a0' + s, MUSE.cat)).join('')).join('');
   return `<h2 class="sec">${esc(DATA.museum.title || 'Museum')}</h2>` +
     `<div class="filter muse-filter"><input id="mq" type="search" value="${esc(MUSE.q)}" placeholder="Kopf suchen …" autocomplete="off">` +
-    `<select id="mcat" aria-label="Kategorie">${opt('', 'Alle Kategorien', MUSE.cat)}${cats.map(c => opt(c, c, MUSE.cat)).join('')}</select>` +
+    `<select id="mcat" aria-label="Kategorie">${opt('', 'Alle Kategorien', MUSE.cat)}${catOpts}</select>` +
     `<select id="mpl" aria-label="Spieler">${opt('', 'Alle Spieler', MUSE.player)}${users.map(u => opt(u, nameOf(u), MUSE.player)).join('')}</select>` +
     `<select id="mst" aria-label="Status">${opt('', 'Gesammelt und fehlend', MUSE.st)}${opt('have', 'Nur gesammelt', MUSE.st)}${opt('miss', 'Nur fehlend', MUSE.st)}</select></div>` +
     `<div id="muse-list">${museumList()}</div>`;
