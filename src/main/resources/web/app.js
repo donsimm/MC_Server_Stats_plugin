@@ -534,39 +534,37 @@ function blockCube(id, size, spin) {
   const f = (cls, img) => `<i class="f ${cls}" style="background-color:${g.c};background-image:${img}"></i>`;
   return `<div class="cube${spin ? ' spin' : ''}" style="--s:${size}px"><div class="cube-in">${f('top', top)}${f('front', side)}${f('right', side)}${f('back', side)}${f('left', side)}${f('bottom', top)}</div></div>`;
 }
-const CF = { sel: 0, ids: [] };
-/** Karte waehlen: hervorheben und in die Mitte der Reihe schieben (ohne Animation). */
-function cfLayout() {
-  const stage = document.querySelector('.bm .cf-stage');
-  document.querySelectorAll('.bm .cf-card').forEach(c => c.classList.toggle('on', Number(c.dataset.i) === CF.sel));
-  document.querySelectorAll('.bm .pbars li').forEach(l => l.classList.toggle('sel', Number(l.dataset.i) === CF.sel));
-  const card = document.querySelector(`.bm .cf-card[data-i="${CF.sel}"]`);
-  if (stage && card) stage.scrollLeft = card.offsetLeft - (stage.clientWidth - card.offsetWidth) / 2;
+const CF = { sel: 0, ids: [], u: '' };
+/** Rechte Karte: Block, Gesamtzahl aller Spieler und die 5 besten Spieler. */
+function cfCardHTML() {
+  const id = CF.ids[CF.sel], u = CF.u, P = DATA.players[u];
+  const b = DATA.blocks.list.find(x => x.id === id), mineN = (P.placed.top.find(x => x[0] === id) || [0, 0])[1];
+  const rank = b ? b.top.findIndex(x => x[0] === u) + 1 : 0;
+  return `<div class="bc-name">${esc(blockName(id))}</div><div class="bc-tot">${b ? nf.format(b.total) + ' platziert (alle Spieler)' : 'keine Daten'}</div>` +
+    `<ol class="bc-top">${(b ? b.top : []).map(([v, n], k) => `<li class="${v === u ? 'me' : ''}"><span>${k + 1}</span>${avatar(v)}<b>${esc(nameOf(v))}</b><em>${nf.format(n)}</em></li>`).join('')}</ol>` +
+    `<div class="bc-me">${mineN ? `${esc(P.name)}: ${nf.format(mineN)}${rank ? ` · Platz ${rank}` : ''}` : `${esc(P.name)}: noch nichts platziert`}</div>`;
+}
+function cfSelect(i) {
+  CF.sel = i;
+  document.querySelectorAll('.bm .bl li').forEach(l => l.classList.toggle('on', Number(l.dataset.i) === i));
+  const card = document.querySelector('.bm .bcard'); if (card) card.innerHTML = cfCardHTML();
 }
 function placedModule(u) {
   const P = DATA.players[u];
   if (!P || !P.placed || !DATA.blocks || !DATA.blocks.list.length) return '';
-  const mine = P.placed.top, byId = new Map(DATA.blocks.list.map(b => [b.id, b]));
-  const ids = mine.map(x => x[0]);
-  DATA.blocks.list.forEach(b => { if (!ids.includes(b.id) && ids.length < 60) ids.push(b.id); });
-  CF.ids = ids; CF.sel = 0;
-  const max = mine[0][1], total = P.placed.total;
-  const sum = {}; mine.forEach(([id, n]) => { const g = blockGroup(id); (sum[g.n] = sum[g.n] || { n: g.n, c: g.c, v: 0 }).v += n; });
-  const gl = Object.values(sum).sort((a, b) => b.v - a.v), gsum = gl.reduce((s, g) => s + g.v, 0);
-  const cards = ids.map((id, i) => { const b = byId.get(id), top = b ? b.top : [];
-    return `<div class="cf-card" data-i="${i}"><div class="cf-name">${esc(blockName(id))}</div><div class="cf-tot">${b ? nf.format(b.total) + ' platziert (alle Spieler)' : '&nbsp;'}</div>` +
-      `<ol class="cf-top">${top.map(([v, n], k) => `<li class="${v === u ? 'me' : ''}"><span>${k + 1}</span>${avatar(v)}<b>${esc(nameOf(v))}</b><em>${nf.format(n)}</em></li>`).join('')}</ol></div>`; }).join('');
-  setTimeout(cfLayout, 0);
-  return `<h2 class="sec">Baumeister<small>Blöcke platziert</small></h2><div class="bm"><div class="cf"><div class="cf-bar"><button type="button" data-cf="-1" aria-label="Vorheriger Block">◀</button><span>Block wählen: Karten seitlich schieben oder unten in der Liste anklicken</span><button type="button" data-cf="1" aria-label="Nächster Block">▶</button></div><div class="cf-stage">${cards}</div></div>` +
-    `<div class="bm-in"><div class="pb2"><div class="power"><b>${nf.format(total)}</b><span>Blöcke insgesamt</span></div>` +
-    `<div><div class="stack">${gl.map(g => `<i style="width:${(g.v / gsum * 100).toFixed(1)}%;background:${g.c}" title="${esc(g.n)}"></i>`).join('')}</div>` +
-    `<div class="glegend">${gl.map(g => `<span><i style="background:${g.c}"></i>${esc(g.n)} ${(g.v / gsum * 100).toFixed(0)} %</span>`).join('')}</div></div></div>` +
-    `<ul class="pbars">${mine.slice(0, 12).map(([id, n], i) => `<li data-i="${i}"><span class="ico">${blockCube(id, 18, false)}</span><span class="pn">${esc(blockName(id))}</span><span class="meter"><i style="width:${(n / max * 100).toFixed(1)}%;background:${blockGroup(id).c}"></i></span><span class="num">${nf.format(n)}</span></li>`).join('')}</ul></div></div>`;
+  const mine = new Map(P.placed.top), ids = P.placed.top.map(x => x[0]);
+  DATA.blocks.list.forEach(b => { if (!mine.has(b.id) && ids.length < 60) ids.push(b.id); });
+  CF.ids = ids; CF.sel = 0; CF.u = u;
+  const rows = ids.map((id, i) => `<li data-i="${i}" tabindex="0" class="${i === 0 ? 'on' : ''}"><span class="ico">${blockCube(id, 18, false)}</span><span class="pn">${esc(blockName(id))}</span><span class="num">${mine.has(id) ? nf.format(mine.get(id)) : '–'}</span></li>`).join('');
+  return `<h2 class="sec">Baumeister<small>Blöcke platziert</small></h2><div class="bm"><div class="bm-h"><div class="power"><b>${nf.format(P.placed.total)}</b><span>Blöcke insgesamt</span></div><span class="hint">Block anklicken: beste Spieler anzeigen</span></div>` +
+    `<div class="bm2"><ul class="bl">${rows}</ul><div class="bcard">${cfCardHTML()}</div></div></div>`;
 }
 document.addEventListener('click', e => {
-  const li = e.target.closest('.bm .pbars li[data-i]'); if (li) { CF.sel = Number(li.dataset.i); cfLayout(); return; }
-  const c = e.target.closest('.bm .cf-card'); if (c) { CF.sel = Number(c.dataset.i); cfLayout(); return; }
-  const bt = e.target.closest('.bm [data-cf]'); if (bt) { CF.sel = Math.min(CF.ids.length - 1, Math.max(0, CF.sel + Number(bt.dataset.cf))); cfLayout(); }
+  const li = e.target.closest('.bm .bl li[data-i]'); if (li) cfSelect(Number(li.dataset.i));
+});
+document.addEventListener('keydown', e => {
+  const li = e.target.closest && e.target.closest('.bm .bl li[data-i]');
+  if (li && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); cfSelect(Number(li.dataset.i)); }
 });
 
 function spielerView() {
@@ -730,13 +728,12 @@ function profilView(u) {
     `<div><h1>${esc(P.name)}${rankBadge(P.rank)}${on ? '<span class="pill">online</span>' : ''}</h1><p>Erstbeitritt ${dateStr(P.first)} · ${state}</p></div></article></div>`;
   const tiles = DATA.categories.filter(c => !c.synthetic && !c.auto && IDX.val[c.id][u] !== undefined).map(c => {
     const rk = IDX.rank[c.id][u], total = (c.boards.all || []).length;
-    return `<a class="card tile${c.night ? ' night' : ''}" href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}" style="${cardVars(c)}">` +
-      `<div class="card-h"><div><h3>${esc(c.title)}</h3></div></div>` +
-      `<div class="big">${fmt(c, IDX.val[c.id][u])}</div>` +
-      `<div class="pl"><span class="rank${rk <= 3 ? ' top' : ''}">Platz ${rk}</span><span>von ${total}</span></div></a>`;
+    const val = c.format === 'fewdeaths' ? fmt(c, IDX.val[c.id][u]).replace(/^(.*?) · (.*)$/, '$1<small class="vsub"> · $2</small>') : fmt(c, IDX.val[c.id][u]);
+    return `<a class="card tile mini${c.night ? ' night' : ''}" href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}" style="${cardVars(c)}" title="Platz ${rk} von ${total}">` +
+      `<small class="tt">${esc(c.title)}</small><span class="l"><span class="mv">${val}</span><em class="mr${rk <= 3 ? ' top' : ''}">${rk <= 3 ? '★ ' : ''}#${rk}</em></span></a>`;
   }).join('');
   return `<a class="back" href="#start" data-go="start">← Übersicht</a>${hero}` +
-    (tiles ? `<h2 class="sec">Platzierungen</h2><div class="tiles">${tiles}</div>` : '') + jobsCard(u) + mcmmoCard(u) + placedModule(u) + statsDetails(u);
+    (tiles ? `<h2 class="sec">Platzierungen</h2><div class="tiles mini">${tiles}</div>` : '') + jobsCard(u) + mcmmoCard(u) + placedModule(u) + statsDetails(u);
 }
 
 const slug = t => String(t).toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
