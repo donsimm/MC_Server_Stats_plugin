@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 25
+config-version: 26
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -246,6 +246,16 @@ categories:
     group-sum: "mined"
     ajlb-board: "statistic_mine_block"
 
+  baumeister:
+    page: "Übersicht"
+    title: "Baumeister"
+    subtitle: "Meiste platzierte Blöcke"
+    icon: pick
+    color: "#e0b27a"
+    format: int
+    source: placed
+    tags: ["baumeister", "bauen", "blöcke", "platziert", "platzieren", "block", "placed", "bauherr"]
+
   monsterjaeger:
     page: "Übersicht"
     title: "Monsterjäger"
@@ -279,6 +289,28 @@ categories:
     source: vanilla
     stat: ["custom:deaths"]
     ajlb-board: "statistic_deaths"
+
+  unsterblich:
+    page: "Übersicht"
+    title: "Unsterblich"
+    subtitle: "Meiste Totems der Unsterblichkeit"
+    icon: heart
+    color: "#9be8d0"
+    format: int
+    source: vanilla
+    stat: ["used:totem_of_undying"]
+    ajlb-board: "statistic_use_item:totem_of_undying"
+
+  ueberlebenskuenstler:
+    page: "Übersicht"
+    title: "Überlebenskünstler"
+    subtitle: "Längste Zeit seit dem letzten Tod · nur Spieler ab 5 Std. Spielzeit"
+    icon: heart
+    color: "#b8f5c8"
+    format: dur
+    source: survival
+    column: "TIME"
+    tags: ["tod", "tode", "überleben", "überlebt", "leben", "letzter tod", "sterben", "hardcore"]
 
   netherit-jaeger:
     page: "Übersicht"
@@ -314,28 +346,6 @@ categories:
     scale: 0.00001
     ajlb-board: "statistic_aviate_one_cm"
     ajlb-scale: 0.00001
-
-  unsterblich:
-    page: "Übersicht"
-    title: "Unsterblich"
-    subtitle: "Meiste Totems der Unsterblichkeit"
-    icon: heart
-    color: "#9be8d0"
-    format: int
-    source: vanilla
-    stat: ["used:totem_of_undying"]
-    ajlb-board: "statistic_use_item:totem_of_undying"
-
-  ueberlebenskuenstler:
-    page: "Übersicht"
-    title: "Überlebenskünstler"
-    subtitle: "Längste Zeit seit dem letzten Tod · nur Spieler ab 5 Std. Spielzeit"
-    icon: heart
-    color: "#b8f5c8"
-    format: dur
-    source: survival
-    column: "TIME"
-    tags: ["tod", "tode", "überleben", "überlebt", "leben", "letzter tod", "sterben", "hardcore"]
 
   weltenbummler:
     page: "Übersicht"
@@ -639,16 +649,6 @@ categories:
     source: vanilla
     stat: ["used:crossbow"]
     tags: ["armbrust", "crossbow", "bolzen", "pfeil", "schiessen", "schützen", "waffe", "kampf"]
-
-  baumeister:
-    page: "Übersicht"
-    title: "Baumeister"
-    subtitle: "Meiste platzierte Blöcke"
-    icon: pick
-    color: "#e0b27a"
-    format: int
-    source: placed
-    tags: ["baumeister", "bauen", "blöcke", "platziert", "platzieren", "block", "placed", "bauherr"]
 
   skillmeister:
     page: "Jobs & mcMMO|mcMMO"
