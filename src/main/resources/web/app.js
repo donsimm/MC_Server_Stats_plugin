@@ -460,7 +460,7 @@ const subRank = s => /^baby\b/i.test(s) ? 1 : 0;   // Baby-Unterkategorien nach 
 function museumItems() {
   if (MUSE_ITEMS && MUSE_ITEMS.src === DATA.museum) return MUSE_ITEMS.list;
   const list = DATA.museum.items.map(i => ({ name: i.name, cat: i.cat || 'Sonstige', sub: i.sub || '', ord: i.ord || 0, img: i.img || '', by: i.by, gold: !!i.gold }));
-  const top = c => c === 'Golden Heads' ? 0 : 1;   // goldene Koepfe ganz oben
+  const top = c => c === 'Golden Heads' ? 1 : 0;   // goldene Koepfe ans Ende, vor die Easter Eggs
   list.sort((a, b) => top(a.cat) - top(b.cat) || a.cat.localeCompare(b.cat, 'en') || subRank(a.sub) - subRank(b.sub) || a.sub.localeCompare(b.sub, 'en') || a.ord - b.ord || a.name.localeCompare(b.name, 'en'));
   MUSE_ITEMS = { src: DATA.museum, list };
   return list;
