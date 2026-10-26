@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -60,6 +61,8 @@ final class Collector {
         final Map<String, Map<String, List<AjlbEntry>>> ajlbPeriods = new HashMap<>();
         final Map<String, List<AjlbEntry>> ajlbAll = new HashMap<>();
         final Map<String, Integer> categoryMax = new HashMap<>();
+        /** Advancements, die im Spiel im Menue sichtbar sind (mit Anzeige, ohne Rezepte und versteckte Hilfs-Advancements). */
+        final Set<String> shownAdvancements = new HashSet<>();
         final List<String> notes = new ArrayList<>();
         Path statsDir;
         Path advDir;
@@ -478,13 +481,15 @@ final class Collector {
         }
         for (CategoryDef c : snap.categories) {
             if (c.source().equals("advancements")) {
-                int count = 0;
-                for (Iterator<Advancement> it = Bukkit.advancementIterator(); it.hasNext(); ) {
-                    if (!it.next().getKey().getKey().startsWith("recipes/")) {
-                        count++;
+                if (snap.shownAdvancements.isEmpty()) {
+                    for (Iterator<Advancement> it = Bukkit.advancementIterator(); it.hasNext(); ) {
+                        Advancement adv = it.next();
+                        if (!adv.getKey().getKey().startsWith("recipes/") && adv.getDisplay() != null) {
+                            snap.shownAdvancements.add(adv.getKey().getNamespace() + ":" + adv.getKey().getKey());
+                        }
                     }
                 }
-                snap.categoryMax.put(c.id(), count);
+                snap.categoryMax.put(c.id(), snap.shownAdvancements.size());
             }
         }
 
@@ -758,7 +763,9 @@ final class Collector {
                             Path file = snap.advDir.resolve(p.uuid + ".json");
                             if (Files.isRegularFile(file)) {
                                 try {
-                                    p.values.put(c.id(), (double) AdvancementsFile.countDone(file));
+                                    Set<String> done = AdvancementsFile.doneIds(file);
+                                    done.retainAll(snap.shownAdvancements);
+                                    p.values.put(c.id(), (double) done.size());
                                 } catch (IOException | RuntimeException e) {
                                     readErrors++;
                                 }
