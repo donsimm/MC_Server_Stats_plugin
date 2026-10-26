@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 22
+config-version: 23
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -326,6 +326,17 @@ categories:
     stat: ["used:totem_of_undying"]
     ajlb-board: "statistic_use_item:totem_of_undying"
 
+  ueberlebenskuenstler:
+    page: "Übersicht"
+    title: "Überlebenskünstler"
+    subtitle: "Längste Zeit seit dem letzten Tod · nur Spieler ab 5 Std. Spielzeit"
+    icon: heart
+    color: "#b8f5c8"
+    format: dur
+    source: survival
+    column: "TIME"
+    tags: ["tod", "tode", "überleben", "überlebt", "leben", "letzter tod", "sterben", "hardcore"]
+
   weltenbummler:
     page: "Übersicht"
     title: "Weltenbummler"
@@ -595,17 +606,6 @@ categories:
     source: vanilla
     stat: ["used:trident"]
     tags: ["dreizack", "trident", "werfen", "speer", "waffe", "kampf"]
-
-  ueberlebenskuenstler:
-    page: "Übersicht"
-    title: "Überlebenskünstler"
-    subtitle: "Längste Zeit seit dem letzten Tod · nur Spieler ab 5 Std. Spielzeit"
-    icon: heart
-    color: "#b8f5c8"
-    format: dur
-    source: survival
-    column: "TIME"
-    tags: ["tod", "tode", "überleben", "überlebt", "leben", "letzter tod", "sterben", "hardcore"]
 
   skillmeister:
     page: "Jobs & mcMMO|mcMMO"
