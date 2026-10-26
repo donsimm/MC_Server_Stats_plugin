@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 23
+config-version: 24
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -197,7 +197,7 @@ ranks:
 #   page:      "Tab" oder "Tab|Abschnitt" (mehrere Abschnitte auf einer Seite, z. B. "Jobs & mcMMO|Jobs"). "Übersicht" = Startseite, sonst Reiter in der Navigation (mcMMO, Cookie Clicker, Jobs). Neue Namen ergeben neue Reiter.
 #   format:  int | dur (Wert in Stunden) | km | big (Mio./Mrd./Bio. ...) | adv (x / Gesamtzahl) | dec (eine Nachkommastelle) | level ("Level 16")
 #   icon:    clock gem skull pick sword swords boot scroll bolt star heart shield cookie cursor gear
-#   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker (column: COOKIES, CLICKS, PER_CLICK, PRESTIGE) | jobs (column: Job-Name oder *) | skyblock (column: LEVEL, CHALLENGES, COMPLETIONS, PARTY) | oneblock (column: LEVEL, INVITED) | parkour (stat: block:<modus> oder elytra:<modus>, column: SCORE oder TIME) | dailyrewards (column: CURRENT, LONGEST, CLAIMS) | survival (column: TIME, DEATHS) | ajlb
+#   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker (column: COOKIES, CLICKS, PER_CLICK, PRESTIGE) | jobs (column: Job-Name oder *) | skyblock (column: LEVEL, CHALLENGES, COMPLETIONS, PARTY) | oneblock (column: LEVEL, INVITED) | parkour (stat: block:<modus> oder elytra:<modus>, column: SCORE oder TIME) | dailyrewards (column: CURRENT, LONGEST, CLAIMS) | survival (column: TIME, DEATHS) | placed (alle platzierten Blöcke, aus der Statistik "benutzt") | ajlb
 #   vanilla: stat (Liste, erster Treffer zaehlt) oder sum (Liste, addiert) oder group-sum (ganze Gruppe), plus scale
 #   ajlb-board: AJLeaderboards-Board fuer Zeitfenster (optional)
 #   tags:     zusaetzliche Suchwoerter fuer die Suche auf "Alle Statistiken" (Liste)
@@ -606,6 +606,27 @@ categories:
     source: vanilla
     stat: ["used:trident"]
     tags: ["dreizack", "trident", "werfen", "speer", "waffe", "kampf"]
+
+  streitkolben:
+    page: "Übersicht"
+    title: "Streitkolben-Schwinger"
+    subtitle: "Meiste Streitkolben-Einsätze"
+    icon: hammer
+    color: "#c9c4d6"
+    format: int
+    source: vanilla
+    stat: ["used:mace"]
+    tags: ["streitkolben", "mace", "waffe", "kampf", "schlagen", "hammer"]
+
+  baumeister:
+    page: "Übersicht"
+    title: "Baumeister"
+    subtitle: "Meiste platzierte Blöcke"
+    icon: pick
+    color: "#e0b27a"
+    format: int
+    source: placed
+    tags: ["baumeister", "bauen", "blöcke", "platziert", "platzieren", "block", "placed", "bauherr"]
 
   skillmeister:
     page: "Jobs & mcMMO|mcMMO"

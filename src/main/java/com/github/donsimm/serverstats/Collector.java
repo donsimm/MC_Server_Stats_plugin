@@ -467,7 +467,7 @@ final class Collector {
                 case "jobs" -> snap.jobsDir != null;
                 case "skyblock" -> snap.skyDir != null;
                 case "oneblock" -> snap.oneFile != null;
-                case "survival" -> snap.statsDir != null;
+                case "survival", "placed" -> snap.statsDir != null;
                 case "dailyrewards" -> s.dailyEnabled && new DailyRewardsReader(s, pluginsDir, plugin.getLogger()).file() != null;
                 case "parkour" -> parkourFile(snap.parkourDir, c) != null;
                 case "ajlb" -> ajlb && !c.ajlbBoard().isBlank();
@@ -816,6 +816,20 @@ final class Collector {
                             double value = c.column().equalsIgnoreCase("TIME") ? (entry.timeMs() > 0 ? ParkourData.TIME_BASE - entry.timeMs() : 0) : entry.score();
                             if (value > 0) {
                                 p.values.put(c.id(), value);
+                            }
+                        }
+                    }
+                    case "placed" -> {
+                        if (stats != null) {
+                            long total = 0;
+                            for (Map.Entry<String, Long> e : stats.group("used").entrySet()) {
+                                String key = e.getKey().startsWith("minecraft:") ? e.getKey().substring("minecraft:".length()) : e.getKey();
+                                if (e.getValue() > 0 && isBlockItem(key)) {
+                                    total += e.getValue();
+                                }
+                            }
+                            if (total > 0) {
+                                p.values.put(c.id(), (double) total);
                             }
                         }
                     }
