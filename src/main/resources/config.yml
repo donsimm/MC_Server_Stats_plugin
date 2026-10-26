@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 24
+config-version: 25
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -617,6 +617,28 @@ categories:
     source: vanilla
     stat: ["used:mace"]
     tags: ["streitkolben", "mace", "waffe", "kampf", "schlagen", "hammer"]
+
+  bogen:
+    page: "Übersicht"
+    title: "Bogenschütze"
+    subtitle: "Meiste Bogen-Einsätze"
+    icon: arrow
+    color: "#a9d68b"
+    format: int
+    source: vanilla
+    stat: ["used:bow"]
+    tags: ["bogen", "bow", "pfeil", "schiessen", "schützen", "waffe", "kampf"]
+
+  armbrust:
+    page: "Übersicht"
+    title: "Armbrustschütze"
+    subtitle: "Meiste Armbrust-Einsätze"
+    icon: arrow
+    color: "#d9a066"
+    format: int
+    source: vanilla
+    stat: ["used:crossbow"]
+    tags: ["armbrust", "crossbow", "bolzen", "pfeil", "schiessen", "schützen", "waffe", "kampf"]
 
   baumeister:
     page: "Übersicht"
