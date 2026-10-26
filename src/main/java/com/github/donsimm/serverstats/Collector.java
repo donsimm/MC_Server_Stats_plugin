@@ -50,7 +50,7 @@ final class Collector {
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
     /** Ein Museumsstueck: Advancement mit Anzeigename, Kategorie (Reiter im Advancement-Menue) und Kopf-Textur. */
-    private record MuseumItem(String name, String category, String sub, int depth, String skinUrl) {
+    private record MuseumItem(String name, String category, String sub, int depth, String skinUrl, boolean gold) {
     }
 
     private static final class Snapshot {
@@ -69,6 +69,10 @@ final class Collector {
         /** Museum: Advancement-ID -> Anzeigename (leer = Museum aus). */
         final Map<String, MuseumItem> museum = new java.util.LinkedHashMap<>();
         final Map<UUID, Set<String>> museumDone = new HashMap<>();
+        /** Goldene Koepfe: Eintrags-Schluessel -> Advancement der Kategorie, deren Abschluss sie belohnt. */
+        final Map<String, String> museumGolden = new java.util.LinkedHashMap<>();
+        /** Easter-Egg-Koepfe: {Name, Bildname, Textur-Adresse}. */
+        final List<String[]> museumEggs = new ArrayList<>();
     }
 
     private final ServerStatsPlugin plugin;
@@ -264,8 +268,11 @@ final class Collector {
                 String category = dirs.length > 0 ? dirTitle(byId, ns, prefix + dirs[0], dirs[0]) : "Sonstige";
                 String sub = dirs.length > 1 ? dirTitle(byId, ns, prefix + dirs[0] + "/" + dirs[1], dirs[1]) : "";
                 String title = displayTitle(adv);
-                snap.museum.put(id, new MuseumItem(title != null ? title : prettyName(path), category, sub, depth(adv), skinUrl(adv)));
+                snap.museum.put(id, new MuseumItem(title != null ? title : prettyName(path), category, sub, depth(adv), skinUrl(adv), false));
             }
+        }
+        if (!snap.museum.isEmpty()) {
+            loadMuseumExtras(snap, byId);
         }
         long noSkin = snap.museum.values().stream().filter(m -> m.skinUrl().isEmpty()).count();
         if (noSkin > 0) {
@@ -275,6 +282,35 @@ final class Collector {
             snap.notes.add("Museum: keine passenden Advancements gefunden. Namensraeume mit Advancements ausser minecraft: "
                     + (perNamespace.isEmpty() ? "keine" : perNamespace)
                     + ". Passenden Namensraum unter museum.namespaces in der config.yml eintragen.");
+        }
+    }
+
+    /** Goldene Koepfe und Easter Eggs aus museum-extra.json (aus dem Datapack V12.2 uebernommen). */
+    private void loadMuseumExtras(Snapshot snap, Map<String, Advancement> byId) {
+        try (java.io.InputStream in = plugin.getResource("museum-extra.json")) {
+            if (in == null) {
+                return;
+            }
+            JsonObject root = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject();
+            int n = 0;
+            for (JsonElement e : root.getAsJsonArray("golden")) {
+                JsonObject g = e.getAsJsonObject();
+                String adv = g.get("advancement").getAsString();
+                if (!byId.containsKey(adv)) {
+                    continue; // Kategorie gibt es in dieser Datapack-Version nicht
+                }
+                String key = "golden:" + adv + "#" + n++;
+                snap.museumGolden.put(key, adv);
+                snap.museum.put(key, new MuseumItem(g.get("name").getAsString(), "Golden Heads", "", n,
+                        "http://textures.minecraft.net/texture/" + g.get("texture").getAsString(), true));
+            }
+            for (JsonElement e : root.getAsJsonArray("eggs")) {
+                JsonObject g = e.getAsJsonObject();
+                String name = g.get("name").getAsString();
+                snap.museumEggs.add(new String[]{name, imageName("egg:" + name), "http://textures.minecraft.net/texture/" + g.get("texture").getAsString()});
+            }
+        } catch (IOException | RuntimeException ex) {
+            snap.notes.add("Museum: museum-extra.json nicht lesbar (" + ex.getMessage() + ").");
         }
     }
 
@@ -655,8 +691,14 @@ final class Collector {
                 Path file = snap.advDir.resolve(p.uuid + ".json");
                 if (Files.isRegularFile(file)) {
                     try {
-                        Set<String> done = AdvancementsFile.doneIds(file);
+                        Set<String> all = AdvancementsFile.doneIds(file);
+                        Set<String> done = new java.util.HashSet<>(all);
                         done.retainAll(snap.museum.keySet());
+                        snap.museumGolden.forEach((key, adv) -> {
+                            if (all.contains(adv)) {
+                                done.add(key);
+                            }
+                        });
                         snap.museumDone.put(p.uuid, done);
                     } catch (IOException | RuntimeException e) {
                         readErrors++;
@@ -879,6 +921,9 @@ final class Collector {
                 item.addProperty("cat", e.getValue().category());
                 item.addProperty("sub", e.getValue().sub());
                 item.addProperty("ord", e.getValue().depth());
+                if (e.getValue().gold()) {
+                    item.addProperty("gold", true);
+                }
                 if (!e.getValue().skinUrl().isEmpty() && museumHeads != null) {
                     item.addProperty("img", imageName(e.getKey()));
                     museumHeads.enqueueSkin(imageName(e.getKey()), e.getValue().skinUrl());
@@ -893,6 +938,19 @@ final class Collector {
                 items.add(item);
             }
             museum.add("items", items);
+            JsonArray eggs = new JsonArray();
+            for (String[] egg : snap.museumEggs) {
+                JsonObject o = new JsonObject();
+                o.addProperty("name", egg[0]);
+                if (museumHeads != null) {
+                    o.addProperty("img", egg[1]);
+                    museumHeads.enqueueSkin(egg[1], egg[2]);
+                }
+                eggs.add(o);
+            }
+            if (eggs.size() > 0) {
+                museum.add("eggs", eggs);
+            }
             json.add("museum", museum);
             // Kompakte Uebersicht fuer die Fehlersuche: je Kategorie Anzahl, Beispiel-IDs und -Namen
             JsonObject overview = new JsonObject();

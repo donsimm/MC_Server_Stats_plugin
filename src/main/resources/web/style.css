@@ -313,3 +313,9 @@ h2.sec small { color: var(--muted); font-size: 13px; font-weight: 400; margin-le
 .muse-sub { margin: 18px 0 10px; font-size: 16px; }
 .muse-sub small { color: var(--muted); font-size: 12px; font-weight: 400; margin-left: 8px; }
 h2.sec small { font-family: var(--font); }
+
+/* Goldene Koepfe und Easter Eggs im Museum */
+.muse.gold.have { background: color-mix(in srgb, #ffd23f 22%, #000); border-color: #ffd23f; }
+.muse.gold.miss { border-color: #8a7020; }
+.muse.egg { border-color: #c9a8ff; background: color-mix(in srgb, #8e5cf0 20%, #000); }
+.muse.egg .muse-t small { color: #d9c4ff; opacity: 1; }

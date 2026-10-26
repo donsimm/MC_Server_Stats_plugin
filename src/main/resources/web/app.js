@@ -459,8 +459,9 @@ let MUSE_ITEMS = null;
 const subRank = s => /^baby\b/i.test(s) ? 1 : 0;   // Baby-Unterkategorien nach den ausgewachsenen Tieren
 function museumItems() {
   if (MUSE_ITEMS && MUSE_ITEMS.src === DATA.museum) return MUSE_ITEMS.list;
-  const list = DATA.museum.items.map(i => ({ name: i.name, cat: i.cat || 'Sonstige', sub: i.sub || '', ord: i.ord || 0, img: i.img || '', by: i.by }));
-  list.sort((a, b) => a.cat.localeCompare(b.cat, 'en') || subRank(a.sub) - subRank(b.sub) || a.sub.localeCompare(b.sub, 'en') || a.ord - b.ord || a.name.localeCompare(b.name, 'en'));
+  const list = DATA.museum.items.map(i => ({ name: i.name, cat: i.cat || 'Sonstige', sub: i.sub || '', ord: i.ord || 0, img: i.img || '', by: i.by, gold: !!i.gold }));
+  const top = c => c === 'Golden Heads' ? 0 : 1;   // goldene Koepfe ganz oben
+  list.sort((a, b) => top(a.cat) - top(b.cat) || a.cat.localeCompare(b.cat, 'en') || subRank(a.sub) - subRank(b.sub) || a.sub.localeCompare(b.sub, 'en') || a.ord - b.ord || a.name.localeCompare(b.name, 'en'));
   MUSE_ITEMS = { src: DATA.museum, list };
   return list;
 }
@@ -483,7 +484,7 @@ function museumList() {
     const on = has(i), by = i.by.slice(0, 4), more = i.by.length - by.length;
     const who = by.map(u => `<a href="#profil-${u}" title="${esc(nameOf(u))}">${avatar(u)}</a>`).join('') + (more > 0 ? `<span class="more">+${more}</span>` : '');
     const img = `<img class="mob" src="${i.img ? 'heads/' + esc(i.img) + '.png' : fallbackAvatar()}" alt="" loading="lazy" data-n="${esc(i.name)}">`;
-    return `<div class="muse ${on ? 'have' : 'miss'}">${img}<div class="muse-t"><b>${esc(i.name)}</b>` +
+    return `<div class="muse ${on ? 'have' : 'miss'}${i.gold ? ' gold' : ''}">${img}<div class="muse-t"><b>${esc(i.name)}</b>` +
       (i.by.length ? `<span class="muse-by">${who}</span><small>${pl ? (on ? 'gesammelt' : nf.format(i.by.length) + ' Spieler') : nf.format(i.by.length) + ' Spieler'}</small>` : '<small>noch nicht gesammelt</small>') + '</div></div>';
   };
   const count = items => `<small>${nf.format(items.filter(has).length)} / ${nf.format(items.length)}</small>`;
@@ -491,10 +492,13 @@ function museumList() {
     const items = c.subs.flatMap(s => s.items);
     const body = c.subs.map(s => (s.title ? `<h3 class="muse-sub">${esc(s.title)}${count(s.items)}</h3>` : '') + `<div class="muse-grid">${s.items.map(card).join('')}</div>`).join('');
     return `<h2 class="sec">${esc(c.title)}${count(items)}</h2>${body}`;
-  }).join('') || '<p class="empty">Keine Treffer.</p>';
+  }).join('');
+  // Easter Eggs: nicht erfassbar, nur zur Ansicht (ohne Spielerfilter)
+  const eggList = (DATA.museum.eggs || []).filter(e => !q || e.name.toLowerCase().includes(q) || 'easter eggs'.includes(q));
+  const eggsHtml = (eggList.length && !pl && !MUSE.st && (!fc || fc === 'Easter Eggs')) ? `<h2 class="sec">Easter Eggs<small>${eggList.length} Köpfe</small></h2><div class="muse-grid">${eggList.map(e => `<div class="muse egg"><img class="mob" src="${e.img ? 'heads/' + esc(e.img) + '.png' : fallbackAvatar()}" alt="" loading="lazy" data-n="${esc(e.name)}"><div class="muse-t"><b>${esc(e.name)}</b><small>Easter Egg</small></div></div>`).join('')}</div>` : '';
   const who = pl ? nameOf(pl) + ' hat ' : '';
   return `<p class="muted">${esc(who)}${nf.format(got)} von ${nf.format(all.length)} Köpfen gesammelt${pl ? '' : ' (alle Spieler zusammen)'}</p>` +
-    `<div class="muse-bar"><i style="width:${all.length ? Math.round(got * 100 / all.length) : 0}%"></i></div>${sections}`;
+    `<div class="muse-bar"><i style="width:${all.length ? Math.round(got * 100 / all.length) : 0}%"></i></div>${sections || (eggsHtml ? '' : '<p class="empty">Keine Treffer.</p>')}${eggsHtml}`;
 }
 function museumView() {
   const all = museumItems();
@@ -502,10 +506,11 @@ function museumView() {
   const subsOf = c => [...new Set(all.filter(i => i.cat === c && i.sub).map(i => i.sub))];
   const users = [...new Set(DATA.museum.items.flatMap(i => i.by))].sort((a, b) => nameOf(a).localeCompare(nameOf(b), 'de'));
   const opt = (v, l, cur) => `<option value="${esc(v)}"${v === cur ? ' selected' : ''}>${esc(l)}</option>`;
-  const catOpts = tops.map(c => opt(c, c, MUSE.cat) + subsOf(c).map(s => opt(c + '|' + s, '\u00a0\u00a0' + s, MUSE.cat)).join('')).join('');
+  const catOpts = (DATA.museum.eggs && DATA.museum.eggs.length ? '' : '') + tops.map(c => opt(c, c, MUSE.cat) + subsOf(c).map(s => opt(c + '|' + s, '\u00a0\u00a0' + s, MUSE.cat)).join('')).join('');
+  const eggOpt = DATA.museum.eggs && DATA.museum.eggs.length ? opt('Easter Eggs', 'Easter Eggs', MUSE.cat) : '';
   return `<h2 class="sec">${esc(DATA.museum.title || 'Museum')}</h2>` +
     `<div class="filter muse-filter"><input id="mq" type="search" value="${esc(MUSE.q)}" placeholder="Kopf suchen …" autocomplete="off">` +
-    `<select id="mcat" aria-label="Kategorie">${opt('', 'Alle Kategorien', MUSE.cat)}${catOpts}</select>` +
+    `<select id="mcat" aria-label="Kategorie">${opt('', 'Alle Kategorien', MUSE.cat)}${catOpts}${eggOpt}</select>` +
     `<select id="mpl" aria-label="Spieler">${opt('', 'Alle Spieler', MUSE.player)}${users.map(u => opt(u, nameOf(u), MUSE.player)).join('')}</select>` +
     `<select id="mst" aria-label="Status">${opt('', 'Gesammelt und fehlend', MUSE.st)}${opt('have', 'Nur gesammelt', MUSE.st)}${opt('miss', 'Nur fehlend', MUSE.st)}</select></div>` +
     `<div id="muse-list">${museumList()}</div>`;

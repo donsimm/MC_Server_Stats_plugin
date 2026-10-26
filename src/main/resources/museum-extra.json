@@ -1,0 +1,382 @@
+{
+ "golden": [
+  {
+   "name": "Golden Bee",
+   "texture": "8e8bd5104b85b6df42dbcb2f7c45011b8f652d2abb4aeeaa57fb8eedd83d598f",
+   "advancement": "all_mob_heads:collection/bees"
+  },
+  {
+   "name": "Golden Wither",
+   "texture": "fd3ea96fab9fe2b0967be2d6118c4aae28eacaa86098452520d2dd917090f77d",
+   "advancement": "all_mob_heads:collection/bosses"
+  },
+  {
+   "name": "Golden Dog",
+   "texture": "c8db4fec410315a9e7c1e5f85ed101adb0e1947b7a44695cc2b19a96eed03d2a",
+   "advancement": "all_mob_heads:collection/canidae"
+  },
+  {
+   "name": "Golden Copper Golem",
+   "texture": "d5a938ebbca15c96705d7ff8569831afae1625242d0c01efb9e64dd869b95e6",
+   "advancement": "all_mob_heads:collection/copper_golem"
+  },
+  {
+   "name": "Golden Enderman",
+   "texture": "970020a1a784c7867b663dfd3d9db9a7eec2764910596dc70b107a11faf04de8",
+   "advancement": "all_mob_heads:collection/end/classics"
+  },
+  {
+   "name": "Golden Shulker",
+   "texture": "91dc351eab15c37a28f085c5a7d84efc5c4aed5c8a080e16f97c4e080c16261c",
+   "advancement": "all_mob_heads:collection/end/shulkers"
+  },
+  {
+   "name": "Golden Cat",
+   "texture": "d09c4592a850157db3ecf0a9ef47fee1ac11fc2c9003953043762450bd479fb2",
+   "advancement": "all_mob_heads:collection/felines"
+  },
+  {
+   "name": "Golden Frog",
+   "texture": "f769b2be2611d1b8bb8084edcdd060927bf9e2005eed815d1e729ee4af7ab7ef",
+   "advancement": "all_mob_heads:collection/frogs"
+  },
+  {
+   "name": "Golden Goat",
+   "texture": "d3d74fd2bc7a68b1d6d9fdf911fe48f553bb65b2e6afda2c004684c8262c776c",
+   "advancement": "all_mob_heads:collection/goats"
+  },
+  {
+   "name": "Golden Happy Ghast",
+   "texture": "363bef97a04add5e7885741b7bca468d80996d77dda1c21767e2f4ddd4176f04",
+   "advancement": "all_mob_heads:collection/happy_ghast"
+  },
+  {
+   "name": "Golden Horse",
+   "texture": "3ec163bf922e4f2cdbbcde7d0628af61911c88c1330075d6189aefff2e829509",
+   "advancement": "all_mob_heads:collection/horses"
+  },
+  {
+   "name": "Golden Pillager",
+   "texture": "dfa87d710590c186861d4eb6620ab5320578d70802341d2ba965c7606aebbe82",
+   "advancement": "all_mob_heads:collection/hostiles/anti_villagers"
+  },
+  {
+   "name": "Golden Creeper",
+   "texture": "67efbe81878e93bf3cb512b94c21642ab580a3c8b355869674ff8a1c57f4dd81",
+   "advancement": "all_mob_heads:collection/hostiles/classics"
+  },
+  {
+   "name": "Golden Slime",
+   "texture": "f4460454bda773b11dad68a8889c0f4fa8c0b2b390e4040665f5bae484d49886",
+   "advancement": "all_mob_heads:collection/hostiles/slimes"
+  },
+  {
+   "name": "Golden Panda",
+   "texture": "a421434010bc6afdb061859c15caa939134a24824bb7a5381a880d393e79b4a4",
+   "advancement": "all_mob_heads:collection/jungle/pandas"
+  },
+  {
+   "name": "Golden Parrot",
+   "texture": "3405bc985eb8d6ea1e251d7b38c528d03ad60570b35cd1d57bae8676ba0e0e24",
+   "advancement": "all_mob_heads:collection/jungle/parrots"
+  },
+  {
+   "name": "Golden Llama",
+   "texture": "e75def9787f8abbb8f2f1893221340080e594544dcae55f058b6d33062ba0268",
+   "advancement": "all_mob_heads:collection/llamas"
+  },
+  {
+   "name": "Golden Zombified Piglin",
+   "texture": "2ee8228b16c57c823a95e5ee35ead7b21c9edcfe8bfa56e809eeed236c6d953e",
+   "advancement": "all_mob_heads:collection/nether"
+  },
+  {
+   "name": "Golden Chicken",
+   "texture": "64b575664b09e0b83b6d2f570214ae64e98be67b34f89db2ddb03cbdab4d550b",
+   "advancement": "all_mob_heads:collection/passives"
+  },
+  {
+   "name": "Poisonous Potato",
+   "texture": "d7b7b796382015392a648d6b58897fb248031a81b22548d4d68886c156e9f55e",
+   "advancement": "all_mob_heads:collection/potatoes"
+  },
+  {
+   "name": "Golden Rabbit",
+   "texture": "d17bdcc9cad5b2ac2db40c5761349c33e40ab108dda8cfa788e8cfea113d4a7c",
+   "advancement": "all_mob_heads:collection/rabbits"
+  },
+  {
+   "name": "MrMLDEG",
+   "texture": "62d41b812b20bebe79d21ca0bfd8bae11359c77fc1c36018b657b0791cfdcb4e",
+   "advancement": "all_mob_heads:collection/root"
+  },
+  {
+   "name": "Golden Steve",
+   "texture": "3bb612eb495ede2c5ca5178d2d1ecf1ca5a255d25dfc3c254bc47f6848791d8",
+   "advancement": "all_mob_heads:collection/root"
+  },
+  {
+   "name": "Golden Axolotl",
+   "texture": "6305249b1b5e8c9f311a3a1ca0da10d2acfef0eb5452d8da06ecfc0f423a51bd",
+   "advancement": "all_mob_heads:collection/sea/axolotls"
+  },
+  {
+   "name": "Golden Nautilus",
+   "texture": "d07b48d283837959b04757413fac389deb9020daa5952d50655475ac455a1537",
+   "advancement": "all_mob_heads:collection/sea/nautilus"
+  },
+  {
+   "name": "Golden Guardian",
+   "texture": "ba69c3e17fde29887a393c8d2f4bb0544c1c576db0925bb0ac14acffa3122a65",
+   "advancement": "all_mob_heads:collection/sea/sea_hostile"
+  },
+  {
+   "name": "Golden Glow Squid",
+   "texture": "ed757016597c59e9845e56a537726f4b38659e56fe6692643590f4185f0d0d3",
+   "advancement": "all_mob_heads:collection/sea/sea_passive"
+  },
+  {
+   "name": "Golden Sheep",
+   "texture": "7bce9fe14bd4fd4d5ad2e858f5b1c7c40aff5e91984d926a3e3b368a20fc59cd",
+   "advancement": "all_mob_heads:collection/sheeps"
+  },
+  {
+   "name": "Decapitated Villager",
+   "texture": "39ab872abd6a95a7ddddf3be9cbfbf6eea5329ae71fbc0f189fc3bcfcb8923bc",
+   "advancement": "all_mob_heads:collection/villagers"
+  },
+  {
+   "name": "Golden Desert Villager",
+   "texture": "8660dcbbbd3e5cd514eef6ee1610b5c95b9f6ac129b7290726301f483e460ca3",
+   "advancement": "all_mob_heads:collection/villagers/desert"
+  },
+  {
+   "name": "Golden Jungle Villager",
+   "texture": "b884f81bfd782faf491bb2313bfe2b4f81e4bb3c2d849377f483b58ab1788d35",
+   "advancement": "all_mob_heads:collection/villagers/jungle"
+  },
+  {
+   "name": "Golden Villager",
+   "texture": "75d562e7534c004a77f67ad3fc34d50c35d2307913ad1b9c48e0a089c36c0881",
+   "advancement": "all_mob_heads:collection/villagers/plains"
+  },
+  {
+   "name": "Golden Savanna Villager",
+   "texture": "97d0e13ca73e7dc2c46a82c367f7b8f99bac2a447fb89e22ff8e09ceea5cb4cd",
+   "advancement": "all_mob_heads:collection/villagers/savanna"
+  },
+  {
+   "name": "Golden Snow Villager",
+   "texture": "63fa0536bff1c90a8b62ebc97b4d6115f0d550b6304f0d6be34a232cb6adf2de",
+   "advancement": "all_mob_heads:collection/villagers/snow"
+  },
+  {
+   "name": "Golden Swamp Villager",
+   "texture": "21e3910fc9ecaee144aa202390ff18230944b627e71ff4b1720a91370b001fc4",
+   "advancement": "all_mob_heads:collection/villagers/swamp"
+  },
+  {
+   "name": "Golden Taiga Villager",
+   "texture": "82ae8213f7bca29a3a22b1c409a3c4f6c070c69eb2665ed9fe301e3284ba43f2",
+   "advancement": "all_mob_heads:collection/villagers/taiga"
+  },
+  {
+   "name": "Decapitated Zombie Villager",
+   "texture": "bb0786ac45a5bd601741ece0b2adbecb61c4e9ed2a137db49dd438a08b878ba1",
+   "advancement": "all_mob_heads:collection/zombie_villagers"
+  },
+  {
+   "name": "Golden Desert Zombie Villager",
+   "texture": "be865c7e53e430ffa614d8fff68f8848e8562f51d3ee3abd841a98e261c06800",
+   "advancement": "all_mob_heads:collection/zombie_villagers/desert"
+  },
+  {
+   "name": "Golden Jungle Zombie Villager",
+   "texture": "fb920b172ad56f85e2a0979be35ac44e31da54adef905e4fec44ccd1c001e742",
+   "advancement": "all_mob_heads:collection/zombie_villagers/jungle"
+  },
+  {
+   "name": "Golden Zombie Villager",
+   "texture": "7de2181e5ecd9e3c0383039385e2d2b9d51de212cbe78af23e0a5ab546629f16",
+   "advancement": "all_mob_heads:collection/zombie_villagers/plains"
+  },
+  {
+   "name": "Golden Savanna Zombie Villager",
+   "texture": "ab965bf3889c29c3fec29c83dfdc0f789aa902daf1047b218b6b8d22c979a859",
+   "advancement": "all_mob_heads:collection/zombie_villagers/savanna"
+  },
+  {
+   "name": "Golden Snow Zombie Villager",
+   "texture": "52af6814cbd8a0d7181c0c935b02f173c7ac4464c102b1e369b2518af43c7e54",
+   "advancement": "all_mob_heads:collection/zombie_villagers/snow"
+  },
+  {
+   "name": "Golden Swamp Zombie Villager",
+   "texture": "dfdcb095b5d53fb48f5526ed060382da0f097572f14f2ab0be7c5dcc0e231223",
+   "advancement": "all_mob_heads:collection/zombie_villagers/swamp"
+  },
+  {
+   "name": "Golden Taiga Zombie Villager",
+   "texture": "621990944e0b9e04dd88a6da44ddd65714eaf57ffdda8b2f4e7689e663540917",
+   "advancement": "all_mob_heads:collection/zombie_villagers/taiga"
+  }
+ ],
+ "eggs": [
+  {
+   "name": "ahl",
+   "texture": "2c14dffdc6d489484a742d2b63c3ff710952f1888e7f4bb221d69d5d80532863"
+  },
+  {
+   "name": "Axolotl Green",
+   "texture": "e290c11553112009c67716722191d9489b37346fecea9ff07a48e339b551a902"
+  },
+  {
+   "name": "ayr0b0t",
+   "texture": "1a802f27f401ac835a8255727cf784ac7352688b095fdee0ab91f54a683c9342"
+  },
+  {
+   "name": "Beer",
+   "texture": "2895da33c108e6b7ad38e203e87f96a1f76f2cf8b7574eff6aff384d83e29ad0"
+  },
+  {
+   "name": "Boblennon",
+   "texture": "897da22372690400d305d8b12a70a59f3ed150f2d06c5b13aeade47fbea76858"
+  },
+  {
+   "name": "Cheh minot",
+   "texture": "6ef3599c145d372ea986987763e2498d21b567d71fbf7e23d5fa8197e9ad1d"
+  },
+  {
+   "name": "Chocobo",
+   "texture": "9960335e7981e3c82b03a59bce8aad04b893efc9928e825498199d59627079"
+  },
+  {
+   "name": "Claptrap",
+   "texture": "2dfe090d2ffd72e61a155c787dae3b1f217bfbb30fb8edd94e9f0e76dfcb10af"
+  },
+  {
+   "name": "Coal-Chan",
+   "texture": "fe304cb2b16cff8ad05a3c8f73880993662a99e37404abaea65db534805e5663"
+  },
+  {
+   "name": "Coconut",
+   "texture": "531f24d1b5e6cebb65a67ad3b2f3f2fc9ca29fb0737aa62b5d73bf338d2141f5"
+  },
+  {
+   "name": "Darcodo",
+   "texture": "b6c6af08aa13fd979f674c92c1070cc2c5e0186aa2a3186dfd0cb8d6a72009df"
+  },
+  {
+   "name": "Fries",
+   "texture": "27453ffeeb9f26cd3b682942153f6a938a3d7023f9cfdec7b266dd3e26dfa923"
+  },
+  {
+   "name": "Frozen Blaze",
+   "texture": "8d1006e23360468a7c314a8f57692f253e390e75689d813d5fde2b8c546f8c6a"
+  },
+  {
+   "name": "Golden Allay",
+   "texture": "d2a22f21728eff176e78d4cc1870283b9a799302baa8af917fee378ddc4992c7"
+  },
+  {
+   "name": "Hermit Crab",
+   "texture": "185e6834a4bf26a6526f7cac4f6eaa9f7fa77db8c14353a81582b5f699"
+  },
+  {
+   "name": "Luma",
+   "texture": "75327df831e31e4a928a78a740844281df95d2223cd5825059eba35e148b139b"
+  },
+  {
+   "name": "Maki",
+   "texture": "90ec585fa3044ccbc94441c8a79b4b8c23eaa6ddb4d519949826c51ef335059"
+  },
+  {
+   "name": "Maxtar07",
+   "texture": "e83d9b9a0a782fbe23c92c9c8c662401c96cbfc856d9abc9d1526046f1e937a8"
+  },
+  {
+   "name": "ME Controller",
+   "texture": "8e875169d1dbb697dfe470146e8c4878068fdfe7ab1478a80c1e7917436e481c"
+  },
+  {
+   "name": "Mew",
+   "texture": "b98c5dffd054fc7d1a856cc76d53b8fc80e3ea4389756e936289911988fb65f"
+  },
+  {
+   "name": "Milk Bucket",
+   "texture": "651c03b5e659275ed85ca2c8ad988c755ccfba45aff3f6d8d6f2738b0967cccd"
+  },
+  {
+   "name": "Moobloom",
+   "texture": "e1908275fba4fce37521323bc889b727a6692d241b50f2b072576056424decf6"
+  },
+  {
+   "name": "MrFexFull002",
+   "texture": "92d4b535529c48255a836c84dbeae82c3e6f5017781f62ccda112558f2b4514a"
+  },
+  {
+   "name": "Nurse",
+   "texture": "22948279389a5934c41cb8474dd0f6ef6feb8aa19176f78be5c05ace5a841fe"
+  },
+  {
+   "name": "Orlox",
+   "texture": "7784207cd31bb3af2f8306f6cf5bbd525e7dc1a16b657e3e28b08f59286ef351"
+  },
+  {
+   "name": "Pigeon",
+   "texture": "b7ea4c017e3456cf09a5c263f34d3cc5f41577b74d60f6f8196c60e07f8c5a96"
+  },
+  {
+   "name": "Pikxee",
+   "texture": "31adb14d389cab0a0205e96e509084bdd35885deaaf986cbb9e74426713c5a52"
+  },
+  {
+   "name": "Pot Of Amethyst",
+   "texture": "184a27556d7a6787c8b2af8d22204875188a782c6041c590b20b7d614a94a65f"
+  },
+  {
+   "name": "Rayenryuu",
+   "texture": "b9c0ef79fb1f1dfc7a57b4dfec9ba1cb92495361f406d8d9ac0fdd686b17a1e0"
+  },
+  {
+   "name": "Red Skull",
+   "texture": "cb852ba1584da9e5714859995451e4b94748c4dd63ae4543c15f9f8aec65c8"
+  },
+  {
+   "name": "Sossur",
+   "texture": "33e770c592a84d5f7268f61726d3e474f3e2d7f830af3313eb378c4d1dd76821"
+  },
+  {
+   "name": "Spruce Crate",
+   "texture": "d992e4a8f43c77ac2e2d792d9604f61f34387c877aba3712e4047b740c578"
+  },
+  {
+   "name": "Sushi",
+   "texture": "b17eda1f65bdc8ed41aaa4ccaa4e2bed694714e32867ee16af31f4c42ef1f28"
+  },
+  {
+   "name": "TacOwl",
+   "texture": "5189b621319d8b2849b886eeee792b4473751910d610574ceddb033c3391f748"
+  },
+  {
+   "name": "The Pinkinator",
+   "texture": "f151bec8f91ef93c60cf40a98acbbeb17f6375725f00d4433a118f1010b298b"
+  },
+  {
+   "name": "TheFantasio974",
+   "texture": "e49fa6b0ff7a29f8b9ae72f61f6abec0599daaf1ad76c08c5ef31172bd35fa86"
+  },
+  {
+   "name": "thoyy",
+   "texture": "d75e064480ac68c9bd51091f20603a5efcfc6f55ed66c924e43b92856d0b9b37"
+  },
+  {
+   "name": "Unicorn Pet",
+   "texture": "70b33b7a3b24f76bd80a65c3a933e7188be358487342be143c22a7580b4d00e1"
+  },
+  {
+   "name": "Venom",
+   "texture": "1ba744a0614431e1e6950efab68d3cc3f249fbb5d97fd067ffc5885d8b4f1b81"
+  }
+ ]
+}
