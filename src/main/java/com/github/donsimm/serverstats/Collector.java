@@ -7,6 +7,7 @@ import com.github.donsimm.serverstats.core.HistoryStore;
 import com.github.donsimm.serverstats.core.CategoryDef;
 import com.github.donsimm.serverstats.core.NumberParse;
 import com.github.donsimm.serverstats.core.OneblockData;
+import com.github.donsimm.serverstats.core.PlacedBlocks;
 import com.github.donsimm.serverstats.core.ParkourData;
 import com.github.donsimm.serverstats.core.PlayerData;
 import com.github.donsimm.serverstats.core.StatsBuilder;
@@ -97,9 +98,31 @@ final class Collector {
         this.optOut = optOut;
     }
 
+    private volatile BlockTextureService blockTextures;
+    private static final Map<String, Boolean> BLOCK_ITEMS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    String blockTextureSummary() {
+        BlockTextureService service = blockTextures;
+        return service == null ? "aus" : service.summary();
+    }
+
+    /** Ist der Gegenstand ein platzierbarer Block (nicht Luft)? */
+    private static boolean isBlockItem(String key) {
+        return BLOCK_ITEMS.computeIfAbsent(key, k -> {
+            try {
+                org.bukkit.Material m = org.bukkit.Material.matchMaterial("minecraft:" + k);
+                return m != null && m.isBlock() && !m.isAir();
+            } catch (RuntimeException e) {
+                return false;
+            }
+        });
+    }
+
     void configure(Settings settings, HeadService heads) {
         this.settings = settings;
         this.heads = heads;
+        this.blockTextures = settings.blocksEnabled
+                ? new BlockTextureService(settings.outputDir.resolve("blocks"), Bukkit.getMinecraftVersion(), plugin.getLogger()) : null;
         loggedNotes.clear();
         verbose = true;
     }
@@ -441,6 +464,7 @@ final class Collector {
                 case "jobs" -> snap.jobsDir != null;
                 case "skyblock" -> snap.skyDir != null;
                 case "oneblock" -> snap.oneFile != null;
+                case "survival" -> snap.statsDir != null;
                 case "dailyrewards" -> s.dailyEnabled && new DailyRewardsReader(s, pluginsDir, plugin.getLogger()).file() != null;
                 case "parkour" -> parkourFile(snap.parkourDir, c) != null;
                 case "ajlb" -> ajlb && !c.ajlbBoard().isBlank();
@@ -448,7 +472,7 @@ final class Collector {
             };
             if (ok) {
                 snap.categories.add(c);
-            } else if ((!c.source().equals("cookieclicker") || s.cookieEnabled) && !c.source().equals("parkour") && !c.source().equals("dailyrewards")) {
+            } else if ((!c.source().equals("cookieclicker") || s.cookieEnabled) && !c.source().equals("parkour") && !c.source().equals("dailyrewards") && !c.source().equals("survival")) {
                 snap.notes.add("Kategorie '" + c.id() + "' uebersprungen: Quelle '" + c.source() + "' nicht verfuegbar.");
             }
         }
@@ -635,6 +659,7 @@ final class Collector {
 
         Map<UUID, Map<String, double[]>> jobsData = snap.jobsDir == null ? null : JobsReader.read(snap.jobsDir);
         Map<String, Map<UUID, Long>> customStats = new HashMap<>();
+        Map<UUID, Map<String, Long>> placedPerPlayer = new HashMap<>();
         SkyblockReader.Result skyResult = snap.skyDir == null ? null : SkyblockReader.read(snap.skyDir, plugin.getLogger());
         Map<UUID, SkyblockReader.Info> skyData = skyResult == null ? null : skyResult.players();
         if (skyResult != null) {
@@ -679,6 +704,19 @@ final class Collector {
                     } catch (IOException | RuntimeException e) {
                         readErrors++;
                     }
+                }
+            }
+            if (s.blocksEnabled && stats != null) {
+                // Platzierte Bloecke: Statistik "benutzt" nur fuer Gegenstaende, die Bloecke sind
+                Map<String, Long> blocks = new HashMap<>();
+                for (Map.Entry<String, Long> e : stats.group("used").entrySet()) {
+                    String key = e.getKey().startsWith("minecraft:") ? e.getKey().substring("minecraft:".length()) : e.getKey();
+                    if (e.getValue() > 0 && isBlockItem(key)) {
+                        blocks.put(key, e.getValue());
+                    }
+                }
+                if (!blocks.isEmpty()) {
+                    placedPerPlayer.put(p.uuid, blocks);
                 }
             }
             if (s.autoStats && stats != null) {
@@ -771,6 +809,25 @@ final class Collector {
                             double value = c.column().equalsIgnoreCase("TIME") ? (entry.timeMs() > 0 ? ParkourData.TIME_BASE - entry.timeMs() : 0) : entry.score();
                             if (value > 0) {
                                 p.values.put(c.id(), value);
+                            }
+                        }
+                    }
+                    case "survival" -> {
+                        if (stats != null) {
+                            double play = Math.max(stats.get("custom:play_time"), stats.get("custom:play_one_minute")) / 72000.0; // Stunden
+                            if (play >= s.survivalMinHours) {
+                                double value = 0;
+                                if (c.column().equalsIgnoreCase("TIME")) {
+                                    long ticks = stats.get("custom:time_since_death");
+                                    value = ticks > 0 ? ticks / 72000.0 : 0;
+                                } else {
+                                    // wenigste Tode zuerst, bei Gleichstand die laengere Spielzeit: (1000 - Tode) * 1e6 + Spielstunden
+                                    long deaths = Math.min(999, Math.max(0, stats.get("custom:deaths")));
+                                    value = (1000 - deaths) * 1_000_000d + Math.min(999_999, Math.round(play));
+                                }
+                                if (value > 0) {
+                                    p.values.put(c.id(), value);
+                                }
                             }
                         }
                     }
@@ -894,6 +951,16 @@ final class Collector {
         links.addProperty("discordUrl", safeUrl(s.discordUrl));
         json.add("links", links);
         applyHistoryWindows(snap, json, notes);
+        for (JsonElement element : json.getAsJsonArray("categories")) {
+            JsonObject category = element.getAsJsonObject();
+            List<String> tags = s.categoryTags.get(category.get("id").getAsString());
+            if (tags != null) {
+                JsonArray array = new JsonArray();
+                tags.forEach(array::add);
+                category.add("tags", array);
+            }
+        }
+        addPlacedBlocks(s, json, placedPerPlayer);
         if (s.luckpermsEnabled && !s.ranks.isEmpty()) {
             JsonObject ranks = new JsonObject();
             for (Map.Entry<String, String[]> e : s.ranks.entrySet()) {
@@ -1045,6 +1112,58 @@ final class Collector {
         }
     }
 
+    /** Baumeister-Modul: je Block die Top-Spieler, je Spieler die meistgesetzten Bloecke (klein gehalten). */
+    private void addPlacedBlocks(Settings s, JsonObject json, Map<UUID, Map<String, Long>> placedPerPlayer) {
+        if (!s.blocksEnabled || placedPerPlayer.isEmpty()) {
+            return;
+        }
+        PlacedBlocks.Result result = PlacedBlocks.aggregate(placedPerPlayer, 40, 5, 20);
+        JsonObject players = json.getAsJsonObject("players");
+        JsonArray blocks = new JsonArray();
+        List<String> ids = new ArrayList<>();
+        for (PlacedBlocks.Block block : result.blocks()) {
+            JsonObject o = new JsonObject();
+            o.addProperty("id", block.id());
+            o.addProperty("total", block.total());
+            JsonArray top = new JsonArray();
+            for (Map.Entry<UUID, Long> e : block.top()) {
+                if (players.has(e.getKey().toString())) {
+                    JsonArray pair = new JsonArray();
+                    pair.add(e.getKey().toString());
+                    pair.add(e.getValue());
+                    top.add(pair);
+                }
+            }
+            o.add("top", top);
+            blocks.add(o);
+            ids.add(block.id());
+        }
+        JsonObject blockRoot = new JsonObject();
+        blockRoot.add("list", blocks);
+        json.add("blocks", blockRoot);
+        for (Map.Entry<UUID, PlacedBlocks.Player> e : result.players().entrySet()) {
+            JsonObject target = players.has(e.getKey().toString()) ? players.getAsJsonObject(e.getKey().toString()) : null;
+            if (target == null) {
+                continue;
+            }
+            JsonObject placed = new JsonObject();
+            placed.addProperty("total", e.getValue().total());
+            JsonArray top = new JsonArray();
+            for (Map.Entry<String, Long> b : e.getValue().top()) {
+                JsonArray pair = new JsonArray();
+                pair.add(b.getKey());
+                pair.add(b.getValue());
+                top.add(pair);
+            }
+            placed.add("top", top);
+            target.add("placed", placed);
+        }
+        BlockTextureService textures = blockTextures;
+        if (textures != null) {
+            textures.ensure(ids);
+        }
+    }
+
     private static final Map<String, Long> WINDOW_DAYS = new LinkedHashMap<>();
 
     static {
@@ -1068,7 +1187,7 @@ final class Collector {
         } catch (IOException | RuntimeException e) {
             notes.add("Verlauf (history.json) nicht lesbar, wird neu begonnen: " + e.getMessage());
         }
-        Set<String> skip = Set.of("skyblock", "oneblock", "parkour", "ajlb");
+        Set<String> skip = Set.of("skyblock", "oneblock", "parkour", "ajlb", "survival");
         Map<String, Map<String, Double>> current = new LinkedHashMap<>();
         Map<String, CategoryDef> eligible = new HashMap<>();
         for (CategoryDef c : snap.categories) {

@@ -162,6 +162,10 @@ public final class ServerStatsPlugin extends JavaPlugin {
         });
     }
 
+    String blockStatus() {
+        return collector.blockTextureSummary();
+    }
+
     String headStatus() {
         return heads == null ? "aus (heads.enabled: false)" : heads.summary();
     }

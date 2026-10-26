@@ -72,6 +72,10 @@ final class Settings {
     /** Gruppe (klein) -&gt; {Anzeigename, Hintergrundfarbe, Schriftfarbe}. */
     final Map<String, String[]> ranks = new java.util.LinkedHashMap<>();
 
+    final double survivalMinHours;
+    final boolean blocksEnabled;
+    final Map<String, List<String>> categoryTags = new java.util.HashMap<>();
+
     final boolean autoStats;
     final String autoPage;
     final int autoMinPlayers;
@@ -174,6 +178,9 @@ final class Settings {
             }
         }
 
+        survivalMinHours = Math.max(0, c.getDouble("sources.survival.min-hours", 5));
+        blocksEnabled = c.getBoolean("sources.blocks.enabled", true);
+
         autoStats = c.getBoolean("auto-stats.enabled", true);
         autoPage = c.getString("auto-stats.page", "Alle Statistiken");
         autoMinPlayers = Math.max(1, c.getInt("auto-stats.min-players", 1));
@@ -214,6 +221,10 @@ final class Settings {
                 ConfigurationSection s = cats.getConfigurationSection(id);
                 if (s == null) {
                     continue;
+                }
+                List<String> tagList = list(s, "tags");
+                if (!tagList.isEmpty()) {
+                    categoryTags.put(id, tagList);
                 }
                 categories.add(new CategoryDef(
                         id,

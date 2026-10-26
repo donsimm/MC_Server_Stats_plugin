@@ -250,6 +250,7 @@ function fmt(c, v) {
     case 'level': return `Level ${Math.floor(v + 1e-9)}`;
     case 'dec': return nf1.format(v);
     case 'coins': return `${nf.format(Math.round(v))} ₵`;
+    case 'fewdeaths': { const deaths = 1000 - Math.floor(v / 1e6), hours = Math.round(v % 1e6); return `${nf.format(deaths)} ${deaths === 1 ? 'Tod' : 'Tode'} · ${dur(hours)}`; }
     case 'timerev': { const ms = Math.max(0, Math.round(1e9 - v)); return `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}.${String(ms % 1000).padStart(3, '0')}`; }
     default: return nf.format(Math.round(v));
   }
@@ -436,7 +437,7 @@ function searchTerms(q) {
   SEARCH_GROUPS.forEach(g => { if (g.some(w => w.includes(q) || (w.length >= 4 && q.includes(w)))) g.forEach(w => terms.add(w)); });
   return [...terms];
 }
-const catText = c => `${c.title} ${c.subtitle} ${c.source} ${c.id} ${c.sub || ''}`.toLowerCase();
+const catText = c => `${c.title} ${c.subtitle} ${c.source} ${c.id} ${c.sub || ''} ${(c.tags || []).join(' ')}`.toLowerCase();
 function applyCatFilter() {
   const q = catFilter.trim().toLowerCase();
   const all = $('allres');
@@ -515,6 +516,62 @@ function museumView() {
     `<select id="mst" aria-label="Status">${opt('', 'Gesammelt und fehlend', MUSE.st)}${opt('have', 'Nur gesammelt', MUSE.st)}${opt('miss', 'Nur fehlend', MUSE.st)}</select></div>` +
     `<div id="muse-list">${museumList()}</div>`;
 }
+/* ---------- Baumeister: platzierte Bloecke im Profil (Cover-Flow, Balkenliste) ---------- */
+const BLOCK_GROUPS = [
+  ['Redstone', '#d63b3b', /redstone|repeater|comparator|observer|piston|dispenser|dropper|hopper|lever|target|daylight|note_block/],
+  ['Glas', '#7fd4ff', /glass/],
+  ['Farbe', '#ff9fc0', /wool|concrete|terracotta|carpet|banner|shulker_box|candle|(white|orange|magenta|light_blue|yellow|lime|pink|gray|light_gray|cyan|purple|blue|brown|green|red|black)_/],
+  ['Holz', '#b8945f', /planks|log|wood|stem|hyphae|bamboo|door|fence|trapdoor|sign|barrel|chest|bookshelf|crafting|ladder|scaffolding/],
+  ['Erde & Sand', '#8b5e3c', /dirt|sand|gravel|grass|mud|clay|podzol|mycelium|farmland|soil|path|snow|ice/],
+  ['Stein', '#8d8d8d', /stone|cobble|deepslate|brick|andesite|diorite|granite|tuff|basalt|blackstone|obsidian|quartz|sandstone|prismarine|calcite|netherrack|end_/]
+];
+function blockGroup(id) { for (const [n, c, re] of BLOCK_GROUPS) if (re.test(id)) return { n, c }; return { n: 'Sonstiges', c: '#f6c33a' }; }
+const blockName = id => id.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+const FLAT_BLOCK = /(_stairs|_slab|_wall|_fence|_fence_gate|_door|_trapdoor|_pane|_button|_pressure_plate|_sign|torch|_bed|_carpet|_banner|_head|_skull|sapling|tulip|dandelion|poppy|fern|vine|ladder|rail|lever|lantern|chain|candle|_pot|bell|campfire|cake|cauldron|end_rod|lightning_rod|scaffolding|_flower|grass$|seagrass|kelp)/;
+function blockCube(id, size, spin) {
+  const g = blockGroup(id), top = `url('blocks/${esc(id)}_top.png')`, side = `url('blocks/${esc(id)}_side.png')`;
+  if (FLAT_BLOCK.test(id)) return `<span class="flatb" style="width:${size}px;height:${size}px;background-color:${g.c};background-image:${side}"></span>`;
+  const f = (cls, img) => `<i class="f ${cls}" style="background-color:${g.c};background-image:${img}"></i>`;
+  return `<div class="cube${spin ? ' spin' : ''}" style="--s:${size}px"><div class="cube-in">${f('top', top)}${f('front', side)}${f('right', side)}${f('back', side)}${f('left', side)}${f('bottom', top)}</div></div>`;
+}
+const CF = { sel: 0, ids: [] };
+function cfLayout() {
+  document.querySelectorAll('.bm .cf-card').forEach(c => { const o = Number(c.dataset.i) - CF.sel, a = Math.abs(o);
+    c.style.display = a > 6 ? 'none' : '';
+    c.style.transform = o === 0 ? 'translateX(-50%) translateZ(60px) scale(1)' : `translateX(calc(-50% + ${o * 78 + Math.sign(o) * 150}px)) rotateY(${o > 0 ? -58 : 58}deg) scale(.82)`;
+    c.style.zIndex = 20 - a; c.style.opacity = a > 5 ? .35 : 1; c.classList.toggle('on', o === 0); });
+  document.querySelectorAll('.bm .pbars li').forEach(l => l.classList.toggle('sel', Number(l.dataset.i) === CF.sel));
+  const r = document.getElementById('cf-range'); if (r) r.value = CF.sel;
+}
+function placedModule(u) {
+  const P = DATA.players[u];
+  if (!P || !P.placed || !DATA.blocks || !DATA.blocks.list.length) return '';
+  const mine = P.placed.top, byId = new Map(DATA.blocks.list.map(b => [b.id, b]));
+  const ids = mine.map(x => x[0]);
+  DATA.blocks.list.forEach(b => { if (!ids.includes(b.id) && ids.length < 60) ids.push(b.id); });
+  CF.ids = ids; CF.sel = 0;
+  const max = mine[0][1], total = P.placed.total;
+  const sum = {}; mine.forEach(([id, n]) => { const g = blockGroup(id); (sum[g.n] = sum[g.n] || { n: g.n, c: g.c, v: 0 }).v += n; });
+  const gl = Object.values(sum).sort((a, b) => b.v - a.v), gsum = gl.reduce((s, g) => s + g.v, 0);
+  const cards = ids.map((id, i) => { const b = byId.get(id), top = b ? b.top : [];
+    return `<div class="cf-card" data-i="${i}"><div class="cf-art" style="background:radial-gradient(circle at 50% 40%, ${blockGroup(id).c}55, #111 70%)">${blockCube(id, 64, true)}</div>` +
+      `<div class="cf-name">${esc(blockName(id))}</div><div class="cf-tot">${b ? nf.format(b.total) + ' platziert (alle Spieler)' : ''}</div>` +
+      `<ol class="cf-top">${top.map(([v, n], k) => `<li class="${v === u ? 'me' : ''}"><span>${k + 1}</span>${avatar(v)}<b>${esc(nameOf(v))}</b><em>${nf.format(n)}</em></li>`).join('')}</ol></div>`; }).join('');
+  setTimeout(cfLayout, 0);
+  return `<h2 class="sec">Baumeister<small>Blöcke platziert</small></h2><div class="bm"><div class="cf"><div class="cf-stage">${cards}</div>` +
+    `<div class="cf-bar"><button type="button" data-cf="-1" aria-label="Zurück">◀</button><input id="cf-range" type="range" min="0" max="${ids.length - 1}" value="0" aria-label="Block wählen"><button type="button" data-cf="1" aria-label="Weiter">▶</button></div></div>` +
+    `<div class="bm-in"><div class="pb2"><div class="power"><b>${nf.format(total)}</b><span>Blöcke insgesamt</span></div>` +
+    `<div><div class="stack">${gl.map(g => `<i style="width:${(g.v / gsum * 100).toFixed(1)}%;background:${g.c}" title="${esc(g.n)}"></i>`).join('')}</div>` +
+    `<div class="glegend">${gl.map(g => `<span><i style="background:${g.c}"></i>${esc(g.n)} ${(g.v / gsum * 100).toFixed(0)} %</span>`).join('')}</div></div></div>` +
+    `<ul class="pbars">${mine.slice(0, 12).map(([id, n], i) => `<li data-i="${i}"><span class="ico">${blockCube(id, 18, false)}</span><span class="pn">${esc(blockName(id))}</span><span class="meter"><i style="width:${(n / max * 100).toFixed(1)}%;background:${blockGroup(id).c}"></i></span><span class="num">${nf.format(n)}</span></li>`).join('')}</ul></div></div>`;
+}
+document.addEventListener('click', e => {
+  const li = e.target.closest('.bm .pbars li[data-i]'); if (li) { CF.sel = Number(li.dataset.i); cfLayout(); return; }
+  const c = e.target.closest('.bm .cf-card'); if (c) { CF.sel = Number(c.dataset.i); cfLayout(); return; }
+  const bt = e.target.closest('.bm [data-cf]'); if (bt) { CF.sel = Math.min(CF.ids.length - 1, Math.max(0, CF.sel + Number(bt.dataset.cf))); cfLayout(); }
+});
+document.addEventListener('input', e => { if (e.target.id === 'cf-range') { CF.sel = Number(e.target.value); cfLayout(); } });
+
 function spielerView() {
   const list = Object.entries(DATA.players).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));
   const cards = list.map(([u, p]) => {
@@ -682,7 +739,7 @@ function profilView(u) {
       `<div class="pl"><span class="rank${rk <= 3 ? ' top' : ''}">Platz ${rk}</span><span>von ${total}</span></div></a>`;
   }).join('');
   return `<a class="back" href="#start" data-go="start">← Übersicht</a>${hero}` +
-    (tiles ? `<h2 class="sec">Platzierungen</h2><div class="tiles">${tiles}</div>` : '') + jobsCard(u) + mcmmoCard(u) + statsDetails(u);
+    (tiles ? `<h2 class="sec">Platzierungen</h2><div class="tiles">${tiles}</div>` : '') + jobsCard(u) + mcmmoCard(u) + placedModule(u) + statsDetails(u);
 }
 
 const slug = t => String(t).toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');

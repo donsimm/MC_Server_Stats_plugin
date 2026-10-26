@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 20
+config-version: 21
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -145,6 +145,13 @@ sources:
     # Rang-Abzeichen: die primaere LuckPerms-Gruppe jedes Spielers (auch offline). Erscheinen nur fuer Gruppen,
     # in denen der Spieler ist. Aussehen je Gruppe unter "ranks:" weiter unten.
     enabled: true
+  survival:
+    # Karten "Ueberlebenskuenstler" und "Unkaputtbar": nur Spieler mit mindestens so vielen Stunden Spielzeit werden gezaehlt.
+    min-hours: 5
+  blocks:
+    # Baumeister-Modul im Profil: platzierte Bloecke (Statistik "benutzt" der Block-Gegenstaende). Die Block-Texturen holt das Plugin
+    # einmalig aus dem offiziellen Minecraft-Client von den Mojang-Servern (Ordner web/blocks). Ohne Internet zeigt die Seite Farben.
+    enabled: true
   ajlb:
     # AJLeaderboards ueber PlaceholderAPI. Nur fuer Zeitfenster (Monat, Woche, Heute) und Kategorien mit source: ajlb.
     # Die Platzhalter-Schreibweise kann je nach AJLB-Version abweichen: mit /serverstats ajlb <board> pruefen.
@@ -190,9 +197,10 @@ ranks:
 #   page:      "Tab" oder "Tab|Abschnitt" (mehrere Abschnitte auf einer Seite, z. B. "Jobs & mcMMO|Jobs"). "Übersicht" = Startseite, sonst Reiter in der Navigation (mcMMO, Cookie Clicker, Jobs). Neue Namen ergeben neue Reiter.
 #   format:  int | dur (Wert in Stunden) | km | big (Mio./Mrd./Bio. ...) | adv (x / Gesamtzahl) | dec (eine Nachkommastelle) | level ("Level 16")
 #   icon:    clock gem skull pick sword swords boot scroll bolt star heart shield cookie cursor gear
-#   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker (column: COOKIES, CLICKS, PER_CLICK, PRESTIGE) | jobs (column: Job-Name oder *) | skyblock (column: LEVEL, CHALLENGES, COMPLETIONS, PARTY) | oneblock (column: LEVEL, INVITED) | parkour (stat: block:<modus> oder elytra:<modus>, column: SCORE oder TIME) | dailyrewards (column: CURRENT, LONGEST, CLAIMS) | ajlb
+#   source:  vanilla | advancements | vault | mcmmo-power | cookieclicker (column: COOKIES, CLICKS, PER_CLICK, PRESTIGE) | jobs (column: Job-Name oder *) | skyblock (column: LEVEL, CHALLENGES, COMPLETIONS, PARTY) | oneblock (column: LEVEL, INVITED) | parkour (stat: block:<modus> oder elytra:<modus>, column: SCORE oder TIME) | dailyrewards (column: CURRENT, LONGEST, CLAIMS) | survival (column: TIME, DEATHS) | ajlb
 #   vanilla: stat (Liste, erster Treffer zaehlt) oder sum (Liste, addiert) oder group-sum (ganze Gruppe), plus scale
 #   ajlb-board: AJLeaderboards-Board fuer Zeitfenster (optional)
+#   tags:     zusaetzliche Suchwoerter fuer die Suche auf "Alle Statistiken" (Liste)
 #   include-zero: true = auch Spieler mit dem Wert 0 listen (z. B. "hat eine Insel")
 categories:
   dauerzocker:
@@ -225,6 +233,7 @@ categories:
     format: int
     source: dailyrewards
     column: "CURRENT"
+    tags: ["streak", "serie", "daily", "belohnung", "täglich", "login", "daily reward"]
 
   abrissbirne:
     page: "Übersicht"
@@ -849,6 +858,7 @@ categories:
     format: int
     source: vanilla
     stat: ["used:trident"]
+    tags: ["dreizack", "trident", "werfen", "speer", "waffe", "kampf"]
   friedhof:
     page: "Übersicht"
     title: "Friedhof"
@@ -869,6 +879,7 @@ categories:
     format: int
     source: dailyrewards
     column: "CURRENT"
+    tags: ["streak", "serie", "daily", "belohnung", "täglich", "login", "daily reward"]
   streak-bester:
     page: "Cookie Clicker & Daily Reward|Daily Reward"
     title: "Bester Streak"
@@ -878,6 +889,7 @@ categories:
     format: int
     source: dailyrewards
     column: "LONGEST"
+    tags: ["streak", "serie", "daily", "belohnung", "täglich", "login", "daily reward"]
   streak-abholungen:
     page: "Cookie Clicker & Daily Reward|Daily Reward"
     title: "Belohnungen abgeholt"
@@ -887,3 +899,44 @@ categories:
     format: int
     source: dailyrewards
     column: "CLAIMS"
+    tags: ["streak", "serie", "daily", "belohnung", "täglich", "login", "daily reward"]
+  netherit-jaeger:
+    page: "Übersicht"
+    title: "Netherit-Jäger"
+    subtitle: "Meiste Ancient Debris abgebaut"
+    icon: pick
+    color: "#c9916e"
+    format: int
+    source: vanilla
+    stat: ["mined:ancient_debris"]
+    tags: ["netherit", "netherite", "ancient debris", "antiker schrott", "nether", "abbau", "bergbau", "mining", "erz"]
+  diamant-sammler:
+    page: "Übersicht"
+    title: "Diamant-Sammler"
+    subtitle: "Meiste Diamanten aufgehoben"
+    icon: gem
+    color: "#4de3d5"
+    format: int
+    source: vanilla
+    stat: ["picked_up:diamond"]
+    tags: ["diamant", "diamanten", "diamond", "aufgehoben", "sammeln", "gefarmt", "farm", "erz"]
+  ueberlebenskuenstler:
+    page: "Übersicht"
+    title: "Überlebenskünstler"
+    subtitle: "Längste Zeit seit dem letzten Tod · nur Spieler ab 5 Std. Spielzeit"
+    icon: heart
+    color: "#b8f5c8"
+    format: dur
+    source: survival
+    column: "TIME"
+    tags: ["tod", "tode", "überleben", "überlebt", "leben", "letzter tod", "sterben", "hardcore"]
+  unkaputtbar:
+    page: "Übersicht"
+    title: "Unkaputtbar"
+    subtitle: "Wenigste Tode · nur Spieler ab 5 Std. Spielzeit"
+    icon: shield
+    color: "#e9dcb8"
+    format: fewdeaths
+    source: survival
+    column: "DEATHS"
+    tags: ["tod", "tode", "wenig", "null", "unsterblich", "überleben", "tote", "deaths"]

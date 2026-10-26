@@ -181,6 +181,7 @@ public final class StatsBuilder {
             case "skyblock" -> "uSkyBlock";
             case "oneblock" -> "OneBlock";
             case "dailyrewards" -> "DailyRewards";
+            case "survival" -> "Vanilla-Statistik";
             case "ajlb" -> "AJLeaderboards";
             default -> c.source();
         };

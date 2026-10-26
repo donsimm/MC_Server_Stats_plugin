@@ -197,4 +197,22 @@ class CoreTest {
         reread.prune(now + 500 * day);
         assertEquals(1, reread.snapshots().size(), "aelter als 400 Tage wird verworfen");
     }
+
+    @Test
+    void placedBlocksKeepTopBlocksAndTopPlayers() {
+        UUID a = UUID.fromString("00000000-0000-0000-0000-00000000000a");
+        UUID b = UUID.fromString("00000000-0000-0000-0000-00000000000b");
+        Map<UUID, Map<String, Long>> data = Map.of(
+                a, Map.of("stone", 100L, "dirt", 50L, "torch", 3L),
+                b, Map.of("stone", 300L, "glass", 20L));
+        PlacedBlocks.Result r = PlacedBlocks.aggregate(data, 1, 5, 2);
+        // stone ist Top-Block; dirt/glass kommen als meistgesetzte Bloecke der Spieler dazu, torch (3. Platz von a) nicht
+        List<String> ids = r.blocks().stream().map(PlacedBlocks.Block::id).toList();
+        assertEquals("stone", ids.get(0));
+        assertTrue(ids.contains("dirt") && ids.contains("glass") && !ids.contains("torch"));
+        assertEquals(400, r.blocks().get(0).total());
+        assertEquals(b, r.blocks().get(0).top().get(0).getKey());
+        assertEquals(153, r.players().get(a).total());
+        assertEquals(2, r.players().get(a).top().size());
+    }
 }
