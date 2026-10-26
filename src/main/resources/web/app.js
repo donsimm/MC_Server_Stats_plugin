@@ -554,7 +554,7 @@ function placedModule(u) {
   const sum = {}; mine.forEach(([id, n]) => { const g = blockGroup(id); (sum[g.n] = sum[g.n] || { n: g.n, c: g.c, v: 0 }).v += n; });
   const gl = Object.values(sum).sort((a, b) => b.v - a.v), gsum = gl.reduce((s, g) => s + g.v, 0);
   const cards = ids.map((id, i) => { const b = byId.get(id), top = b ? b.top : [];
-    return `<div class="cf-card" data-i="${i}"><div class="cf-art" style="background:radial-gradient(circle at 50% 40%, ${blockGroup(id).c}55, #111 70%)">${blockCube(id, 64, true)}</div>` +
+    return `<div class="cf-card" data-i="${i}"><div class="cf-art" style="background:radial-gradient(circle at 50% 40%, ${blockGroup(id).c}55, #111 70%)">${blockCube(id, 64, false)}</div>` +
       `<div class="cf-name">${esc(blockName(id))}</div><div class="cf-tot">${b ? nf.format(b.total) + ' platziert (alle Spieler)' : ''}</div>` +
       `<ol class="cf-top">${top.map(([v, n], k) => `<li class="${v === u ? 'me' : ''}"><span>${k + 1}</span>${avatar(v)}<b>${esc(nameOf(v))}</b><em>${nf.format(n)}</em></li>`).join('')}</ol></div>`; }).join('');
   setTimeout(cfLayout, 0);
