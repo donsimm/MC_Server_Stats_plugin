@@ -363,3 +363,5 @@ h2.sec small { font-family: var(--font); }
 .tile.mini .mr { font-style: normal; font-size: 14px; opacity: .8; white-space: nowrap; } .tile.mini .mr.top { opacity: 1; }
 
 .bl .ico { width: 26px; height: 26px; border: 0; background: none; box-shadow: none; display: grid; place-items: center; padding: 0; }
+
+.tile.mini .l { white-space: nowrap; } .tile.mini .mv { overflow: hidden; text-overflow: ellipsis; }

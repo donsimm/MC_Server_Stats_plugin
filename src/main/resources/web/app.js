@@ -729,8 +729,8 @@ function profilView(u) {
   const tiles = DATA.categories.filter(c => !c.synthetic && !c.auto && IDX.val[c.id][u] !== undefined)
     .map((c, i) => [c, i]).sort((a, b) => (a[0].page === MAIN_PAGE ? 0 : 1) - (b[0].page === MAIN_PAGE ? 0 : 1) || a[1] - b[1]).map(x => x[0]).map(c => {
     const rk = IDX.rank[c.id][u], total = (c.boards.all || []).length;
-    const val = c.format === 'fewdeaths' ? fmt(c, IDX.val[c.id][u]).replace(/^(.*?) · (.*)$/, '$1<small class="vsub"> · $2</small>') : fmt(c, IDX.val[c.id][u]);
-    return `<a class="card tile mini${c.night ? ' night' : ''}" href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}" style="${cardVars(c)}" title="Platz ${rk} von ${total}">` +
+    const full = fmt(c, IDX.val[c.id][u]), val = c.format === 'fewdeaths' ? full.split(' · ')[0] : full; // Unkaputtbar: Spielzeit nur im Tooltip, damit alle Kacheln gleich hoch bleiben
+    return `<a class="card tile mini${c.night ? ' night' : ''}" href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}" style="${cardVars(c)}" title="${esc(c.title)}: ${esc(full.replace(/<[^>]*>/g, ''))} · Platz ${rk} von ${total}">` +
       `<small class="tt">${esc(c.title)}</small><span class="l"><span class="mv">${val}</span><em class="mr${rk <= 3 ? ' top' : ''}">${rk <= 3 ? '★ ' : ''}#${rk}</em></span></a>`;
   }).join('');
   return `<a class="back" href="#start" data-go="start">← Übersicht</a>${hero}` +
