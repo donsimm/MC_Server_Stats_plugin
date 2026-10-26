@@ -726,7 +726,8 @@ function profilView(u) {
   const state = on ? `online seit ${sessStr(on.sessionMin)} · ${esc(on.dim)} · Ping ${on.ping} ms${on.afk ? ' · AFK' : ''}` : `Zuletzt online ${agoStr(P.last)}`;
   const hero = `<div class="hero"><article class="card" style="--card:#8fd0ff"><img class="av" src="heads/${u}.png" alt="" data-n="${esc(P.name)}">` +
     `<div><h1>${esc(P.name)}${rankBadge(P.rank)}${on ? '<span class="pill">online</span>' : ''}</h1><p>Erstbeitritt ${dateStr(P.first)} · ${state}</p></div></article></div>`;
-  const tiles = DATA.categories.filter(c => !c.synthetic && !c.auto && IDX.val[c.id][u] !== undefined).map(c => {
+  const tiles = DATA.categories.filter(c => !c.synthetic && !c.auto && IDX.val[c.id][u] !== undefined)
+    .map((c, i) => [c, i]).sort((a, b) => (a[0].page === MAIN_PAGE ? 0 : 1) - (b[0].page === MAIN_PAGE ? 0 : 1) || a[1] - b[1]).map(x => x[0]).map(c => {
     const rk = IDX.rank[c.id][u], total = (c.boards.all || []).length;
     const val = c.format === 'fewdeaths' ? fmt(c, IDX.val[c.id][u]).replace(/^(.*?) · (.*)$/, '$1<small class="vsub"> · $2</small>') : fmt(c, IDX.val[c.id][u]);
     return `<a class="card tile mini${c.night ? ' night' : ''}" href="#kat-${esc(c.id)}" data-go="kat-${esc(c.id)}" style="${cardVars(c)}" title="Platz ${rk} von ${total}">` +
