@@ -320,7 +320,7 @@ function cardVars(c) { return `--card:${esc(c.color)};`; }
 function rowHTML(u, v, i, c, max) {
   const w = max ? ` style="--w:${(v / max * 100).toFixed(1)}%"` : '';
   return `<li><a class="row" href="#profil-${u}" data-go="profil-${u}"${w}><span class="rank${i < 3 ? ' top' : ''}">${i + 1}</span>${avatar(u)}` +
-    `<span class="nm">${isOnline(u) ? '<i class="dot" title="online"></i>' : ''}${esc(nameOf(u))}</span><span class="val">${c.format === 'coins' ? `<span class="coin-b">${nf.format(Math.round(v))}<b>₵</b></span>` : fmt(c, v)}</span></a></li>`;
+    `<span class="nm">${isOnline(u) ? '<i class="dot" title="online"></i>' : ''}${esc(nameOf(u))}</span><span class="val">${c.format === 'coins' ? `<span class="coin-b">${nf.format(Math.round(v))}<b>₵</b></span>` : c.format === 'fewdeaths' ? fmt(c, v).replace(/^(.*?) · (.*)$/, '$1<small class="vsub"> · $2</small>') : fmt(c, v)}</span></a></li>`;
 }
 function headHTML(c, link) {
   const tag = onlyTotal(c) ? '<span class="tag">nur Gesamt</span>' : '';

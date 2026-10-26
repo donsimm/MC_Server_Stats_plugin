@@ -363,3 +363,6 @@ h2.sec small { font-family: var(--font); }
 .cf-card { position: static; left: auto; top: auto; transform: none !important; transition: none; flex: 0 0 210px; width: 210px; transform-style: flat; opacity: 1 !important; display: block !important; z-index: auto !important; }
 .cf-name { margin-top: 0; }
 .cf-bar { grid-template-columns: 34px 1fr 34px; padding: 0 0 8px; font-size: 13px; color: #cfc9dd; text-align: center; }
+
+/* Karten-Wert: Zusatzangabe (z. B. Spielzeit bei Unkaputtbar) kleiner */
+.val .vsub { font-size: .78em; font-weight: 400; opacity: .75; }
