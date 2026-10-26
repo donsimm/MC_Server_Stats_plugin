@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 21
+config-version: 22
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -257,6 +257,75 @@ categories:
     stat: ["custom:mob_kills"]
     ajlb-board: "statistic_mob_kills"
 
+  unkaputtbar:
+    page: "Übersicht"
+    title: "Unkaputtbar"
+    subtitle: "Wenigste Tode · nur Spieler ab 5 Std. Spielzeit"
+    icon: shield
+    color: "#e9dcb8"
+    format: fewdeaths
+    source: survival
+    column: "DEATHS"
+    tags: ["tod", "tode", "wenig", "null", "unsterblich", "überleben", "tote", "deaths"]
+
+  friedhof:
+    page: "Übersicht"
+    title: "Friedhof"
+    subtitle: "Hier liegen sie. Immer wieder."
+    icon: skull
+    color: "#2b2040"
+    night: true
+    format: int
+    source: vanilla
+    stat: ["custom:deaths"]
+    ajlb-board: "statistic_deaths"
+
+  netherit-jaeger:
+    page: "Übersicht"
+    title: "Netherit-Jäger"
+    subtitle: "Meiste Ancient Debris abgebaut"
+    icon: pick
+    color: "#c9916e"
+    format: int
+    source: vanilla
+    stat: ["mined:ancient_debris"]
+    tags: ["netherit", "netherite", "ancient debris", "antiker schrott", "nether", "abbau", "bergbau", "mining", "erz"]
+
+  diamant-sammler:
+    page: "Übersicht"
+    title: "Diamant-Sammler"
+    subtitle: "Meiste Diamanten aufgehoben"
+    icon: gem
+    color: "#4de3d5"
+    format: int
+    source: vanilla
+    stat: ["picked_up:diamond"]
+    tags: ["diamant", "diamanten", "diamond", "aufgehoben", "sammeln", "gefarmt", "farm", "erz"]
+
+  elytrapilot:
+    page: "Übersicht"
+    title: "Elytra-Pilot"
+    subtitle: "Meiste Strecke im Gleitflug"
+    icon: wing
+    color: "#d6c2ff"
+    format: km
+    source: vanilla
+    stat: ["custom:aviate_one_cm"]
+    scale: 0.00001
+    ajlb-board: "statistic_aviate_one_cm"
+    ajlb-scale: 0.00001
+
+  unsterblich:
+    page: "Übersicht"
+    title: "Unsterblich"
+    subtitle: "Meiste Totems der Unsterblichkeit"
+    icon: heart
+    color: "#9be8d0"
+    format: int
+    source: vanilla
+    stat: ["used:totem_of_undying"]
+    ajlb-board: "statistic_use_item:totem_of_undying"
+
   weltenbummler:
     page: "Übersicht"
     title: "Weltenbummler"
@@ -347,17 +416,6 @@ categories:
     stat: ["killed_by:player"]
     ajlb-board: "statistic_entity_killed_by:player"
 
-  unsterblich:
-    page: "Übersicht"
-    title: "Unsterblich"
-    subtitle: "Meiste Totems der Unsterblichkeit"
-    icon: heart
-    color: "#9be8d0"
-    format: int
-    source: vanilla
-    stat: ["used:totem_of_undying"]
-    ajlb-board: "statistic_use_item:totem_of_undying"
-
   feuerwerker:
     page: "Übersicht"
     title: "Feuerwerker"
@@ -445,19 +503,6 @@ categories:
     ajlb-board: "statistic_boat_one_cm"
     ajlb-scale: 0.00001
 
-  elytrapilot:
-    page: "Übersicht"
-    title: "Elytra-Pilot"
-    subtitle: "Meiste Strecke im Gleitflug"
-    icon: wing
-    color: "#d6c2ff"
-    format: km
-    source: vanilla
-    stat: ["custom:aviate_one_cm"]
-    scale: 0.00001
-    ajlb-board: "statistic_aviate_one_cm"
-    ajlb-scale: 0.00001
-
   pferd:
     page: "Übersicht"
     title: "Pferd"
@@ -470,6 +515,7 @@ categories:
     scale: 0.00001
     ajlb-board: "statistic_horse_one_cm"
     ajlb-scale: 0.00001
+
   schwein:
     page: "Übersicht"
     title: "Schwein"
@@ -482,6 +528,7 @@ categories:
     scale: 0.00001
     ajlb-board: "statistic_pig_one_cm"
     ajlb-scale: 0.00001
+
   strider:
     page: "Übersicht"
     title: "Strider"
@@ -492,6 +539,7 @@ categories:
     source: vanilla
     stat: ["custom:strider_one_cm"]
     scale: 0.00001
+
   kamel:
     page: "Übersicht"
     title: "Kamel"
@@ -502,6 +550,7 @@ categories:
     source: vanilla
     stat: ["custom:camel_one_cm"]
     scale: 0.00001
+
   lore:
     page: "Übersicht"
     title: "Lore"
@@ -536,6 +585,28 @@ categories:
     source: ajlb
     ajlb-board: "quests_player_quest_points"
 
+  dreizack:
+    page: "Übersicht"
+    title: "Dreizack-Werfer"
+    subtitle: "Meiste Dreizack-Einsätze"
+    icon: bolt
+    color: "#7fd4ff"
+    format: int
+    source: vanilla
+    stat: ["used:trident"]
+    tags: ["dreizack", "trident", "werfen", "speer", "waffe", "kampf"]
+
+  ueberlebenskuenstler:
+    page: "Übersicht"
+    title: "Überlebenskünstler"
+    subtitle: "Längste Zeit seit dem letzten Tod · nur Spieler ab 5 Std. Spielzeit"
+    icon: heart
+    color: "#b8f5c8"
+    format: dur
+    source: survival
+    column: "TIME"
+    tags: ["tod", "tode", "überleben", "überlebt", "leben", "letzter tod", "sterben", "hardcore"]
+
   skillmeister:
     page: "Jobs & mcMMO|mcMMO"
     title: "Skill-Meister"
@@ -554,6 +625,7 @@ categories:
     format: int
     source: cookieclicker
     column: PRESTIGE
+
   keksbaecker:
     page: "Cookie Clicker & Daily Reward|Cookie Clicker"
     title: "Keksbäcker"
@@ -583,6 +655,7 @@ categories:
     format: level
     source: jobs
     column: "Miner"
+
   farmer:
     page: "Jobs & mcMMO|Jobs"
     title: "Farmer"
@@ -592,6 +665,7 @@ categories:
     format: level
     source: jobs
     column: "Farmer"
+
   jaeger:
     page: "Jobs & mcMMO|Jobs"
     title: "Jäger"
@@ -601,6 +675,7 @@ categories:
     format: level
     source: jobs
     column: "Hunter"
+
   fischer:
     page: "Jobs & mcMMO|Jobs"
     title: "Fischer"
@@ -610,6 +685,7 @@ categories:
     format: level
     source: jobs
     column: "Fisher"
+
   holzfaeller:
     page: "Jobs & mcMMO|Jobs"
     title: "Holzfäller"
@@ -619,6 +695,7 @@ categories:
     format: level
     source: jobs
     column: "Woodcutter"
+
   jobmeister:
     page: "Jobs & mcMMO|Jobs"
     title: "Job-Meister"
@@ -628,6 +705,7 @@ categories:
     format: level
     source: jobs
     column: "*"
+
   sky-level:
     page: "SkyBlock & OneBlock|SkyBlock"
     title: "Inseln"
@@ -638,6 +716,7 @@ categories:
     format: dec
     source: skyblock
     column: "LEVEL"
+
   sky-challenges:
     page: "SkyBlock & OneBlock|SkyBlock"
     title: "Challenges"
@@ -647,6 +726,7 @@ categories:
     format: int
     source: skyblock
     column: "CHALLENGES"
+
   sky-completions:
     page: "SkyBlock & OneBlock|SkyBlock"
     title: "Challenge-Abschlüsse"
@@ -656,6 +736,7 @@ categories:
     format: int
     source: skyblock
     column: "COMPLETIONS"
+
   sky-team:
     page: "SkyBlock & OneBlock|SkyBlock"
     title: "Inselteam"
@@ -665,6 +746,7 @@ categories:
     format: int
     source: skyblock
     column: "PARTY"
+
   oneblock-level:
     page: "SkyBlock & OneBlock|OneBlock"
     title: "OneBlock-Level"
@@ -674,6 +756,7 @@ categories:
     format: level
     source: oneblock
     column: "LEVEL"
+
   oneblock-team:
     page: "SkyBlock & OneBlock|OneBlock"
     title: "Mitbewohner"
@@ -683,6 +766,7 @@ categories:
     format: int
     source: oneblock
     column: "INVITED"
+
   benutzt:
     page: "Alle Statistiken"
     title: "Gegenstände benutzt"
@@ -692,6 +776,7 @@ categories:
     format: int
     source: vanilla
     group-sum: "used"
+
   zerbrochen:
     page: "Alle Statistiken"
     title: "Gegenstände zerbrochen"
@@ -701,6 +786,7 @@ categories:
     format: int
     source: vanilla
     group-sum: "broken"
+
   aufgehoben:
     page: "Alle Statistiken"
     title: "Gegenstände aufgehoben"
@@ -710,6 +796,7 @@ categories:
     format: int
     source: vanilla
     group-sum: "picked_up"
+
   getoetet-worden:
     page: "Alle Statistiken"
     title: "Getötet worden"
@@ -719,6 +806,7 @@ categories:
     format: int
     source: vanilla
     group-sum: "killed_by"
+
   parkour-default:
     page: "Parkour|Parkour"
     title: "Parkour-Rekord"
@@ -729,6 +817,7 @@ categories:
     source: parkour
     stat: ["block:default"]
     column: "SCORE"
+
   parkour-speed:
     page: "Parkour|Parkour"
     title: "Parkour Speed"
@@ -739,6 +828,7 @@ categories:
     source: parkour
     stat: ["block:speed"]
     column: "SCORE"
+
   parkour-hourglass:
     page: "Parkour|Parkour"
     title: "Parkour Hourglass"
@@ -749,6 +839,7 @@ categories:
     source: parkour
     stat: ["block:hourglass"]
     column: "SCORE"
+
   parkour-super-jump:
     page: "Parkour|Parkour"
     title: "Parkour Super Jump"
@@ -759,6 +850,7 @@ categories:
     source: parkour
     stat: ["block:super_jump"]
     column: "SCORE"
+
   parkour-team-survival:
     page: "Parkour|Parkour"
     title: "Parkour Team Survival"
@@ -769,6 +861,7 @@ categories:
     source: parkour
     stat: ["block:team_survival"]
     column: "SCORE"
+
   parkour-time-trial:
     page: "Parkour|Parkour"
     title: "Parkour Time Trial"
@@ -779,6 +872,7 @@ categories:
     source: parkour
     stat: ["block:time_trial"]
     column: "TIME"
+
   parkour-wave-trial:
     page: "Parkour|Parkour"
     title: "Parkour Wave Trial"
@@ -789,6 +883,7 @@ categories:
     source: parkour
     stat: ["block:wave_trial"]
     column: "TIME"
+
   elytra-default:
     page: "Parkour|Elytra"
     title: "Elytra-Rekord"
@@ -799,6 +894,7 @@ categories:
     source: parkour
     stat: ["elytra:default"]
     column: "SCORE"
+
   elytra-close:
     page: "Parkour|Elytra"
     title: "Elytra Close"
@@ -809,6 +905,7 @@ categories:
     source: parkour
     stat: ["elytra:close"]
     column: "SCORE"
+
   elytra-min-speed:
     page: "Parkour|Elytra"
     title: "Elytra Min Speed"
@@ -819,6 +916,7 @@ categories:
     source: parkour
     stat: ["elytra:min speed"]
     column: "SCORE"
+
   elytra-obstacle:
     page: "Parkour|Elytra"
     title: "Elytra Obstacle"
@@ -829,6 +927,7 @@ categories:
     source: parkour
     stat: ["elytra:obstacle"]
     column: "SCORE"
+
   elytra-speed-demon:
     page: "Parkour|Elytra"
     title: "Elytra Speed Demon"
@@ -839,6 +938,7 @@ categories:
     source: parkour
     stat: ["elytra:speed demon"]
     column: "SCORE"
+
   elytra-time-trial:
     page: "Parkour|Elytra"
     title: "Elytra Time Trial"
@@ -849,27 +949,7 @@ categories:
     source: parkour
     stat: ["elytra:time trial"]
     column: "SCORE"
-  dreizack:
-    page: "Übersicht"
-    title: "Dreizack-Werfer"
-    subtitle: "Meiste Dreizack-Einsätze"
-    icon: bolt
-    color: "#7fd4ff"
-    format: int
-    source: vanilla
-    stat: ["used:trident"]
-    tags: ["dreizack", "trident", "werfen", "speer", "waffe", "kampf"]
-  friedhof:
-    page: "Übersicht"
-    title: "Friedhof"
-    subtitle: "Hier liegen sie. Immer wieder."
-    icon: skull
-    color: "#2b2040"
-    night: true
-    format: int
-    source: vanilla
-    stat: ["custom:deaths"]
-    ajlb-board: "statistic_deaths"
+
   streak-cookie:
     page: "Cookie Clicker & Daily Reward|Daily Reward"
     title: "Streak"
@@ -880,6 +960,7 @@ categories:
     source: dailyrewards
     column: "CURRENT"
     tags: ["streak", "serie", "daily", "belohnung", "täglich", "login", "daily reward"]
+
   streak-bester:
     page: "Cookie Clicker & Daily Reward|Daily Reward"
     title: "Bester Streak"
@@ -890,6 +971,7 @@ categories:
     source: dailyrewards
     column: "LONGEST"
     tags: ["streak", "serie", "daily", "belohnung", "täglich", "login", "daily reward"]
+
   streak-abholungen:
     page: "Cookie Clicker & Daily Reward|Daily Reward"
     title: "Belohnungen abgeholt"
@@ -900,43 +982,3 @@ categories:
     source: dailyrewards
     column: "CLAIMS"
     tags: ["streak", "serie", "daily", "belohnung", "täglich", "login", "daily reward"]
-  netherit-jaeger:
-    page: "Übersicht"
-    title: "Netherit-Jäger"
-    subtitle: "Meiste Ancient Debris abgebaut"
-    icon: pick
-    color: "#c9916e"
-    format: int
-    source: vanilla
-    stat: ["mined:ancient_debris"]
-    tags: ["netherit", "netherite", "ancient debris", "antiker schrott", "nether", "abbau", "bergbau", "mining", "erz"]
-  diamant-sammler:
-    page: "Übersicht"
-    title: "Diamant-Sammler"
-    subtitle: "Meiste Diamanten aufgehoben"
-    icon: gem
-    color: "#4de3d5"
-    format: int
-    source: vanilla
-    stat: ["picked_up:diamond"]
-    tags: ["diamant", "diamanten", "diamond", "aufgehoben", "sammeln", "gefarmt", "farm", "erz"]
-  ueberlebenskuenstler:
-    page: "Übersicht"
-    title: "Überlebenskünstler"
-    subtitle: "Längste Zeit seit dem letzten Tod · nur Spieler ab 5 Std. Spielzeit"
-    icon: heart
-    color: "#b8f5c8"
-    format: dur
-    source: survival
-    column: "TIME"
-    tags: ["tod", "tode", "überleben", "überlebt", "leben", "letzter tod", "sterben", "hardcore"]
-  unkaputtbar:
-    page: "Übersicht"
-    title: "Unkaputtbar"
-    subtitle: "Wenigste Tode · nur Spieler ab 5 Std. Spielzeit"
-    icon: shield
-    color: "#e9dcb8"
-    format: fewdeaths
-    source: survival
-    column: "DEATHS"
-    tags: ["tod", "tode", "wenig", "null", "unsterblich", "überleben", "tote", "deaths"]

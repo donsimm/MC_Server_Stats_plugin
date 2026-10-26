@@ -357,3 +357,9 @@ h2.sec small { font-family: var(--font); }
 .pbars .pn { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pbars .meter { height: 14px; border: 2px solid #1b1923; background: rgba(255,255,255,.1); } .pbars .meter i { display: block; height: 100%; } .pbars .num { text-align: right; font-weight: 700; }
 @media (max-width: 700px) { .pb2 { grid-template-columns: 1fr; } .pbars li { grid-template-columns: 32px 1fr 70px; } .pbars .meter { display: none; } }
+
+/* Baumeister: gerade Karten in einer seitlich schiebbaren Reihe, ohne Animation und ohne 3D */
+.cf-stage { display: flex; gap: 12px; overflow-x: auto; height: auto; perspective: none; padding: 6px 4px 14px; scrollbar-width: thin; scroll-behavior: auto; }
+.cf-card { position: static; left: auto; top: auto; transform: none !important; transition: none; flex: 0 0 210px; width: 210px; transform-style: flat; opacity: 1 !important; display: block !important; z-index: auto !important; }
+.cf-name { margin-top: 0; }
+.cf-bar { grid-template-columns: 34px 1fr 34px; padding: 0 0 8px; font-size: 13px; color: #cfc9dd; text-align: center; }

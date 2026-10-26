@@ -535,13 +535,13 @@ function blockCube(id, size, spin) {
   return `<div class="cube${spin ? ' spin' : ''}" style="--s:${size}px"><div class="cube-in">${f('top', top)}${f('front', side)}${f('right', side)}${f('back', side)}${f('left', side)}${f('bottom', top)}</div></div>`;
 }
 const CF = { sel: 0, ids: [] };
+/** Karte waehlen: hervorheben und in die Mitte der Reihe schieben (ohne Animation). */
 function cfLayout() {
-  document.querySelectorAll('.bm .cf-card').forEach(c => { const o = Number(c.dataset.i) - CF.sel, a = Math.abs(o);
-    c.style.display = a > 6 ? 'none' : '';
-    c.style.transform = o === 0 ? 'translateX(-50%) translateZ(60px) scale(1)' : `translateX(calc(-50% + ${o * 78 + Math.sign(o) * 150}px)) rotateY(${o > 0 ? -58 : 58}deg) scale(.82)`;
-    c.style.zIndex = 20 - a; c.style.opacity = a > 5 ? .35 : 1; c.classList.toggle('on', o === 0); });
+  const stage = document.querySelector('.bm .cf-stage');
+  document.querySelectorAll('.bm .cf-card').forEach(c => c.classList.toggle('on', Number(c.dataset.i) === CF.sel));
   document.querySelectorAll('.bm .pbars li').forEach(l => l.classList.toggle('sel', Number(l.dataset.i) === CF.sel));
-  const r = document.getElementById('cf-range'); if (r) r.value = CF.sel;
+  const card = document.querySelector(`.bm .cf-card[data-i="${CF.sel}"]`);
+  if (stage && card) stage.scrollLeft = card.offsetLeft - (stage.clientWidth - card.offsetWidth) / 2;
 }
 function placedModule(u) {
   const P = DATA.players[u];
@@ -554,12 +554,10 @@ function placedModule(u) {
   const sum = {}; mine.forEach(([id, n]) => { const g = blockGroup(id); (sum[g.n] = sum[g.n] || { n: g.n, c: g.c, v: 0 }).v += n; });
   const gl = Object.values(sum).sort((a, b) => b.v - a.v), gsum = gl.reduce((s, g) => s + g.v, 0);
   const cards = ids.map((id, i) => { const b = byId.get(id), top = b ? b.top : [];
-    return `<div class="cf-card" data-i="${i}"><div class="cf-art" style="background:radial-gradient(circle at 50% 40%, ${blockGroup(id).c}55, #111 70%)">${blockCube(id, 64, false)}</div>` +
-      `<div class="cf-name">${esc(blockName(id))}</div><div class="cf-tot">${b ? nf.format(b.total) + ' platziert (alle Spieler)' : ''}</div>` +
+    return `<div class="cf-card" data-i="${i}"><div class="cf-name">${esc(blockName(id))}</div><div class="cf-tot">${b ? nf.format(b.total) + ' platziert (alle Spieler)' : '&nbsp;'}</div>` +
       `<ol class="cf-top">${top.map(([v, n], k) => `<li class="${v === u ? 'me' : ''}"><span>${k + 1}</span>${avatar(v)}<b>${esc(nameOf(v))}</b><em>${nf.format(n)}</em></li>`).join('')}</ol></div>`; }).join('');
   setTimeout(cfLayout, 0);
-  return `<h2 class="sec">Baumeister<small>Blöcke platziert</small></h2><div class="bm"><div class="cf"><div class="cf-stage">${cards}</div>` +
-    `<div class="cf-bar"><button type="button" data-cf="-1" aria-label="Zurück">◀</button><input id="cf-range" type="range" min="0" max="${ids.length - 1}" value="0" aria-label="Block wählen"><button type="button" data-cf="1" aria-label="Weiter">▶</button></div></div>` +
+  return `<h2 class="sec">Baumeister<small>Blöcke platziert</small></h2><div class="bm"><div class="cf"><div class="cf-bar"><button type="button" data-cf="-1" aria-label="Vorheriger Block">◀</button><span>Block wählen: Karten seitlich schieben oder unten in der Liste anklicken</span><button type="button" data-cf="1" aria-label="Nächster Block">▶</button></div><div class="cf-stage">${cards}</div></div>` +
     `<div class="bm-in"><div class="pb2"><div class="power"><b>${nf.format(total)}</b><span>Blöcke insgesamt</span></div>` +
     `<div><div class="stack">${gl.map(g => `<i style="width:${(g.v / gsum * 100).toFixed(1)}%;background:${g.c}" title="${esc(g.n)}"></i>`).join('')}</div>` +
     `<div class="glegend">${gl.map(g => `<span><i style="background:${g.c}"></i>${esc(g.n)} ${(g.v / gsum * 100).toFixed(0)} %</span>`).join('')}</div></div></div>` +
@@ -570,7 +568,6 @@ document.addEventListener('click', e => {
   const c = e.target.closest('.bm .cf-card'); if (c) { CF.sel = Number(c.dataset.i); cfLayout(); return; }
   const bt = e.target.closest('.bm [data-cf]'); if (bt) { CF.sel = Math.min(CF.ids.length - 1, Math.max(0, CF.sel + Number(bt.dataset.cf))); cfLayout(); }
 });
-document.addEventListener('input', e => { if (e.target.id === 'cf-range') { CF.sel = Number(e.target.value); cfLayout(); } });
 
 function spielerView() {
   const list = Object.entries(DATA.players).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));
