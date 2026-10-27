@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 27
+config-version: 28
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -595,16 +595,6 @@ categories:
     scale: 0.00001
     ajlb-board: "statistic_climb_one_cm"
     ajlb-scale: 0.00001
-
-  questmeister:
-    page: "Übersicht"
-    title: "Questmeister"
-    subtitle: "Meiste Quest-Punkte"
-    icon: scroll
-    color: "#ffb36b"
-    format: int
-    source: ajlb
-    ajlb-board: "quests_player_quest_points"
 
   dreizack:
     page: "Übersicht"
