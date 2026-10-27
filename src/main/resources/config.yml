@@ -3,7 +3,7 @@
 #
 # config-version: Bei einer neuen Plugin-Version mit neuer Standard-Config wird diese Datei als config-v<alt>.yml.bak gesichert
 # und durch die neue ersetzt. Eigene Einstellungen danach aus der Sicherung uebernehmen.
-config-version: 26
+config-version: 27
 
 # Titel und Untertitel der Seite
 title: "Stats-Tafel"
@@ -649,6 +649,17 @@ categories:
     source: vanilla
     stat: ["used:crossbow"]
     tags: ["armbrust", "crossbow", "bolzen", "pfeil", "schiessen", "schützen", "waffe", "kampf"]
+
+  angler:
+    page: "Übersicht"
+    title: "Angler"
+    subtitle: "Meiste Angel-Fänge"
+    icon: wave
+    color: "#7fc8d9"
+    format: int
+    source: vanilla
+    stat: ["custom:fish_caught"]
+    tags: ["angler", "angeln", "fisch", "fische", "fischen", "fang", "fänge", "angel", "fishing"]
 
   skillmeister:
     page: "Jobs & mcMMO|mcMMO"
