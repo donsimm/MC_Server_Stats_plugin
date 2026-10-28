@@ -553,10 +553,10 @@ function placedModule(u) {
   const P = DATA.players[u];
   if (!P || !P.placed || !DATA.blocks || !DATA.blocks.list.length) return '';
   const mine = new Map(P.placed.top), ids = P.placed.top.map(x => x[0]);
-  DATA.blocks.list.forEach(b => { if (!mine.has(b.id) && ids.length < 60) ids.push(b.id); });
+  DATA.blocks.list.forEach(b => { if (!mine.has(b.id) && ids.length < 80) ids.push(b.id); });
   CF.ids = ids; CF.sel = 0; CF.u = u;
   const rows = ids.map((id, i) => `<li data-i="${i}" tabindex="0" class="${i === 0 ? 'on' : ''}"><span class="ico">${blockCube(id, 18, false)}</span><span class="pn">${esc(blockName(id))}</span><span class="num">${mine.has(id) ? nf.format(mine.get(id)) : '–'}</span></li>`).join('');
-  return `<h2 class="sec">Baumeister<small>Blöcke platziert</small></h2><div class="bm"><div class="bm-h"><div class="power"><b>${nf.format(P.placed.total)}</b><span>Blöcke insgesamt</span></div><span class="hint">Block anklicken: beste Spieler anzeigen</span></div>` +
+  return `<h2 class="sec">Baumeister<small>Blöcke platziert</small></h2><div class="bm"><div class="bm-h"><div class="power"><b>${nf.format(P.placed.total)}</b><span>Blöcke insgesamt platziert</span></div><span class="hint">Block anklicken: beste Spieler anzeigen</span></div>` +
     `<div class="bm2"><ul class="bl">${rows}</ul><div class="bcard">${cfCardHTML()}</div></div></div>`;
 }
 document.addEventListener('click', e => {

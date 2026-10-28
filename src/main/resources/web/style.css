@@ -334,21 +334,21 @@ h2.sec small { font-family: var(--font); }
 .cube .right { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); filter: brightness(.7); }
 .cube .left { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); filter: brightness(.86); }
 .flatb { display: inline-block; background-size: 100% auto; background-position: top; image-rendering: pixelated; border: 2px solid #0c0a12; }
-.bm { background: #25222e; border: 3px solid #3a3646; padding: 16px; color: #f4efe3; margin-bottom: 20px; }
+.bm { --bm: #9ee6c8; --bh: 340px; background: var(--bm); border: 3px solid var(--ink); box-shadow: 6px 6px 0 color-mix(in srgb, var(--bm) 40%, #000); outline: 1px solid rgba(255, 255, 255, .16); padding: 16px 18px 14px; color: var(--ink); margin-bottom: 20px; }
 .bm-h { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin-bottom: 12px; }
-.bm .power { display: block; } .bm .power b { display: block; font-size: 30px; line-height: 1; } .bm .power span { display: block; margin-top: 4px; color: #cfc9dd; }
-.bm .hint { font-size: 13px; color: #b9b3c9; }
+.bm .power { display: block; } .bm .power b { display: block; font-size: 30px; line-height: 1; } .bm .power span { display: block; margin-top: 4px; opacity: .8; }
+.bm .hint { font-size: 13px; opacity: .75; }
 .bm2 { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-.bl { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow-y: auto; border: 2px solid #3a3646; scrollbar-width: thin; scrollbar-color: #5a546a #1b1923; background: #1b1923; }
+.bl { list-style: none; margin: 0; padding: 0; height: var(--bh); overflow-y: auto; border: 3px solid #d9d4e6; scrollbar-width: thin; scrollbar-color: #5a546a #1b1923; background: #1b1923; }
 .bl li { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center; padding: 6px 10px; cursor: pointer; border-top: 1px solid rgba(255,255,255,.08); font-weight: 600; }
 .bl li:first-child { border-top: 0; } .bl li:hover { background: rgba(255,255,255,.07); } .bl li:focus-visible { outline: 2px solid #d9d4e6; outline-offset: -2px; }
 .bl li.on { background: #f4efe3; color: #0c0a12; } .bl .num { font-variant-numeric: tabular-nums; } .bl li:not(.on) .num:empty, .bl .pn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.bcard { background: #34303f; border: 3px solid #d9d4e6; padding: 14px; min-height: 260px; }
+.bcard { background: #34303f; color: #f4efe3; border: 3px solid #d9d4e6; padding: 14px; height: var(--bh); overflow: hidden; }
 .bc-name { font-family: var(--font-pixel); font-size: 18px; } .bc-tot { font-size: 13px; color: #b9b3c9; margin: 2px 0 10px; }
 .bc-top { list-style: none; margin: 0; padding: 0; } .bc-top li { display: grid; grid-template-columns: 16px 28px 1fr auto; gap: 8px; align-items: center; padding: 5px 4px; border-top: 1px solid rgba(255,255,255,.12); font-size: 14px; }
 .bc-top li:first-child { border-top: 0; } .bc-top li.me { background: rgba(255,255,255,.14); } .bc-top .av { width: 26px; height: 26px; } .bc-top em { font-style: normal; font-weight: 700; } .bc-top b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bc-me { margin-top: 10px; padding-top: 8px; border-top: 2px solid #5a546a; font-size: 13px; color: #d9d4e6; }
-@media (max-width: 700px) { .bm2 { grid-template-columns: 1fr; } .bl { max-height: 240px; } .bm-h { flex-direction: column; align-items: start; } }
+@media (max-width: 700px) { .bm2 { grid-template-columns: 1fr; } .bl { height: 240px; } .bcard { height: auto; min-height: 0; } .bm-h { flex-direction: column; align-items: start; } }
 
 /* Karten-Wert: Zusatzangabe (z. B. Spielzeit bei Unkaputtbar) kleiner */
 .val .vsub { font-size: .78em; font-weight: 400; opacity: .75; }
@@ -365,3 +365,5 @@ h2.sec small { font-family: var(--font); }
 .bl .ico { width: 26px; height: 26px; border: 0; background: none; box-shadow: none; display: grid; place-items: center; padding: 0; }
 
 .tile.mini .l { white-space: nowrap; } .tile.mini .mv { overflow: hidden; text-overflow: ellipsis; }
+
+.bm .hint { color: var(--ink); opacity: .75; } .bl { color: #f4efe3; } .bl li.on { color: var(--ink); }
