@@ -209,7 +209,7 @@ document.addEventListener('error', e => {
 const $ = id => document.getElementById(id);
 const view = $('view');
 let DATA = null, ONLINE = { players: [] }, IDX = null;
-let period = 'all', mode = 'abs', cmp = '', jmode = 'rel', cmpj = '', cur = (location.hash || '').slice(1) || 'start';
+let period = 'all', mode = 'log', cmp = '', jmode = 'log', cmpj = '', cur = (location.hash || '').slice(1) || 'start';
 let onlineSig = '';
 
 const PERIOD_NAMES = { week: 'Letzte 7 Tage', month: 'Letzter Monat', year: 'Letztes Jahr', all: 'Gesamt' };
@@ -596,23 +596,38 @@ function skillKeys() {
 }
 const mcmmoValue = (pl, k) => (pl.mcmmo && pl.mcmmo.skills[k]) || 0;
 function skillMax(keys) {
-  return keys.map(k => mode === 'abs' ? DATA.mcmmoRadarMax : Math.max(1, ...Object.values(DATA.players).map(p => mcmmoValue(p, k))));
+  const top = Math.max(...keys.map(k => Math.max(0, ...Object.values(DATA.players).map(p => mcmmoValue(p, k)))));
+  const absMax = Math.max(DATA.mcmmoRadarMax, Math.ceil(top / 100) * 100); // Skala wächst mit, wenn jemand über der Config-Grenze liegt
+  return keys.map(k => mode === 'rel' ? Math.max(1, ...Object.values(DATA.players).map(p => mcmmoValue(p, k))) : absMax);
 }
 
 /**
  * Radar als SVG. Die Beschriftungen werden gegeneinander verschoben, damit sie sich nicht überlagern.
  * valueOf(spieler, schluessel) liefert den Wert, maxes die Skala je Achse.
  */
-function radarSvg(aria, keys, labelOf, valueOf, maxes, me, other, groups) {
+/** Anteil 0..1 eines Wertes auf der Skala: linear oder logarithmisch (kleine Werte werden sichtbar, grosse gestaucht). */
+const scaleFrac = (m, v, max) => max > 0 ? Math.min(1, m === 'log' ? Math.log1p(Math.max(0, v)) / Math.log1p(max) : Math.max(0, v) / max) : 0;
+/** Ringe: linear 25/50/75/100 %, logarithmisch bei 10, 100, 1000 ... und dem Maximum. */
+function scaleRings(m, max) {
+  if (m !== 'log') return [.25, .5, .75, 1].map(f => ({ f, label: '' }));
+  const r = [];
+  for (let v = 10; v < max; v *= 10) r.push({ f: scaleFrac('log', v, max), label: nf.format(v) });
+  const last = r.length ? r[r.length - 1] : null;
+  if (last && last.f > 0.9) r.pop(); // Ring knapp unter dem Maximum weglassen, sonst ueberlagern sich die Beschriftungen
+  r.push({ f: 1, label: nf.format(max) });
+  return r;
+}
+function radarSvg(aria, keys, labelOf, valueOf, maxes, me, other, groups, sm = 'abs') {
   const n = keys.length, cx = 200, cy = 200;
   // Kategorie-Schilder (nur wenn Gruppen uebergeben wurden): Position je Gruppe aus ihren Achsen
   const R = groups ? 142 : 118;
   const GR = groups ? groups.map(g => ({ g, idx: g.keys.map(k => keys.indexOf(k)).filter(i => i >= 0) })).filter(x => x.idx.length) : null;
   const pt = (i, f, r = R) => { const a = i * 2 * Math.PI / n - Math.PI / 2; return [cx + Math.cos(a) * r * f, cy + Math.sin(a) * r * f]; };
   const fix = a => a.map(v => v.toFixed(1)).join(',');
-  const poly = (pl, dx = 0, dy = 0) => keys.map((k, i) => { const [x, y] = pt(i, Math.min(1, valueOf(pl, k) / maxes[i])); return (x + dx).toFixed(1) + ',' + (y + dy).toFixed(1); }).join(' ');
+  const poly = (pl, dx = 0, dy = 0) => keys.map((k, i) => { const [x, y] = pt(i, scaleFrac(sm, valueOf(pl, k), maxes[i])); return (x + dx).toFixed(1) + ',' + (y + dy).toFixed(1); }).join(' ');
   let s = `<svg viewBox="${GR ? '-112 -52 624 504' : '-60 -4 520 420'}" role="img" aria-label="${esc(aria)}">`;
-  [.25, .5, .75, 1].forEach(f => { s += `<polygon class="ring${f === 1 ? ' out' : ''}" points="${keys.map((_, i) => fix(pt(i, f))).join(' ')}"/>`; });
+  const rings = scaleRings(sm, maxes[0]);
+  rings.forEach(({ f }) => { s += `<polygon class="ring${f === 1 ? ' out' : ''}" points="${keys.map((_, i) => fix(pt(i, f))).join(' ')}"/>`; });
   keys.forEach((_, i) => { const [x, y] = pt(i, 1); s += `<line class="axis" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`; });
   s += `<polygon points="${poly(me, 5, 5)}" fill="#0c0a12"/>`;
   if (other) {
@@ -620,7 +635,9 @@ function radarSvg(aria, keys, labelOf, valueOf, maxes, me, other, groups) {
     s += `<polygon points="${poly(other)}" fill="#4de3d5" fill-opacity=".6" stroke="#0c0a12" stroke-width="3" stroke-dasharray="7 4"/>`;
   }
   s += `<polygon points="${poly(me)}" fill="#ffd23f" fill-opacity=".88" stroke="#0c0a12" stroke-width="3" stroke-linejoin="miter"/>`;
-  keys.forEach((k, i) => { const [x, y] = pt(i, Math.min(1, valueOf(me, k) / maxes[i])); s += `<rect x="${(x - 3.5).toFixed(1)}" y="${(y - 3.5).toFixed(1)}" width="7" height="7" fill="#0c0a12"/>`; });
+  keys.forEach((k, i) => { const [x, y] = pt(i, scaleFrac(sm, valueOf(me, k), maxes[i])); s += `<rect x="${(x - 3.5).toFixed(1)}" y="${(y - 3.5).toFixed(1)}" width="7" height="7" fill="#0c0a12"/>`; });
+
+  if (sm === 'log') rings.forEach(({ f, label }) => { s += `<text x="${cx + 4}" y="${(cy - R * f - 3).toFixed(1)}" style="font:700 11px var(--font);fill:#0c0a12;opacity:.7">${label}</text>`; });
 
   // Beschriftungen: Position und grobe Breite berechnen, dann in der oberen und unteren Hälfte entzerren
   const labels = keys.map((k, i) => {
@@ -655,7 +672,7 @@ function legendHTML(P, otherP) {
   return `<div class="legend"><span><i style="background:#ffd23f"></i>${esc(P.name)}</span>${otherP ? `<span><i style="background:#4de3d5"></i>${esc(otherP.name)}</span>` : ''}</div>`;
 }
 function scaleCtl(attr, current) {
-  return `<div class="seg" role="group" aria-label="Skala"><button type="button" ${attr}="abs" aria-pressed="${current === 'abs'}">Absolut</button><button type="button" ${attr}="rel" aria-pressed="${current === 'rel'}">Relativ</button></div>`;
+  return `<div class="seg" role="group" aria-label="Skala"><button type="button" ${attr}="abs" aria-pressed="${current === 'abs'}">Absolut</button><button type="button" ${attr}="rel" aria-pressed="${current === 'rel'}">Relativ</button><button type="button" ${attr}="log" aria-pressed="${current === 'log'}">Logarithmisch</button></div>`;
 }
 
 function mcmmoCard(u) {
@@ -664,16 +681,16 @@ function mcmmoCard(u) {
   const keys = skillKeys(), maxes = skillMax(keys);
   const otherP = cmp && cmp !== u && DATA.players[cmp] && DATA.players[cmp].mcmmo ? DATA.players[cmp] : null;
   const order = keys.map((k, i) => i).sort((a, b) => mcmmoValue(P, keys[b]) - mcmmoValue(P, keys[a]));
-  const list = order.map(i => { const k = keys[i], v = mcmmoValue(P, k); return `<li><span>${esc(skillLabel(k))}</span><span class="meter"><i style="width:${Math.min(100, v / maxes[i] * 100).toFixed(1)}%"></i></span>` +
+  const list = order.map(i => { const k = keys[i], v = mcmmoValue(P, k); return `<li><span>${esc(skillLabel(k))}</span><span class="meter"><i style="width:${(scaleFrac(mode, v, maxes[i]) * 100).toFixed(1)}%"></i></span>` +
     `<span class="num">${nf.format(v)}${otherP ? ` <small>${nf.format(mcmmoValue(otherP, k))}</small>` : ''}</span></li>`; }).join('');
   const candidates = Object.entries(DATA.players).filter(([id, p]) => id !== u && p.mcmmo).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));
   const opts = '<option value="">– keiner –</option>' + candidates.map(([id, p]) => `<option value="${id}"${id === cmp ? ' selected' : ''}>${esc(p.name)}</option>`).join('');
   return `<h2 class="sec">Skills</h2><article class="card" style="--card:#b9a4ff"><div class="card-h"><div><h3>mcMMO-Skills</h3><p>Skillradar und Level je Fertigkeit</p></div></div>` +
-    `<div class="mm"><div>${radarSvg('mcMMO-Skillradar von ' + P.name, keys, skillLabel, mcmmoValue, maxes, P, otherP, SKILL_GROUPS)}${legendHTML(P, otherP)}</div>` +
+    `<div class="mm"><div>${radarSvg('mcMMO-Skillradar von ' + P.name, keys, skillLabel, mcmmoValue, maxes, P, otherP, SKILL_GROUPS, mode)}${legendHTML(P, otherP)}</div>` +
     `<div><div class="power"><b>${nf.format(P.mcmmo.power)}</b><span>Power-Level</span></div>` +
     `<div class="ctrl">${scaleCtl('data-mode', mode)}<label for="cmp">Vergleichen mit</label><select id="cmp">${opts}</select></div>` +
     `<ul class="skills">${list}</ul>` +
-    `<p class="note">${mode === 'abs' ? 'Absolut: Skala bis Level ' + nf.format(DATA.mcmmoRadarMax) + ' (in der Config einstellbar).' : 'Relativ: 100 % entspricht dem besten Spieler des Servers im jeweiligen Skill.'} Verwerten und Schmelzen fehlen, weil mcMMO sie als Child-Skills ohne eigene Erfahrung führt.</p></div></div>` +
+    `<p class="note">${mode === 'abs' ? 'Absolut: Skala bis Level ' + nf.format(maxes[0]) + ' (Grenze in der Config einstellbar, wächst mit, wenn jemand darüber liegt).' : mode === 'log' ? 'Logarithmisch: Skala bis Level ' + nf.format(maxes[0]) + ', Ringe bei 10, 100, 1’000 … Kleine Werte werden grösser dargestellt, grosse gestaucht.' : 'Relativ: 100 % entspricht dem besten Spieler des Servers im jeweiligen Skill.'} Verwerten und Schmelzen fehlen, weil mcMMO sie als Child-Skills ohne eigene Erfahrung führt.</p></div></div>` +
     `<div class="card-f"><span></span><span class="src">Quelle: mcMMO</span></div></article>`;
 }
 
@@ -688,7 +705,9 @@ function jobKeys() {
   return [...keys].sort((a, b) => jobLabel(a).localeCompare(jobLabel(b), 'de'));
 }
 function jobMax(keys) {
-  return keys.map(k => jmode === 'abs' ? JOB_ABS_MAX : Math.max(1, ...Object.values(DATA.players).map(p => jobValue(p, k))));
+  const top = Math.max(...keys.map(k => Math.max(0, ...Object.values(DATA.players).map(p => jobValue(p, k)))));
+  const absMax = Math.max(JOB_ABS_MAX, Math.ceil(top / 10) * 10);
+  return keys.map(k => jmode === 'rel' ? Math.max(1, ...Object.values(DATA.players).map(p => jobValue(p, k))) : absMax);
 }
 function jobsCard(u) {
   const P = DATA.players[u];
@@ -698,17 +717,17 @@ function jobsCard(u) {
   const order = keys.map((k, i) => i).sort((a, b) => jobValue(P, keys[b]) - jobValue(P, keys[a]) || ((P.jobs[keys[b]] || {}).xp || 0) - ((P.jobs[keys[a]] || {}).xp || 0));
   const list = order.map(i => {
     const k = keys[i], j = P.jobs[k];
-    return `<li><span>${esc(jobLabel(k))}</span><span class="meter"><i style="width:${Math.min(100, jobValue(P, k) / maxes[i] * 100).toFixed(1)}%"></i></span>` +
+    return `<li><span>${esc(jobLabel(k))}</span><span class="meter"><i style="width:${(scaleFrac(jmode, jobValue(P, k), maxes[i]) * 100).toFixed(1)}%"></i></span>` +
       `<span class="num">Level ${jobValue(P, k)}${j ? ` <small>${nf.format(Math.round(j.xp))} XP</small>` : ''}${otherP ? ` <small>· ${jobValue(otherP, k)}</small>` : ''}</span></li>`;
   }).join('');
   const candidates = Object.entries(DATA.players).filter(([id, p]) => id !== u && p.jobs).sort((a, b) => a[1].name.localeCompare(b[1].name, 'de'));
   const opts = '<option value="">– keiner –</option>' + candidates.map(([id, p]) => `<option value="${id}"${id === cmpj ? ' selected' : ''}>${esc(p.name)}</option>`).join('');
   return `<h2 class="sec">Jobs</h2><article class="card" style="--card:#ffe08a"><div class="card-h"><div><h3>AethelJobs</h3><p>Jobradar und Level je Beruf</p></div></div>` +
-    `<div class="mm"><div>${radarSvg('Jobradar von ' + P.name, keys, jobLabel, jobValue, maxes, P, otherP)}${legendHTML(P, otherP)}</div>` +
+    `<div class="mm"><div>${radarSvg('Jobradar von ' + P.name, keys, jobLabel, jobValue, maxes, P, otherP, null, jmode)}${legendHTML(P, otherP)}</div>` +
     `<div><div class="power"><b>${nf.format(jobTotal(P))}</b><span>Gesamtlevel</span></div>` +
     `<div class="ctrl">${scaleCtl('data-jmode', jmode)}<label for="cmpj">Vergleichen mit</label><select id="cmpj">${opts}</select></div>` +
     `<ul class="skills jobs">${list}</ul>` +
-    `<p class="note">${jmode === 'abs' ? 'Absolut: Skala bis Level ' + JOB_ABS_MAX + '.' : 'Relativ: 100 % entspricht dem besten Spieler des Servers im jeweiligen Job.'} Das Gesamtlevel ist die Summe aller Job-Level.</p></div></div>` +
+    `<p class="note">${jmode === 'abs' ? 'Absolut: Skala bis Level ' + maxes[0] + '.' : jmode === 'log' ? 'Logarithmisch: Skala bis Level ' + maxes[0] + ', Ringe bei 10, 100 … Kleine Werte werden grösser dargestellt, grosse gestaucht.' : 'Relativ: 100 % entspricht dem besten Spieler des Servers im jeweiligen Job.'} Das Gesamtlevel ist die Summe aller Job-Level.</p></div></div>` +
     `<div class="card-f"><span></span><span class="src">Quelle: AethelJobs</span></div></article>`;
 }
 
