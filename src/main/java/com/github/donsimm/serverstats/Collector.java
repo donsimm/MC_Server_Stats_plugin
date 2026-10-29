@@ -1138,7 +1138,7 @@ final class Collector {
         if (!s.blocksEnabled || placedPerPlayer.isEmpty()) {
             return;
         }
-        PlacedBlocks.Result result = PlacedBlocks.aggregate(placedPerPlayer, 60, 5, 10);
+        PlacedBlocks.Result result = PlacedBlocks.aggregate(placedPerPlayer, 60, 10, 10);
         JsonObject players = json.getAsJsonObject("players");
         JsonArray blocks = new JsonArray();
         List<String> ids = new ArrayList<>();

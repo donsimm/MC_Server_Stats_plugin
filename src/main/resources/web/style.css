@@ -334,7 +334,7 @@ h2.sec small { font-family: var(--font); }
 .cube .right { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); filter: brightness(.7); }
 .cube .left { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); filter: brightness(.86); }
 .flatb { display: inline-block; background-size: 100% auto; background-position: top; image-rendering: pixelated; border: 2px solid #0c0a12; }
-.bm { --bm: #9ee6c8; --bh: 340px; background: var(--bm); border: 3px solid var(--ink); box-shadow: 6px 6px 0 color-mix(in srgb, var(--bm) 40%, #000); outline: 1px solid rgba(255, 255, 255, .16); padding: 16px 18px 14px; color: var(--ink); margin-bottom: 20px; }
+.bm { --bm: #9ee6c8; --bh: 504px; background: var(--bm); border: 3px solid var(--ink); box-shadow: 6px 6px 0 color-mix(in srgb, var(--bm) 40%, #000); outline: 1px solid rgba(255, 255, 255, .16); padding: 16px 18px 14px; color: var(--ink); margin-bottom: 20px; }
 .bm-h { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin-bottom: 12px; }
 .bm .power { display: block; } .bm .power b { display: block; font-size: 30px; line-height: 1; } .bm .power span { display: block; margin-top: 4px; opacity: .8; }
 .bm .hint { font-size: 13px; opacity: .75; }

@@ -535,7 +535,7 @@ function blockCube(id, size, spin) {
   return `<div class="cube${spin ? ' spin' : ''}" style="--s:${size}px"><div class="cube-in">${f('top', top)}${f('front', side)}${f('right', side)}${f('back', side)}${f('left', side)}${f('bottom', top)}</div></div>`;
 }
 const CF = { sel: 0, ids: [], u: '' };
-/** Rechte Karte: Block, Gesamtzahl aller Spieler und die 5 besten Spieler. */
+/** Rechte Karte: Block, Gesamtzahl aller Spieler und die 10 besten Spieler. */
 function cfCardHTML() {
   const id = CF.ids[CF.sel], u = CF.u, P = DATA.players[u];
   const b = DATA.blocks.list.find(x => x.id === id), mineN = (P.placed.top.find(x => x[0] === id) || [0, 0])[1];
